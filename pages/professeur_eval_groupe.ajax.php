@@ -46,6 +46,8 @@ $orientation    = (isset($_POST['f_orientation']))     ? clean_texte($_POST['f_o
 $marge_min      = (isset($_POST['f_marge_min']))       ? clean_texte($_POST['f_marge_min'])             : '';
 $couleur        = (isset($_POST['f_couleur']))         ? clean_texte($_POST['f_couleur'])               : '';
 $only_req       = (isset($_POST['f_restriction_req'])) ? true                                           : false;
+$aff_conv_sur20 = (isset($_POST['f_conv_sur20']))  ? 1                                    : 0; // en cas de manipulation type Firebug, peut être forcé pour l'élève avec (mb_substr_count($_SESSION['DROIT_
+ 
 
 $dossier_export = './__tmp/export/';
 $fnom = 'saisie_'.$_SESSION['BASE'].'_'.$_SESSION['USER_ID'].'_'.$ref;
@@ -958,6 +960,7 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_type && $groupe_id 
 	require('./_inc/class.PDF.php');
 	$sacoche_pdf = new PDF($orientation,$marge_min,$couleur);
 	$sacoche_pdf->cartouche_initialiser($cart_detail,$item_nb);
+	$tab_item = Array();
 	if($cart_detail=='minimal')
 	{
 		// dans le cas d'un cartouche minimal
@@ -966,6 +969,20 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_type && $groupe_id 
 			if($tab_user_nb_req[$user_id])
 			{
 				$texte_entete = $date.' - '.$info.' - '.$val_user;
+				if ($aff_conv_sur20) {
+					$somme_scores_ponderes = 0;
+					$somme_coefs = 0;
+					foreach($tab_comp_id as $comp_id=>$tab_val_comp)
+					{
+					       if (!isset($tab_item[$comp_id])) {
+						       $result = DB_STRUCTURE_recuperer_item_infos($comp_id);
+						       $tab_item[$comp_id] = $result;
+					       }
+					       $somme_scores_ponderes += $_SESSION['CALCUL_VALEUR'][$tab_result[$comp_id][$user_id]]*$tab_item[$comp_id]['item_coef'];
+					       $somme_coefs += $tab_item[$comp_id]['item_coef'];
+					}
+					$texte_entete .= '  '.sprintf("%04.1f",$somme_scores_ponderes/(5*$somme_coefs)).' /20';
+				}
 				$sacoche_htm .= '<table class="bilan"><thead><tr><th colspan="'.$tab_user_nb_req[$user_id].'">'.html($texte_entete).'</th></tr></thead><tbody>';
 				$sacoche_csv .= $texte_entete."\r\n";
 				$sacoche_pdf->cartouche_entete( $texte_entete , $lignes_nb=4 );
@@ -996,6 +1013,20 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_type && $groupe_id 
 			if($tab_user_nb_req[$user_id])
 			{
 				$texte_entete = $date.' - '.$info.' - '.$val_user;
+				if ($aff_conv_sur20) {
+					$somme_scores_ponderes = 0;
+					$somme_coefs = 0;
+					foreach($tab_comp_id as $comp_id=>$tab_val_comp)
+					{
+					       if (!isset($tab_item[$comp_id])) {
+						       $result = DB_STRUCTURE_recuperer_item_infos($comp_id);
+						       $tab_item[$comp_id] = $result;
+					       }
+					       $somme_scores_ponderes += $_SESSION['CALCUL_VALEUR'][$tab_result[$comp_id][$user_id]]*$tab_item[$comp_id]['item_coef'];
+					       $somme_coefs += $tab_item[$comp_id]['item_coef'];
+					}
+					$texte_entete .= '  '.sprintf("%04.1f",$somme_scores_ponderes/(5*$somme_coefs)).' /20';
+				}
 				$sacoche_htm .= '<table class="bilan"><thead><tr><th colspan="3">'.html($texte_entete).'</th></tr></thead><tbody>';
 				$sacoche_csv .= $texte_entete."\r\n";
 				$sacoche_pdf->cartouche_entete( $texte_entete , $lignes_nb=$tab_user_nb_req[$user_id]+1 );

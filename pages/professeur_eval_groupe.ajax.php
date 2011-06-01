@@ -1001,7 +1001,7 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_type && $groupe_id 
 				}
 				$sacoche_htm .= '<tr>'.$ligne1_html.'</tr><tr>'.$ligne2_html.'</tr></tbody></table><p />';
 				$sacoche_csv .= $ligne1_csv."\r\n".$ligne2_csv."\r\n\r\n";
-				$sacoche_pdf->cartouche_interligne(4);
+				$sacoche_pdf->cartouche_interligne(3);
 			}
 		}
 	}
@@ -1041,7 +1041,7 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_type && $groupe_id 
 				}
 				$sacoche_htm .= '</tbody></table><p />';
 				$sacoche_csv .= "\r\n";
-				$sacoche_pdf->cartouche_interligne(2);
+				$sacoche_pdf->cartouche_interligne(1);
 			}
 		}
 	}

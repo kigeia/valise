@@ -784,6 +784,7 @@ function afficher_pourcentage_acquis($gras,$tab_infos,$detail)
 				// Interligne
 				$this->SetXY($this->marge_gauche , $this->GetY() + $this->lignes_hauteur*2);
 			}
+
 		}
 		elseif( ($format=='multimatiere') || ($format=='selection') )
 		{
@@ -1461,6 +1462,7 @@ function afficher_pourcentage_acquis($gras,$tab_infos,$detail)
 
 	public function cartouche_initialiser($detail,$item_nb)
 	{
+		$this->marge_droit = $this->marge_droit + 15;
 		$this->cases_largeur     = ($detail=='minimal') ? ($this->page_largeur - $this->marge_gauche - $this->marge_droit) / $item_nb : 10 ;
 		$this->cases_hauteur     = 5 ;
 		$this->reference_largeur = 15 ;

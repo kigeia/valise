@@ -54,8 +54,6 @@ if(!file_exists($fichier_lock))
 }
 
 // Alerte si navigateur trop ancien
-require_once('./_inc/fonction_css_browser_selector.php');
-echo afficher_navigateurs_alertes($hr_avant='<hr />',$chemin_image='./_img',$hr_apres='');
 
 // Alerte non déconnexion de l'ENT si deconnexion de SACoche depuis un compte connecté via un ENT
 if($ALERTE_SSO)
@@ -68,30 +66,15 @@ if($ALERTE_SSO)
 
 <hr />
 
-<h2><img src="./_img/login.gif" alt="Identification" /> <?php echo($profil=='normal')?'Identification':'<span style="color:#C00">Accès webmestre</span>'; ?><?php echo $liens_autres_profils ?></h2>
 <form action=""><fieldset>
 	<input id="f_base" name="f_base" type="hidden" value="<?php echo $BASE ?>" />
 	<input id="f_profil" name="f_profil" type="hidden" value="<?php echo $profil ?>" />
-	<label id="ajax_msg" class="loader">Chargement en cours...</label>
+	<label class="tab" for="f_login">Nom d\'utilisateur :</label><input id="f_login" name="f_login" size="20" type="text" value="" tabindex="2" /><br />
+	<label class="tab" for="f_password">Mot de passe :</label><input id="f_password" name="f_password" size="20" type="password" value="" tabindex="3" /><br />
+	<span class="tab"></span>
+	<input id="f_mode" name="f_mode" type="hidden" value="normal" />
+	<input id="f_action" name="f_action" type="hidden" value="identifier" /><button id="f_submit" type="submit" tabindex="4"><img alt="" src="./_img/bouton/mdp_perso.png" /> Accéder à son espace.</button><label id="ajax_msg">&nbsp;</label><br />
 </fieldset></form>
-
-<hr />
-
-<h2><img src="./_img/serveur.png" alt="Hébergement" /> Hébergement</h2>
-<ul class="puce">
-	<li><em>SACoche</em> peut être téléchargé et installé sur différents serveurs.</li>
-	<li>Cette installation (<?php echo (HEBERGEUR_INSTALLATION=='mono-structure') ? HEBERGEUR_INSTALLATION : DB_WEBMESTRE_compter_structure() ; ?>) a été effectuée par : <?php echo (HEBERGEUR_ADRESSE_SITE) ? '<a class="lien_ext" href="'.html(HEBERGEUR_ADRESSE_SITE).'">'.html(HEBERGEUR_DENOMINATION).'</a>' : html(HEBERGEUR_DENOMINATION); ?> (<?php echo mailto(WEBMESTRE_COURRIEL,'SACoche','contact','Attention ! Si vous êtes élève, professeur ou directeur, alors il ne faut pas contacter le webmestre du serveur, mais l\'administrateur de votre établissement qui a créé les comptes utilisateurs.'); ?>).</li>
-	<li><a class="lien_ext" href="http://sacoche.sesamath.net/index.php?dossier=presentation&amp;fichier=accueil__cnil">Information CNIL</a>. Déclaration <?php echo intval(CNIL_NUMERO) ? 'n°'.CNIL_NUMERO : 'non renseignée' ; ?>.</li>
-</ul>
-
-<hr />
-
-<h2><img src="./_img/puce_astuce.png" alt="Informations" /> Informations</h2>
-<ul class="puce">
-	<li><em>SACoche</em> est un logiciel gratuit, libre, développé avec le soutien de <a class="lien_ext" href="http://www.sesamath.net"><em>Sésamath</em></a>.</li>
-	<li class="b">Consulter <a href="<?php echo SERVEUR_PROJET ?>" class="lien_ext">le site officiel de <em>SACoche</em></a> pour tout renseignement.</li>
-	<li>Version installée <em><?php echo VERSION_PROG ?></em>.<label id="ajax_version" for="version"></label></li>
-</ul>
 
 <script type="text/javascript">
 	var VERSION_PROG = "<?php echo VERSION_PROG ?>";

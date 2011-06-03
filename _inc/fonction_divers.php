@@ -613,10 +613,10 @@ function connecter_user($BASE,$profil,$login,$password,$mode_connection)
 		return'Identification réussie mais ce compte est desactivé !';
 	}
 	// Si erreur de profil...
-	if( ( ($profil!='administrateur')&&($DB_ROW['user_profil']=='administrateur') ) || ( ($profil=='administrateur')&&($DB_ROW['user_profil']!='administrateur') ) )
-	{
-		return'Utilisez le formulaire approprié aux '.str_replace('eleve','élève',$DB_ROW['user_profil']).'s !';
-	}
+	//if( ( ($profil!='administrateur')&&($DB_ROW['user_profil']=='administrateur') ) || ( ($profil=='administrateur')&&($DB_ROW['user_profil']!='administrateur') ) )
+	//{
+	//	return'Utilisez le formulaire approprié aux '.str_replace('eleve','élève',$DB_ROW['user_profil']).'s !';
+	//}
 	// Si on arrive ici c'est que l'identification s'est bien effectuée !
 	enregistrer_informations_session($BASE,$DB_ROW);
 	// Mémoriser la date de la (dernière) connexion

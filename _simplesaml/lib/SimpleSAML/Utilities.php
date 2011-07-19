@@ -104,10 +104,7 @@ class SimpleSAML_Utilities {
 	public static function selfURLNoQuery() {
 	
 		$selfURLhost = self::selfURLhost();
-		$selfURLhost .= $_SERVER['SCRIPT_NAME'];
-		if (isset($_SERVER['PATH_INFO'])) {
-			$selfURLhost .= $_SERVER['PATH_INFO'];
-		}
+		$selfURLhost .= str_replace( '?'.$_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI'] );;//hack for gepi & sacoche
 		return $selfURLhost;
 	
 	}

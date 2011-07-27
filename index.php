@@ -41,6 +41,7 @@ require_once('./_inc/fonction_sessions.php');
 
 // Page appelée
 $PAGE    = (isset($_GET['page']))    ? $_GET['page']    : 'public_accueil' ;
+if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '' && $PAGE == 'public_accueil') $PAGE = 'compte_accueil'; //on évite la page de login dans le cas simplesaml
 $SECTION = (isset($_GET['section'])) ? $_GET['section'] : '';
 
 // Ouverture de la session et gestion des droits d'accès
@@ -186,6 +187,10 @@ if(!is_file($filename_php))
 {
 	$tab_messages_erreur[] = 'Erreur : page "'.$filename_php.'" manquante (supprimée, déplacée, non créée...).';
 	$PAGE = ($_SESSION['USER_PROFIL']=='public') ? 'public_accueil' :'compte_accueil' ;
+	if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {
+		header("Location: ./index.php?page=compte_accueil");
+		die();
+	}
 	$filename_php = './pages/'.$PAGE.'.php';
 }
 require($filename_php);

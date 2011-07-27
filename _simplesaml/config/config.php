@@ -507,3 +507,4 @@ $config['technicalcontact_email'] = WEBMESTRE_COURRIEL;
 
 require_once("$path/_inc/fonction_sessions.php");
 $config['session.phpsession.cookiename'] = SESSION_NOM;	
+$config['session.cookie.path'] = COOKIE_PATH;

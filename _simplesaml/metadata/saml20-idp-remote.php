@@ -11,6 +11,6 @@ $metadata['gepi-idp'] = array(
 	'name' => array('fr' => 'Gepi'),
 	'SingleSignOnService'  => 'https://localhost/gepi/simplesaml/saml2/idp/SSOService.php',
 	'SingleLogoutService'  => 'https://localhost/gepi/simplesaml/saml2/idp/SingleLogoutService.php',
-	'certFingerprint'      => 'AF:E7:1C:28:EF:74:0B:C8:74:25:BE:13:A2:26:3D:37:97:1D:A1:F9'
+	'certFingerprint'      => 'AA:FD:FF:98:48:18:A8:56:73:32:73:8F:33:53:04:8C:36:9B:E6:B2'
 );
 ?>

@@ -1,1 +1,16 @@
 AddDefaultCharset UTF-8
+
+DirectoryIndex index.php
+
+<IfModule rewrite_module>
+	RewriteEngine On
+	# acces simplesaml forcé en https.
+	RewriteCond %{HTTPS} off
+	RewriteRule ^simplesaml(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [NE,R,L]	# redirige en https pour l'authentification
+
+	RewriteCond %{HTTPS} off
+	RewriteRule ^_simplesaml(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [NE,L,R]	# redirige en https pour l'authentification
+	# fin forcage https
+
+	RewriteRule ^simplesaml(.*)$ _simplesaml/www$1
+</IfModule>

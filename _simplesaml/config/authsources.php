@@ -52,6 +52,16 @@ $config = array(
 		'description' => array(
 		    'fr' => 'Authentification commune gepi et sacoche',
 		),
+		//on va travailler sur les attributs pour avoir des attributs au format sacoche
+		'authproc' => array(
+		    50 => array(
+			'class' => 'core:AttributeMap',
+			'login' => array('USER_ID_ENT', 'USER_ID_GEPI'),
+			'statut' => 'USER_PROFIL',
+			'nom' => 'USER_NOM',
+			'prenom' => 'USER_PRENOM',
+		    ),
+		),
 	),
 
 	//choix d'authentification entre utilisateur webmestre et utilisateur gepi

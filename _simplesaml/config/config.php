@@ -283,62 +283,6 @@ $config = array (
 	'shib13.signresponse' => TRUE,
 	
 	
-	
-	/*
-	 * Authentication processing filters that will be executed for all IdPs
-	 * Both Shibboleth and SAML 2.0
-	 */
-	'authproc.idp' => array(
-		/* Enable the authproc filter below to add URN Prefixces to all attributes
- 		10 => array(
- 			'class' => 'core:AttributeMap', 'addurnprefix'
- 		), */
- 		/* Enable the authproc filter below to automatically generated eduPersonTargetedID. 
- 		20 => 'core:TargetedID',
- 		*/
-
-		// Adopts language from attribute to use in UI
- 		30 => 'core:LanguageAdaptor',
- 		
-		/* Add a realm attribute from edupersonprincipalname
-		40 => 'core:AttributeRealm',
-		 */
-		45 => array(
-			'class' => 'core:StatisticsWithAttribute',
-			'attributename' => 'realm',
-			'type' => 'saml20-idp-SSO',
-		),
-
-		/* When called without parameters, it will fallback to filter attributes ‹the old way›
-		 * by checking the 'attributes' parameter in metadata on IdP hosted and SP remote.
-		 */
-		50 => 'core:AttributeLimit', 
-
-		/* 
-		 * Search attribute "distinguishedName" for pattern and replaces if found
-
-		60 => array(
-			'class'		=> 'core:AttributeAlter',
-			'pattern'	=> '/OU=studerende/',
-			'replacement'	=> 'Student',
-			'subject'	=> 'distinguishedName',
-			'%replace',	
-		),
-		 */
-
-		/*
-		 * Consent module is enabled (with no permanent storage, using cookies).
-
-		90 => array(
-			'class' 	=> 'consent:Consent', 
-			'store' 	=> 'consent:Cookie', 
-			'focus' 	=> 'yes', 
-			'checked' 	=> TRUE
-		),
-		 */
-		// If language is set in Consent module it will be added as an attribute.
- 		99 => 'core:LanguageAdaptor',
-	),
 	/*
 	 * Authentication processing filters that will be executed for all IdPs
 	 * Both Shibboleth and SAML 2.0
@@ -355,13 +299,6 @@ $config = array (
 		 */
 		50 => 'core:AttributeLimit', 
 
-		/*
-		 * Generate the 'group' attribute populated from other variables, including eduPersonAffiliation.
-		 */
- 		60 => array('class' => 'core:GenerateGroups', 'eduPersonAffiliation'),
- 		// All users will be members of 'users' and 'members' 	
- 		61 => array('class' => 'core:AttributeAdd', 'groups' => array('users', 'members')),
- 		
 		// Adopts language from attribute to use in UI
  		90 => 'core:LanguageAdaptor',
 

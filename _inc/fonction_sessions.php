@@ -135,11 +135,26 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 					enregistrer_informations_session(0,'normal',$attr['USER_ID'][0]);
 				}
 			} else {
-				$result = enregistrer_informations_session(0,'gepi',$attr['login'][0]);
+				//si on a pas d'attribut USER_ID c'est qu'on a une authentification externe. On va rechercher sur l'attribut USER_ID_ENT
+				//echo 'USER_ID_ENT'.$attr['USER_ID_ENT'][0]; die;
+				$result = enregistrer_informations_session(0,'gepi',$attr['USER_ID_ENT'][0]);
 				if ($result != null) {
-					//l'utilisateur n'est pas dans la base, c'est un échec
-					$auth->logout();
-					alert_redirection_exit($result);
+					//l'utilisateur n'est pas dans la base on va l'importer
+					$user_id = DB_STRUCTURE_ajouter_utilisateur(
+						'', //sconet_id
+						'', //sconet_num
+						'', //reference
+						$attr['USER_PROFIL'][0],
+						$attr['USER_NOM'][0],
+						$attr['USER_PRENOM'][0],
+						$attr['USER_ID_GEPI'][0], //on met l'id gepi (qui correspond au login gepi) pour le user_login
+						'', //pas de password pour une authentification externe
+						'', //classe
+						$attr['USER_ID_ENT'][0],
+						$attr['USER_ID_GEPI'][0]
+						);
+					$result = enregistrer_informations_session(0,'gepi',$attr['USER_ID_ENT'][0]);
+					echo $result;die;
 				}
 			}
 		}

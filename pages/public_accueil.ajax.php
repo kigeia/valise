@@ -158,14 +158,30 @@ if( ( ($action=='initialiser') && ($BASE>0) && (HEBERGEUR_INSTALLATION=='multi-s
 
 if( ($action=='identifier') && ($profil=='webmestre') && ($login=='webmestre') && ($password!='') )
 {
-	exit( connecter_webmestre($password) );
+	$rep = connecter_webmestre($password);
+	if (substr($rep,0,3)=='id:') {
+		enregistrer_informations_session_webmestre();
+		exit('ok');
+	} else {
+		exit($rep);
+	}
 }
 
 // Pour un utilisateur normal, y compris un administrateur
 
 if( ($action=='identifier') && ($profil=='normal') && ($login!='') && ($password!='') )
 {
-	exit( connecter_user($BASE,$login,$password,$mode_connection='normal') );
+	$rep = connecter_user($BASE,$login,$password,$mode_connection='normal');
+	if (substr($rep,0,3)=='id:') {
+		enregistrer_informations_session($BASE,$mode_connection='normal',substr($rep,3));
+		// Mémoriser la date de la (dernière) connexion
+		DB_STRUCTURE_modifier_date('connexion',$_SESSION['USER_ID']);
+		// Enregistrement d'un cookie sur le poste client servant à retenir le dernier établissement sélectionné si identification avec succès
+		setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'/');
+		exit('ok');
+	} else {
+		exit($rep);
+	}
 }
 
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*

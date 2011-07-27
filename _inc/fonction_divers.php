@@ -374,7 +374,8 @@ function crypter_mdp($password)
 function fabriquer_fichier_hebergeur_info($tab_constantes_modifiees)
 {
 	global $CHEMIN_CONFIG;
-	$fichier_nom     = $CHEMIN_CONFIG.'constantes.php';
+	require_once(dirname(__FILE__).'/constantes.php');
+	$fichier_nom     = dirname(__FILE__).'/../'.$CHEMIN_CONFIG.'constantes.php';
 	$tab_constantes_requises = array('HEBERGEUR_INSTALLATION','HEBERGEUR_DENOMINATION','HEBERGEUR_UAI','HEBERGEUR_ADRESSE_SITE','HEBERGEUR_LOGO','CNIL_NUMERO','CNIL_DATE_ENGAGEMENT','CNIL_DATE_RECEPISSE','WEBMESTRE_NOM','WEBMESTRE_PRENOM','WEBMESTRE_COURRIEL','WEBMESTRE_PASSWORD_MD5','WEBMESTRE_ERREUR_DATE','SERVEUR_PROXY_USED','SERVEUR_PROXY_NAME','SERVEUR_PROXY_PORT','SERVEUR_PROXY_TYPE','SERVEUR_PROXY_AUTH_USED','SERVEUR_PROXY_AUTH_METHOD','SERVEUR_PROXY_AUTH_USER','SERVEUR_PROXY_AUTH_PASS');
 	$fichier_contenu = '<?php'."\r\n";
 	$fichier_contenu.= '// Informations concernant l\'hébergement et son webmestre (n°UAI uniquement pour une installation de type mono-structure)'."\r\n";
@@ -539,6 +540,19 @@ function connecter_webmestre($password)
 		fabriquer_fichier_hebergeur_info( array('WEBMESTRE_ERREUR_DATE'=>time()) );
 		return 'Mot de passe incorrect ! Patientez 10s avant une nouvelle tentative.';
 	}
+	return 'id:0';
+}
+
+/**
+ * enregistrer_informations_session
+ * 
+ * @param int     $BASE
+ * @param array   $DB_ROW   ligne issue de la table sacoche_user correspondant à l'utilisateur qui se connecte.
+ * @return void
+ */
+
+function enregistrer_informations_session_webmestre()
+{
 	// Si on arrive ici c'est que l'identification s'est bien effectuée !
 	// Numéro de la base
 	$_SESSION['BASE']             = 0;
@@ -553,9 +567,7 @@ function connecter_webmestre($password)
 	$_SESSION['DENOMINATION']     = 'Gestion '.HEBERGEUR_INSTALLATION;
 	$_SESSION['MODE_CONNEXION']   = 'normal';
 	$_SESSION['DUREE_INACTIVITE'] = 30;
-	return 'ok';
 }
-
 /**
  * connecter_user
  * 
@@ -582,6 +594,7 @@ function connecter_user($BASE,$login,$password,$mode_connection)
 		return ($mode_connection=='normal') ? 'Nom d\'utilisateur incorrect !' : 'Identification réussie mais identifiant ENT "'.$login.'" inconnu dans SACoche !<br />Un administrateur doit renseigner que l\'identifiant ENT associé à votre compte SACoche est "'.$login.'"&hellip;' ;
 	}
 	// Blocage éventuel par le webmestre ou un administrateur
+	require_once('fonction_redirection.php');
 	tester_blocage_application($BASE,$DB_ROW['user_profil']);
 	annuler_blocage_anormal();
 	// Si tentatives trop rapprochées...
@@ -607,13 +620,7 @@ function connecter_user($BASE,$login,$password,$mode_connection)
 	{
 		return'Identification réussie mais ce compte est desactivé !';
 	}
-	// Si on arrive ici c'est que l'identification s'est bien effectuée !
-	enregistrer_informations_session($BASE,$DB_ROW);
-	// Mémoriser la date de la (dernière) connexion
-	DB_STRUCTURE_modifier_date('connexion',$_SESSION['USER_ID']);
-	// Enregistrement d'un cookie sur le poste client servant à retenir le dernier établissement sélectionné si identification avec succès
-	setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'/');
-	return'ok';
+	return 'id:'.$DB_ROW['user_id'];
 }
 
 /**
@@ -621,11 +628,29 @@ function connecter_user($BASE,$login,$password,$mode_connection)
  * 
  * @param int     $BASE
  * @param array   $DB_ROW   ligne issue de la table sacoche_user correspondant à l'utilisateur qui se connecte.
- * @return void
+ * @return string message d'erreur ou null si pas d'erreur.
  */
 
-function enregistrer_informations_session($BASE,$DB_ROW)
+function enregistrer_informations_session($BASE,$mode_connection,$id)
 {
+	if ($id === 0 && $id === '0' && $mode_connection=='normal') {
+		enregistrer_informations_session_webmestre();
+		return null;
+	}
+	require_once('fonction_requetes_structure.php');
+	// En cas de multi-structures, il faut charger les paramètres de connexion à la base concernée
+	// Sauf pour une connexion à un ENT, car alors il a déjà fallu les charger pour récupérer les paramètres de connexion à l'ENT
+	if( ($BASE) && ($mode_connection=='normal') )
+	{
+		charger_parametres_mysql_supplementaires($BASE);
+	}
+	// Récupérer les données associées à l'utilisateur.
+	$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id($mode_connection,$id);
+	// Si login non trouvé...
+	if(!count($DB_ROW))
+	{
+		return ($mode_connection=='normal') ? 'Nom d\'utilisateur incorrect !' : 'Identification réussie mais identifiant ENT "'.$id.'" inconnu dans SACoche !<br />Un administrateur doit renseigner que l\'identifiant ENT associé à votre compte SACoche est "'.$id.'"&hellip;' ;
+	}
 	// Enregistrer en session le numéro de la base
 	$_SESSION['BASE']             = $BASE;
 	// Enregistrer en session les données associées à l'utilisateur (indices du tableau de session en majuscules).
@@ -686,6 +711,7 @@ function enregistrer_informations_session($BASE,$DB_ROW)
 	adapter_session_daltonisme() ;
 	// Enregistrer en session le CSS personnalisé
 	actualiser_style_session();
+	return null;
 }
 
 /**

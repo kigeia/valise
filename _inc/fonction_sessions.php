@@ -30,6 +30,7 @@
 
 // Paramétrage de la session
 define('SESSION_NOM','SACoche-session');
+require_once(dirname(__FILE__).'/../__private/config/constantes.php');
 session_name(SESSION_NOM);
 session_cache_limiter('nocache');
 session_cache_expire(180);
@@ -39,7 +40,11 @@ function open_old_session()
 {
 	$ID = $_COOKIE[SESSION_NOM];
 	session_id($ID);
-	return session_start();
+	if(!isset($_SESSION)) {
+		return session_start();
+	} else {
+		return true;
+	}
 }
 
 // Créer une nouvelle session
@@ -70,6 +75,11 @@ function init_session()
 // Fermer une session existante
 function close_session()
 {
+	include_once(dirname(__FILE__).'/../_simplesaml/lib/_autoload.php');
+	$auth = new SimpleSAML_Auth_Simple(SIMPLESAML_AUTHSOURCE);
+	if ($auth->isAuthenticated()) {
+		$auth->logout();
+	}
 	$alerte_sso = (isset($_SESSION['ALERTE_SSO'])) ? '&amp;f_base='.$_SESSION['BASE'].'&amp;f_mode='.$_SESSION['CONNEXION_MODE'] : false ;
 	$_SESSION = array();
 	setcookie(session_name(),'',time()-42000,'/');
@@ -94,12 +104,54 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 	$tab_msg_alerte['II.4.c']['index'] = 'Tentative d\'accès direct à une page réservée !\nRedirection vers l\'accueil...';
 	$tab_msg_alerte['II.4.c']['ajax']  = 'Page réservée. Déconnexion effectuée. Retournez à l\'accueil...';
 	// Zyva !
+	if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {
+		include_once(dirname(__FILE__).'/../_simplesaml/lib/_autoload.php');
+		$auth = new SimpleSAML_Auth_Simple(SIMPLESAML_AUTHSOURCE);
+		$auth->requireAuth();//test l'authentification et la demande si nécessaire
+		$attr = $auth->getAttributes();
+		if (//si l'utilisateur est authentifié mais que il n'est pas chargé en session ou que c'est un autre utilisateur en session on charge le nouvel utilisateur
+			!isset($_SESSION['USER_ID']) || 
+			(
+				isset($attr['USER_ID'][0]) && $attr['USER_ID'][0] != $_SESSION['USER_ID']
+			) ||
+			!isset($_SESSION['USER_ID_ENT']) || 
+			(
+				isset($attr['USER_ID_ENT'][0]) && $attr['USER_ID_ENT'][0] != $_SESSION['USER_ID_ENT']
+			)
+			
+		) {
+			//l'utilisateur est authentifié mais les attributs ne sont pas bien chargés en session
+			require_once(dirname(__FILE__).'/fonction_divers.php');
+			require_once(dirname(__FILE__).'/../_lib/DB/DB.class.php');
+			require_once(dirname(__FILE__)."/fonction_requetes_structure.php");
+			require_once(dirname(__FILE__)."/../__private/mysql/serveur_sacoche_structure.php");
+			require_once(dirname(__FILE__).'/class.DB.config.sacoche_structure.php');
+			
+			if (isset($attr['USER_ID'][0])) {
+				//si on a un attribut USER_ID c'est qu'on a une authentification locale
+				if ($attr['USER_ID'][0] == 0) {
+					enregistrer_informations_session_webmestre();
+				} else {
+					enregistrer_informations_session(0,'normal',$attr['USER_ID'][0]);
+				}
+			} else {
+				$result = enregistrer_informations_session(0,'gepi',$attr['login'][0]);
+				if ($result != null) {
+					//l'utilisateur n'est pas dans la base, c'est un échec
+					$auth->logout();
+					alert_redirection_exit($result);
+				}
+			}
+		}
+	}
+	
 	if(!isset($_COOKIE[SESSION_NOM]))
 	{
 		// I. Aucune session transmise
 		open_new_session(); init_session();
 		if(!$TAB_PROFILS_AUTORISES['public'])
 		{
+			if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {$auth->requireAuth();}
 			// I.2. Redirection : demande d'accès à une page réservée donc identification avant accès direct
 			if(isset($_GET['verif_cookie']))
 			{
@@ -119,6 +171,7 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 		open_old_session();
 		if(!isset($_SESSION['USER_PROFIL']))
 		{
+			if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {$auth->requireAuth();}
 			// II.1. Pas de session retrouvée (sinon cette variable serait renseignée)
 			if(!$TAB_PROFILS_AUTORISES['public'])
 			{
@@ -137,6 +190,7 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 			// II.3. Personne non identifiée
 			if(!$TAB_PROFILS_AUTORISES['public'])
 			{
+				if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {$auth->requireAuth();}
 				// II.3.a. Espace non identifié => Espace identifié : redirection pour identification
 				init_session();
 				alert_redirection_exit($tab_msg_alerte['II.3.a'][SACoche]);

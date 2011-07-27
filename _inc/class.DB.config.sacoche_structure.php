@@ -3,6 +3,7 @@
 //##########################################################################
 // Définition des pools de connexion
 //##########################################################################
+global $_CONST;
 
 $_CONST['POOL'][SACOCHE_STRUCTURE_BD_NAME]['ABSTRACTION']    = 'PDO';
 $_CONST['POOL'][SACOCHE_STRUCTURE_BD_NAME]['TYPE']           = 'mysql';

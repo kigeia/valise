@@ -99,6 +99,8 @@ function close_session()
 // Recherche d'une session existante et gestion des cas possibles.
 function gestion_session($TAB_PROFILS_AUTORISES)
 {
+	$BASE     = (isset($_POST['f_base']))     ? clean_entier($_POST['f_base'])       : 0;
+
 	global $ALERTE_SSO;
 	// Messages d'erreurs possibles
 	$tab_msg_alerte = array();
@@ -116,6 +118,13 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 	if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {
 		include_once(dirname(__FILE__).'/../_simplesaml/lib/_autoload.php');
 		$auth = new SimpleSAML_Auth_Simple(SIMPLESAML_AUTHSOURCE);
+		if (!$auth->isAuthenticated()) {
+			//purge des attributs de session sacoche
+			unset($_SESSION['USER_PROFIL']);
+			unset($_SESSION['USER_ID']);
+			unset($_SESSION['USER_ID_ENT']);
+			unset($_SESSION['USER_ID_GEPI']);
+		}
 		$auth->requireAuth();//test l'authentification et la demande si nécessaire
 		$attr = $auth->getAttributes();
 		if (//si l'utilisateur est authentifié mais que il n'est pas chargé en session ou que c'est un autre utilisateur en session on charge le nouvel utilisateur
@@ -129,25 +138,25 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 			)
 			
 		) {
-			//l'utilisateur est authentifié mais les attributs ne sont pas bien chargés en session
+			//l'utilisateur est authentifié mais les attributs ne sont pas encore chargés en session
 			require_once(dirname(__FILE__).'/fonction_divers.php');
 			require_once(dirname(__FILE__).'/../_lib/DB/DB.class.php');
 			require_once(dirname(__FILE__)."/fonction_requetes_structure.php");
 			require_once(dirname(__FILE__)."/../__private/mysql/serveur_sacoche_structure.php");
 			require_once(dirname(__FILE__).'/class.DB.config.sacoche_structure.php');
-			
+						
 			if (isset($attr['USER_ID'][0])) {
 				//si on a un attribut USER_ID c'est qu'on a une authentification locale
 				if ($attr['USER_ID'][0] == 0) {
 					enregistrer_informations_session_webmestre();
 				} else {
-					enregistrer_informations_session(0,'normal',$attr['USER_ID'][0]);
+					enregistrer_informations_session($BASE,'normal',$attr['USER_ID'][0]);
 				}
 			} else {
 				//si on a pas d'attribut USER_ID c'est qu'on a une authentification externe. On va rechercher sur l'attribut USER_ID_ENT
-				//echo 'USER_ID_ENT'.$attr['USER_ID_ENT'][0]; die;
-				$result = enregistrer_informations_session(0,'gepi',$attr['USER_ID_ENT'][0]);
-				if ($result != null) {
+				$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id('gepi',$attr['USER_ID_ENT'][0]);
+				$user_id = -1;
+				if(!count($DB_ROW)) {
 					//l'utilisateur n'est pas dans la base on va l'importer
 					$user_id = DB_STRUCTURE_ajouter_utilisateur(
 						'', //sconet_id
@@ -162,10 +171,39 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 						$attr['USER_ID_ENT'][0],
 						$attr['USER_ID_GEPI'][0]
 						);
-					$result = enregistrer_informations_session(0,'gepi',$attr['USER_ID_ENT'][0]);
-					echo $result;die;
+				} else {
+					$user_id = (int) $DB_ROW['user_id'];
+				}
+				
+				//on va mettre à jours l'utilisateur avec les données transmises
+				$DB_VAR = array();
+				$DB_VAR[':profil'] = $attr['USER_PROFIL'][0];
+				$DB_VAR[':nom'] = $attr['USER_NOM'][0];
+				$DB_VAR[':prenom'] = $attr['USER_PRENOM'][0];
+				$DB_VAR[':login'] = $attr['USER_ID_GEPI'][0];
+				$DB_VAR[':id_ent'] = $attr['USER_ID_ENT'][0];
+				$DB_VAR[':id_gepi'] = $attr['USER_ID_GEPI'][0];
+				DB_STRUCTURE_modifier_utilisateur($user_id,$DB_VAR);
+				//on met à jour les matières
+				if (isset($attr['matieres'])) {
+					// Récupérer la liste des matiere_id
+					$DB_SQL = 'SELECT matiere_id FROM sacoche_matiere ';
+					$DB_SQL.= 'WHERE matiere_ref=:matiere_ref limit 1;';
+					foreach($attr['matieres'] as $matiere_ref) {
+						$DB_VAR = array(':matiere_ref'=>$matiere_ref);
+						$DB_ROW = DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+						if(count($DB_ROW)) {
+							DB_STRUCTURE_modifier_liaison_professeur_matiere($user_id,$DB_ROW['matiere_id'],true);
+						}
+					}
+				}	
+				
+				$result = enregistrer_informations_session($BASE,'gepi',$attr['USER_ID_ENT'][0]);
+				if ($result != null) {
+					echo 'il y a une erreur car normalement on vient d enregistrer le profil mais il ne semble pas être dans la base : '.$result;
 				}
 			}
+			require_once(dirname(__FILE__).'/fonction_maj_base.php');
 		}
 	}
 	

@@ -40,9 +40,9 @@ require_once('./_inc/config_serveur.php');
 require_once('./_inc/fonction_sessions.php');
 
 // Page appelée
-$PAGE    = (isset($_GET['page']))    ? $_GET['page']    : 'public_accueil' ;
+$PAGE    = (isset($_GET['page']))    ? $_GET['page']    : (isset($_POST['page'])    ? $_POST['page'] : 'public_accueil') ;
 if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '' && $PAGE == 'public_accueil') $PAGE = 'compte_accueil'; //on évite la page de login dans le cas simplesaml
-$SECTION = (isset($_GET['section'])) ? $_GET['section'] : '';
+$SECTION = (isset($_GET['section'])) ? $_GET['section'] : (isset($_POST['section'])    ? $_POST['section'] : '') ;
 
 // Ouverture de la session et gestion des droits d'accès
 require_once('./_inc/tableau_droits.php');

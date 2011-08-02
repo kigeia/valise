@@ -99,7 +99,19 @@ function close_session()
 // Recherche d'une session existante et gestion des cas possibles.
 function gestion_session($TAB_PROFILS_AUTORISES)
 {
-	$BASE     = (isset($_POST['f_base']))     ? clean_entier($_POST['f_base'])       : 0;
+	//récupération de l'organisation (appelé rne ou base)
+	//pour sacoche c'est dans la requete : id, f_base, ou le cookie
+	$BASE = 0;
+	require_once(dirname(__FILE__).'/fonction_clean.php');
+	if (isset($_REQUEST['id'])) {
+		$BASE = clean_entier($_REQUEST['id']);
+	} else if (isset($_REQUEST['f_base'])) {
+		$BASE= clean_entier($_REQUEST['f_base']);
+	} else {
+		if (isset($_COOKIE[COOKIE_STRUCTURE])) {
+			$BASE= clean_entier($_COOKIE['rne']);
+		}
+	}
 
 	global $ALERTE_SSO;
 	// Messages d'erreurs possibles
@@ -125,8 +137,20 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 			unset($_SESSION['USER_ID_ENT']);
 			unset($_SESSION['USER_ID_GEPI']);
 		}
-		$auth->requireAuth();//test l'authentification et la demande si nécessaire
+		
+		//on forge une extension saml pour tramsmettre l'établissement précisé dans sacoche
+		$ext = array();
+		if ($BASE != 0) {
+			$dom = new DOMDocument();
+			$ce = $dom->createElementNS('gepi_name_space', 'gepi_name_space:organization', $BASE);
+			$ext[] = new SAML2_XML_Chunk($ce);
+		}
+		$auth->requireAuth(array('saml:Extensions' => $ext,));//authentification
+					
+		setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'/');//l'utilisateur est bien authentifié pour cet établissement, on le met en cookie
+		
 		$attr = $auth->getAttributes();
+		
 		if (//si l'utilisateur est authentifié mais que il n'est pas chargé en session ou que c'est un autre utilisateur en session on charge le nouvel utilisateur
 			!isset($_SESSION['USER_ID']) || 
 			(

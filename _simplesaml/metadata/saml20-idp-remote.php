@@ -23,7 +23,8 @@ if (isset($_REQUEST['id'])) {
 	$organization= $_REQUEST['f_base'];
 } else {
 	$path = dirname(dirname(dirname(__FILE__)));
-	require_once("$path/__private/config/constantes.php");
+	define('SACoche','index'); //inutile ici mais obligatoire pour l'include suivant
+	require_once("$path/_inc/constantes.php");
 	if (isset($_COOKIE[COOKIE_STRUCTURE])) {
 		$organization= $_COOKIE[COOKIE_STRUCTURE];
 	}

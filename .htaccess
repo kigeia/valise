@@ -12,5 +12,7 @@ DirectoryIndex index.php
 	RewriteRule ^_simplesaml(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [NE,L,R]	# redirige en https pour l'authentification
 	# fin forcage https
 
+	# redirection pour compatibilité avec différentes installation de gepi
 	RewriteRule ^simplesaml(.*)$ _simplesaml/www$1
+	RewriteRule ^_lib/SimpleSAMLphp(.*)$ _simplesaml/www$1
 </IfModule>

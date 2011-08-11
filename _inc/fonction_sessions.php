@@ -105,11 +105,10 @@ function init_session()
 function close_session()
 {
 	include_once(dirname(__FILE__).'/../_simplesaml/lib/_autoload.php');
-	$auth = new SimpleSAML_Auth_Simple(SIMPLESAML_AUTHSOURCE);
-	if ($auth->isAuthenticated()) {
-		$auth->logout();
-	}
-	$alerte_sso = (isset($_SESSION['ALERTE_SSO'])) ? '&amp;f_base='.$_SESSION['BASE'].'&amp;f_mode='.$_SESSION['CONNEXION_MODE'] : false ;
+//	$auth = new SimpleSAML_Auth_Simple(SIMPLESAML_AUTHSOURCE);
+//	if ($auth->isAuthenticated()) {
+//		$auth->logout();
+//	}
 	$_SESSION = array();
 	setcookie(session_name(),'',time()-42000,'');
 	session_destroy();
@@ -121,7 +120,7 @@ function close_session()
  * @param array $TAB_PROFILS_AUTORISES
  * @return void | exit ! (sur une string si ajax, une page html, ou modification $PAGE pour process SSO)
  */
-function gestion_session($TAB_PROFILS_AUTORISES)
+function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 {
 	//récupération de l'organisation (appelé rne ou base)
 	//pour sacoche c'est dans la requete : id, f_base, ou le cookie
@@ -137,10 +136,27 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 		}
 	}
 
-	global $ALERTE_SSO;
-	if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {
+	$path = dirname(dirname(__FILE__));
+	require_once("$path/__private/config/constantes.php");
+	require_once("$path/__private/mysql/serveur_sacoche_structure.php");
+	require_once("$path/_inc/class.DB.config.sacoche_structure.php");
+	require_once("$path/_inc/fonction_requetes_structure.php");
+	require_once("$path/_lib/DB/DB.class.php");
+	$DB_TAB = DB_STRUCTURE_lister_parametres('"connexion_mode","connexion_nom"');
+	foreach($DB_TAB as $DB_ROW)
+	{
+		${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
+	}
+	//print_r($DB_TAB);die;
+		
+	if (isset($connexion_mode) && $connexion_mode = 'ssaml' && isset($connexion_nom) && $connexion_nom == 'configured_source') {
+		//on saute la page d'acceuil
+		if ($PAGE == 'public_accueil') {
+			header("Location: ./index.php?page=compte_accueil");
+			die();
+		}
 		include_once(dirname(__FILE__).'/../_simplesaml/lib/_autoload.php');
-		$auth = new SimpleSAML_Auth_Simple(SIMPLESAML_AUTHSOURCE);
+		$auth = new SimpleSAML_Auth_SacocheSimple();
 		if (!$auth->isAuthenticated()) {
 			//purge des attributs de session sacoche
 			unset($_SESSION['USER_PROFIL']);
@@ -161,7 +177,7 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 			$auth_params['multiauth:preselect'] = $_REQUEST['source'];
 		}
 		$auth->requireAuth($auth_params);//authentification
-					
+
 		setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'/');//l'utilisateur est bien authentifié pour cet établissement, on le met en cookie
 		
 		$attr = $auth->getAttributes();
@@ -236,13 +252,16 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 						}
 					}
 				}	
-				
-				$result = enregistrer_informations_session($BASE,'gepi',$attr['USER_ID_ENT'][0]);
+				$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur('gepi',$attr['USER_ID_GEPI'][0]);
+				DB_STRUCTURE_modifier_date('connexion',$DB_ROW['user_id']);
+				$result = enregistrer_session_user($BASE,$DB_ROW);
 				if ($result != null) {
 					echo 'il y a une erreur car normalement on vient d enregistrer le profil mais il ne semble pas être dans la base : '.$result;
 				}
 			}
-			require_once(dirname(__FILE__).'/fonction_maj_base.php');
+			
+			require_once(dirname(__FILE__).'/fonction_divers.php');
+			maj_base_si_besoin($BASE);
 		}
 	}
 	

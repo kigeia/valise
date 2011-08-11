@@ -538,7 +538,7 @@ function tester_authentification_webmestre($password)
 		fabriquer_fichier_hebergeur_info( array('WEBMESTRE_ERREUR_DATE'=>time()) );
 		return'Mot de passe incorrect ! Patientez 10s avant une nouvelle tentative.';
 	}
-	return 'id:0';
+	return 'ok';
 }
 
 /**
@@ -656,26 +656,8 @@ function tester_authentification_user($BASE,$login,$password,$mode_connection)
  * @return string message d'erreur ou null si pas d'erreur.
  */
 
-function enregistrer_informations_session($BASE,$mode_connection,$id)
+function enregistrer_session_user($BASE,$DB_ROW)
 {
-	if ($id === 0 && $id === '0' && $mode_connection=='normal') {
-		enregistrer_informations_session_webmestre();
-		return null;
-	}
-	require_once('fonction_requetes_structure.php');
-	// En cas de multi-structures, il faut charger les paramètres de connexion à la base concernée
-	// Sauf pour une connexion à un ENT, car alors il a déjà fallu les charger pour récupérer les paramètres de connexion à l'ENT
-	if( ($BASE) && ($mode_connection=='normal') )
-	{
-		charger_parametres_mysql_supplementaires($BASE);
-	}
-	// Récupérer les données associées à l'utilisateur.
-	$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id($mode_connection,$id);
-	// Si login non trouvé...
-	if(!count($DB_ROW))
-	{
-		return ($mode_connection=='normal') ? 'Nom d\'utilisateur incorrect !' : 'Identification réussie mais identifiant ENT "'.$id.'" inconnu dans SACoche !<br />Un administrateur doit renseigner que l\'identifiant ENT associé à votre compte SACoche est "'.$id.'"&hellip;' ;
-	}
 	// Enregistrer en session le numéro de la base
 	$_SESSION['BASE']             = $BASE;
 	// Enregistrer en session les données associées à l'utilisateur (indices du tableau de session en majuscules).
@@ -738,7 +720,7 @@ function enregistrer_informations_session($BASE,$mode_connection,$id)
 	actualiser_style_session();
 	// Juste pour davantage de lisibilité si besoin de debug...
 	ksort($_SESSION);
-}
+	}
 
 /**
  * Compléter la session avec les informations de style dépendant du daltonisme + des choix paramétrés au niveau de l'établissement (couleurs, codes de notation).

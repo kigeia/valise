@@ -297,9 +297,8 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 			{
 				if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {$auth->requireAuth();}
 				// 2.2.1. Espace non identifié => Espace identifié : redirection pour identification
-				init_session();
-				alert_redirection_exit($tab_msg_alerte['II.3.a'][SACoche]);
-			}
+				redirection_SSO_ou_message_exit(); // Pas d'initialisation de session sinon la redirection avec le SSO tourne en boucle.
+ 			}
 			else
 			{
 				// 2.2.2. Espace non identifié => Espace non identifié : RAS

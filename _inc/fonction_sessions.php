@@ -232,13 +232,12 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 				
 				//on va mettre à jours l'utilisateur avec les données transmises
 				$DB_VAR = array();
-				$DB_VAR[':profil'] = $attr['USER_PROFIL'][0];
-				$DB_VAR[':nom'] = $attr['USER_NOM'][0];
-				$DB_VAR[':prenom'] = $attr['USER_PRENOM'][0];
-				$DB_VAR[':login'] = $attr['USER_ID_GEPI'][0];
-				$DB_VAR[':id_ent'] = $attr['USER_ID_ENT'][0];
-				$DB_VAR[':id_gepi'] = $attr['USER_ID_GEPI'][0];
-				DB_STRUCTURE_modifier_utilisateur($user_id,$DB_VAR);
+				if (isset($attr['USER_PROFIL'])) $DB_VAR[':profil'] = $attr['USER_PROFIL'][0];
+				if (isset($attr['USER_NOM'])) $DB_VAR[':nom'] = $attr['USER_NOM'][0];
+				if (isset($attr['USER_PRENOM'])) $DB_VAR[':prenom'] = $attr['USER_PRENOM'][0];
+				if (isset($attr['USER_ID_GEPI'])) $DB_VAR[':login'] = $attr['USER_ID_GEPI'][0];
+				if (isset($attr['USER_ID_GEPI'])) $DB_VAR[':id_gepi'] = $attr['USER_ID_GEPI'][0];
+				if (!empty($DB_VAR)) DB_STRUCTURE_modifier_utilisateur($user_id,$DB_VAR);
 				//on met à jour les matières
 				if (isset($attr['matieres'])) {
 					// Récupérer la liste des matiere_id

@@ -184,6 +184,7 @@ function ajouter_log_SACoche($contenu)
 	$tab_ligne = array();
 	$tab_ligne[] = '<?php /*';
 	$tab_ligne[] = date('d-m-Y H:i:s');
+	require_once(dirname(__FILE__).'/fonction_clean.php');
 	$tab_ligne[] = html($_SESSION['USER_PROFIL'].' ['.$_SESSION['USER_ID'].'] '.$_SESSION['USER_NOM'].' '.$_SESSION['USER_PRENOM']);
 	$tab_ligne[] = html($contenu);
 	$tab_ligne[] = '*/ ?>'."\r\n";
@@ -1737,6 +1738,92 @@ function tester_date($date)
 {
 	$date_unix = strtotime($date);
 	return ( ($date_unix!==FALSE) && ($date_unix!==-1) ) ? TRUE : FALSE ;
+}
+
+/**
+ * importer_groupe_gepi
+ * importe ou mets à jours un groupe gepi avec ses élèves et ses profs
+ * 
+ * @return int
+ */
+
+function importer_groupe_gepi($groupe_gepi)
+{
+	//on regarde si le groupe existe déjà ou pas
+	$DB_SQL = 'SELECT groupe_id ';
+	$DB_SQL.= 'FROM sacoche_groupe ';
+	$DB_SQL.= 'WHERE gepi_id=:gepi_id ';
+	$DB_SQL.= 'LIMIT 1';
+	$DB_VAR = array(':gepi_id'=>$groupe_gepi['id']);
+	$row = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	if (count($row)) {
+		//echo 'trouvé';die;
+		//on va faire un update du groupe
+		//print_r($groupe_gepi);
+		$sacoche_groupe_id = $row[0];
+		DB_STRUCTURE_modifier_groupe($sacoche_groupe_id,$groupe_gepi['classlist_string'],$groupe_gepi['classlist_string'].' '.$groupe_gepi['name'],0);
+	} else {
+		//echo 'non trouvé';die;
+		//on va faire une création de groupe
+		//print_r($groupe_gepi);die;
+		$sacoche_groupe_id = DB_STRUCTURE_ajouter_groupe('groupe',0,$groupe_gepi['classlist_string'],$groupe_gepi['classlist_string'].' '.$groupe_gepi['name'],0,$groupe_gepi['id']);
+	}
+	
+	//on va lier le groupe et les professeur de ce groupe
+	foreach ($groupe_gepi['profs']['list'] as $prof_gepi_login) {
+		$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id('gepi',$prof_gepi_login);
+		if (count($DB_ROW)) {
+			DB_STRUCTURE_modifier_liaison_user_groupe($DB_ROW['user_id'],'professeur',$sacoche_groupe_id,'groupe',true);
+		}
+	}
+
+	//on va importer les élèves de ce groupe
+	//print_r($groupe_gepi);die;
+	foreach ($groupe_gepi['eleves'][2]['users'] as $eleve_tableau) {
+		$eleve_id = importer_eleve_gepi($eleve_tableau);
+		DB_STRUCTURE_modifier_liaison_user_groupe($eleve_id,'eleve',$sacoche_groupe_id,'groupe',true);
+	}
+	
+	return $sacoche_groupe_id;
+}
+
+/**
+ * importer_eleve_gepi
+ * importe ou mets à jours un eleve
+ * 
+ * @param string   $date
+ * @return bool
+ */
+
+function importer_eleve_gepi($eleve_tableau)
+{
+	//print_r($eleve_tableau);die;
+	$user_id = DB_STRUCTURE_tester_utilisateur_SconetId($eleve_tableau['sconet_id'],'eleve');
+	if ($user_id) {
+		//l'utilisateur existe déjà
+		//echo 'lutilisateur '.$user_id.' existe déjà, on va le mettre à jour';die;
+		//on va mettre à jours l'utilisateur avec les données transmises
+		$DB_VAR = array();
+		$DB_VAR[':profil'] = 'eleve';
+		$DB_VAR[':nom'] = $eleve_tableau['nom'];
+		$DB_VAR[':prenom'] = $eleve_tableau['prenom'];
+		$DB_VAR[':id_gepi'] = $eleve_tableau['login'];
+		DB_STRUCTURE_modifier_utilisateur($user_id,$DB_VAR);
+	} else {
+		$user_id = DB_STRUCTURE_ajouter_utilisateur(
+			$eleve_tableau['sconet_id'],
+			$eleve_tableau['elenoet'],
+			'',
+			'eleve',
+			$eleve_tableau['nom'],
+			$eleve_tableau['prenom'],
+			$eleve_tableau['login'],
+			'',
+			0,
+			$eleve_tableau['login'],
+			$eleve_tableau['login']);
+	}
+	return $user_id;
 }
 
 ?>

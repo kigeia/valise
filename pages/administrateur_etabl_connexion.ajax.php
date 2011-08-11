@@ -36,7 +36,7 @@ $cas_serveur_root = (isset($_POST['cas_serveur_root'])) ? clean_texte($_POST['ca
 $gepi_saml_url    = (isset($_POST['gepi_saml_url']))    ? clean_texte($_POST['gepi_saml_url'])     : '';
 $gepi_saml_rne    = (isset($_POST['gepi_saml_rne']))    ? clean_texte($_POST['gepi_saml_rne'])     : '';
 $gepi_saml_certif = (isset($_POST['gepi_saml_certif'])) ? clean_texte($_POST['gepi_saml_certif'])  : '';
-
+$auth_simpleSAML_source = (isset($_POST['auth_simpleSAML_source'])) ? clean_texte($_POST['auth_simpleSAML_source'])  : '';
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Mode de connexion (normal, SSO...)
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
@@ -111,6 +111,13 @@ if($f_connexion_mode=='gepi')
 	$_SESSION['GEPI_URL'] = $gepi_saml_url;
 	$_SESSION['GEPI_RNE'] = $gepi_saml_rne;
 	$_SESSION['GEPI_CERTIFICAT_EMPREINTE'] = $gepi_saml_certif;
+	exit('ok');
+}
+
+if($f_connexion_mode=='ssaml')
+{
+	// C'est ok
+	DB_STRUCTURE_modifier_parametres( array('connexion_mode'=>$f_connexion_mode,'connexion_nom'=>$f_connexion_nom,'auth_simpleSAML_source'=>$auth_simpleSAML_source) );
 	exit('ok');
 }
 

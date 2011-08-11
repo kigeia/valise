@@ -66,7 +66,7 @@ $(document).ready
 		(
 			function()
 			{
-				$('#cas_options , #gepi_options').hide(0);
+				$('#cas_options , #gepi_options, #ssaml_configured_source_options').hide(0);
 				var valeur = $(this).val();
 				var tab_infos = valeur.split('|');
 				var connexion_mode = tab_infos[0];
@@ -96,6 +96,17 @@ $(document).ready
 					$('#gepi_options').show();
 					$('#lien_direct').show();
 				}
+				else if(connexion_mode=='ssaml')
+				{
+					if (connexion_nom=='configured_source') {
+						var valeur = tab_param[connexion_mode][connexion_nom];
+						var tab_infos = valeur.split(']¤[');
+						$('#auth_source').val( tab_infos[0] );
+						$(this).parent().parent().next().after( $('#ssaml_configured_source_options') );
+						$('#ssaml_configured_source_options').show();
+						$('#lien_direct').show();
+					}
+				}
 				else
 				{
 					$('#lien_direct').hide();
@@ -121,6 +132,11 @@ $(document).ready
 				{
 					$(this).parent().parent().next().after( $('#gepi_options') );
 					$('#gepi_options').show();
+				}
+				else if( (connexion_mode=='ssaml') && (connexion_nom=='configured_source') )
+				{
+					$(this).parent().parent().next().after( $('#ssaml_configured_source') );
+					$('#ssaml_configured_source').show();
 				}
 			}
 		);

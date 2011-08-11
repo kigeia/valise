@@ -50,11 +50,17 @@ foreach($tab_connexion_info['cas'] as $connexion_nom => $tab_info)
 {
 	$tab_param_js .= 'tab_param["cas"]["'.$connexion_nom.'"]="'.html($tab_info['serveur_host'].']¤['.$tab_info['serveur_port'].']¤['.$tab_info['serveur_root']).'";';
 }
+
 $tab_param_js .= 'tab_param["gepi"] = new Array();';
 foreach($tab_connexion_info['gepi'] as $connexion_nom => $tab_info)
 {
 	$tab_param_js .= 'tab_param["gepi"]["'.$connexion_nom.'"]="'.html($tab_info['saml_url'].']¤['.$tab_info['saml_rne'].']¤['.$tab_info['saml_certif']).'";';
 }
+
+
+$tab_param_js .= 'tab_param["ssaml"] = new Array();';
+$tab_param_js .= 'tab_param["ssaml"]["configured_source"]="'.html($tab_connexion_info['ssaml']['configured_source']['auth_source']).'";';
+
 
 // Modèle d'url SSO
 $get_base = ($_SESSION['BASE']) ? '&amp;base='.$_SESSION['BASE'] : '' ;
@@ -80,6 +86,37 @@ $url_sso = SERVEUR_ADRESSE.'/?sso'.$get_base;
 		<label class="tab" for="gepi_saml_url">Adresse (URL) <img alt="" src="./_img/bulle_aide.png" title="Adresse web de GEPI.<br />http://adresse_web_de_mon_gepi" /> :</label><input id="gepi_saml_url" name="gepi_saml_url" size="30" type="text" value="<?php echo html($_SESSION['GEPI_URL']) ?>" /><br />
 		<label class="tab" for="gepi_saml_rne">UAI (ex-RNE) <img alt="" src="./_img/bulle_aide.png" title="Indispensable uniquement si installation multisite de GEPI." /> :</label><input id="gepi_saml_rne" name="gepi_saml_rne" size="10" type="text" value="<?php echo ($_SESSION['GEPI_RNE']) ? html($_SESSION['GEPI_RNE']) : html($_SESSION['UAI']) ; ?>" /><br />
 		<label class="tab" for="gepi_saml_certif">Signature <img alt="" src="./_img/bulle_aide.png" title="[ Expliquer où trouver l'empreinte du sertificat... ]" /> :</label><input id="gepi_saml_certif" name="gepi_saml_certif" size="60" type="text" value="<?php echo html($_SESSION['GEPI_CERTIFICAT_EMPREINTE']) ?>" /><br />
+	</div>
+	<div id="ssaml_configured_source_options" class="hide">
+		<label class="tab" for="auth_source">Source <img alt="" src="./_img/bulle_aide.png" title="Choisir une source de configuration."/></label>
+				<?php 
+				//on va voir si il y a simplesaml de configuré
+				if (file_exists(dirname(__FILE__).'/../_simplesaml/config/authsources.php')) {
+					echo "<select name=\"auth_simpleSAML_source\">\n";
+					echo "<option value='unset'></option>";
+					include_once(dirname(__FILE__).'/../_simplesaml/lib/_autoload.php');
+					$config = SimpleSAML_Configuration::getOptionalConfig('authsources.php');
+					$sources = $config->getOptions();
+					foreach($sources as $source) {
+						echo "<option value='$source'";
+						if (isset($_SESSION["auth_simpleSAML_source"]) && $source == $_SESSION["auth_simpleSAML_source"]) {
+							echo 'selected';
+						}
+						echo ">";
+						echo $source;
+						echo "</option>";
+					}
+					echo "</select>\n";
+				}
+				?>
+			</select>
+			
+			<br />
+	</div>
+	<div id="ssaml_idp_options" class="hide">
+		<label class="tab" for="gepi_saml_url">Adresse (URL) <img alt="" src="./_img/bulle_aide.png" title="Adresse web de GEPI.<br />http://adresse_web_de_mon_gepi" /> :</label><input id="gepi_saml_url" name="gepi_saml_url" size="30" type="text" value="<?php echo html($_SESSION['GEPI_URL']) ?>" /><br />
+		<label class="tab" for="gepi_saml_rne">UAI (ex-RNE) <img alt="" src="./_img/bulle_aide.png" title="Indispensable uniquement si installation multisite de GEPI." /> :</label><input id="gepi_saml_rne" name="gepi_saml_rne" size="10" type="text" value="<?php echo ($_SESSION['GEPI_RNE']) ? html($_SESSION['GEPI_RNE']) : html($_SESSION['UAI']) ; ?>" /><br />
+		<label class="tab" for="gepi_saml_certif">Empreinte <img alt="" src="./_img/bulle_aide.png" title="[ Expliquer où trouver l'empreinte du sertificat... ]" /> :</label><input id="gepi_saml_certif" name="gepi_saml_certif" size="60" type="text" value="<?php echo html($_SESSION['GEPI_CERTIFICAT_EMPREINTE']) ?>" /><br />
 	</div>
 	<?php echo $choix ?>
 	<span class="tab"></span><button id="bouton_valider" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Valider ce mode d'identification.</button><label id="ajax_msg">&nbsp;</label>

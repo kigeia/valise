@@ -76,7 +76,7 @@ class sspmod_sacocheauth_Auth_Source_LocalDB extends sspmod_core_Auth_UserPassBa
 		} else if(($this->profil=='normal') && ($login!='') && ($password!='') )
 		{// Pour un utilisateur normal, y compris un administrateur
 			require_once("$path/_inc/fonction_requetes_structure.php");
-			require_once("$path/_inc/class.DB.php");
+			require_once("$path/_lib/DB/DB.class.php");
 			list($auth,$auth_DB_ROW) = tester_authentification_user(0,$login,$password,$mode_connection='normal');
 		}
 		

@@ -426,6 +426,28 @@ $(document).ready
 		};
 
 		/**
+		 * Voir les répartitions des élèves à une évaluation : chargement des données
+		 * @return void
+		 */
+		var retour_gepi = function()
+		{
+			// Récupérer les informations de la ligne concernée
+			var gepi_cn_devoirs_id    = $(this).parent().next().val();
+			window.location = "../javascriptredirect.php"
+		};
+
+		/**
+		 * Voir les répartitions des élèves à une évaluation : chargement des données
+		 * @return void
+		 */
+		var retour_gepi_note = function()
+		{
+			// Récupérer les informations de la ligne concernée
+			var gepi_cn_devoirs_id    = $(this).parent().next();
+			alert(gepi_cn_devoirs_id);
+		};
+
+		/**
 		 * Choisir les items associés à une évaluation : mise en place du formulaire
 		 * @return void
 		 */
@@ -531,6 +553,8 @@ $(document).ready
 		$('q.voir').live(            'click' , voir );
 		$('q.voir_repart').live(     'click' , voir_repart );
 		$('q.choisir_compet').live(  'click' , choisir_compet );
+		$('q.retour_gepi').live(  'click' , retour_gepi );
+		$('q.retour_gepi_note').live(  'click' , retour_gepi_note );
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur le checkbox pour choisir ou non une date visible différente de la date du devoir

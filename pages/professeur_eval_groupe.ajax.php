@@ -46,6 +46,7 @@ $orientation    = (isset($_POST['f_orientation']))     ? clean_texte($_POST['f_o
 $marge_min      = (isset($_POST['f_marge_min']))       ? clean_texte($_POST['f_marge_min'])             : '';
 $couleur        = (isset($_POST['f_couleur']))         ? clean_texte($_POST['f_couleur'])               : '';
 $only_req       = (isset($_POST['f_restriction_req'])) ? true                                           : false;
+$gepi_cn_devoirs_id       = (isset($_POST['f_gepi_cn_devoirs_id'])) ? clean_texte($_POST['f_gepi_cn_devoirs_id'])  : null;
 
 $dossier_export = './__tmp/export/';
 $fnom = 'saisie_'.$_SESSION['BASE'].'_'.$_SESSION['USER_ID'].'_'.$ref;
@@ -167,7 +168,10 @@ if( (($action=='ajouter')||(($action=='dupliquer')&&($devoir_id))) && $date && $
 		exit('Erreur : date trop éloignée !');
 	}
 	// Insérer l'enregistrement de l'évaluation
-	$devoir_id2 = DB_STRUCTURE_ajouter_devoir($_SESSION['USER_ID'],$groupe_id,$date_mysql,$info,$date_visible_mysql);
+	if ($action=='dupliquer') {
+		$gepi_cn_devoirs_id = null; //on ne duplique pas le lien avec gepi
+	}
+	$devoir_id2 = DB_STRUCTURE_ajouter_devoir($_SESSION['USER_ID'],$groupe_id,$date_mysql,$info,$date_visible_mysql,$gepi_cn_devoirs_id);
 	// Insérer les enregistrements des items de l'évaluation
 	DB_STRUCTURE_modifier_liaison_devoir_item($devoir_id2,$tab_items,'dupliquer',$devoir_id);
 	// Afficher le retour
@@ -176,7 +180,16 @@ if( (($action=='ajouter')||(($action=='dupliquer')&&($devoir_id))) && $date && $
 	$s = ($nb_items>1) ? 's' : '';
 	echo'<td><i>'.html($date_mysql).'</i>'.html($date).'</td>';
 	echo'<td>'.html($date_visible).'</td>';
-	echo'<td>{{GROUPE_NOM}}</td>';
+	
+	//on récupère le nom du groupe
+	$DB_SQL = 'SELECT groupe_nom ';
+	$DB_SQL.= 'FROM sacoche_groupe ';
+	$DB_SQL.= 'WHERE groupe_id=:groupe_id ';
+	$DB_SQL.= 'LIMIT 1';
+	$DB_VAR = array(':groupe_id'=>$groupe_id);
+	$nom = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	echo'<td>'.$nom.'</td>';
+	
 	echo'<td>'.html($info).'</td>';
 	echo'<td lang="'.implode('_',$tab_items).'">'.$nb_items.' item'.$s.'</td>';
 	echo'<td class="nu" lang="'.$ref.'">';

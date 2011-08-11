@@ -28,6 +28,11 @@
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Évaluer une classe ou un groupe";
 $VERSION_JS_FILE += 20;
+//ajout du groupe en provenance de gepi
+if (isset($_POST['gepi_current_group'])) {
+	$gepi_current_group = json_decode($_POST['gepi_current_group'],true);
+	$sacoche_groupe_id = importer_groupe_gepi(json_decode($_POST['gepi_current_group'],true));
+}
 ?>
 
 <?php
@@ -102,6 +107,7 @@ if(count($tab_id_classe_groupe))
 <hr />
 
 <form action="" id="form0"><fieldset>
+	<?php if (!isset($_POST['gepi_cn_devoirs_row'])) { ?>
 	<label class="tab" for="f_aff_classe">Classe / groupe :</label><select id="f_aff_classe" name="f_aff_classe"><?php echo $select_eleve ?></select>
 	<div id="zone_periodes" class="hide">
 		<label class="tab" for="f_aff_periode">Période :</label><?php echo $select_periode ?>
@@ -111,6 +117,9 @@ if(count($tab_id_classe_groupe))
 		</span><br />
 		<span class="tab"></span><input type="hidden" name="f_action" value="Afficher_evaluations" /><button id="actualiser" type="submit"><img alt="" src="./_img/bouton/actualiser.png" /> Actualiser l'affichage.</button><label id="ajax_msg0">&nbsp;</label>
 	</div>
+	<?php } else { ?>
+		<!-- ne pas afficher le formulaire -->
+	<?php } ?>
 </fieldset></form>
 
 <form action="" id="form1">
@@ -128,7 +137,56 @@ if(count($tab_id_classe_groupe))
 			</tr>
 		</thead>
 		<tbody>
-			<tr><td class="nu" colspan="6"></td></tr>
+			<?php if (!isset($_POST['gepi_cn_devoirs_array'])) { ?>
+				<tr><td class="nu" colspan="6"></td></tr>
+			<?php } else { 
+				$gepi_cn_devoirs_array = json_decode($_POST['gepi_cn_devoirs_array'], true);
+				//on va rechercher si le devoir existe déjà
+				$DB_ROW = DB_STRUCTURE_recuperer_devoir_gepi($gepi_cn_devoirs_array['id']);
+				//print_r($DB_ROW);die;
+				if ($DB_ROW) {		
+					// Formater la date et la référence de l'évaluation
+					$date_affich = convert_date_mysql_to_french($DB_ROW['devoir_date']);
+					$date_visible = ($DB_ROW['devoir_date']==$DB_ROW['devoir_visible_date']) ? 'identique' : convert_date_mysql_to_french($DB_ROW['devoir_visible_date']);
+					$ref = $DB_ROW['devoir_id'].'_'.strtoupper($DB_ROW['groupe_type']{0}).$DB_ROW['groupe_id'];
+					$cs = ($DB_ROW['items_nombre']>1) ? 's' : '';
+					// Afficher une ligne du tableau
+					echo'<tr>';
+					echo	'<td><i>'.html($DB_ROW['devoir_date']).'</i>'.html($date_affich).'</td>';
+					echo	'<td>'.html($date_visible).'</td>';
+					echo	'<td>'.html($DB_ROW['groupe_nom']).'</td>';
+					echo	'<td>'.html($DB_ROW['devoir_info']).'</td>';
+					echo	'<td lang="'.html($DB_ROW['items_listing']).'">'.html($DB_ROW['items_nombre']).' item'.$cs.'</td>';
+					echo	'<td class="nu" lang="'.$ref.'">';
+					echo		'<q class="modifier" title="Modifier cette évaluation (date, description, ...)."></q>';
+					echo		'<q class="ordonner" title="Réordonner les items de cette évaluation."></q>';
+					echo		'<q class="dupliquer" title="Dupliquer cette évaluation."></q>';
+					echo		'<q class="supprimer" title="Supprimer cette évaluation."></q>';
+					echo		'<q class="imprimer" title="Imprimer un cartouche pour cette évaluation."></q>';
+					echo		'<q class="saisir" title="Saisir les acquisitions des élèves à cette évaluation."></q>';
+					echo		'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
+					echo		'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
+					echo		'<q class="retour_gepi" title="Retourner sur gepi."></q>';
+					echo		'<q class="retour_gepi_note" title="Importer les notes sur gepi."></q>';
+					echo	'</td>';
+					echo '<input type="hidden" name="gepi_cn_devoirs_id" value="'.$gepi_cn_devoirs_array['id'].'"/>'; 
+					echo'</tr>';
+				} else {
+					echo'<tr>';
+					//on va afficher un nouveau devoir
+					echo '<input id="f_gepi_cn_devoirs_id" name="f_gepi_cn_devoirs_id" type="hidden" value="'.$gepi_cn_devoirs_array['id'].'" />';
+					$date = new DateTime($gepi_cn_devoirs_array['date']);
+					echo  '<td><input id="f_date" name="f_date" size="9" type="text" value="'.$date->format('d/m/Y').'" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q></td>';
+					$date_visible = new DateTime($gepi_cn_devoirs_array['date_ele_resp']);
+					echo  '<td><input id="box_date" type="checkbox" checked style="vertical-align:-3px" /> <span style="vertical-align:-2px">identique</span><span class="hide"><input id="f_date_visible" name="f_date_visible" size="9" type="text" value="'.$date_visible->format('d/m/Y').'" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q></span></td>';
+					echo '<input id="f_groupe" name="f_groupe" type="hidden" value="G'.$sacoche_groupe_id.'" />';
+					echo  '<td>'.$gepi_current_group['classlist_string'].' '.$gepi_current_group['name'].'</td>';
+					echo  '<td><input id="f_info" name="f_info" size="20" type="text" value="'.$gepi_cn_devoirs_array['nom_court'].'" /></td>';
+					echo  '<td><input id="f_compet_nombre" name="f_compet_nombre" size="10" type="text" value="0 item" readonly /><input id="f_compet_liste" name="f_compet_liste" type="hidden" value="" /><q class="choisir_compet" title="Voir ou choisir les items."></q></td>';
+					echo  '<td class="nu"><input id="f_action" name="f_action" type="hidden" value="ajouter" /><q class="valider" title="Valider l\'ajout de cette évaluation."></q><q class="annuler" title="Annuler l\'ajout de cette évaluation."></q> <label id="ajax_msg">&nbsp;</label></td>';
+					echo '</tr>';
+				}
+			 } ?>
 		</tbody>
 	</table>
 </form>

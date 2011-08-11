@@ -145,7 +145,11 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 			$ce = $dom->createElementNS('gepi_name_space', 'gepi_name_space:organization', $BASE);
 			$ext[] = new SAML2_XML_Chunk($ce);
 		}
-		$auth->requireAuth(array('saml:Extensions' => $ext,));//authentification
+		$auth_params = array('saml:Extensions' => $ext);
+		if (isset($_REQUEST['source'])) {
+			$auth_params['multiauth:preselect'] = $_REQUEST['source'];
+		}
+		$auth->requireAuth($auth_params);//authentification
 					
 		setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'/');//l'utilisateur est bien authentifié pour cet établissement, on le met en cookie
 		

@@ -72,12 +72,12 @@ class sspmod_sacocheauth_Auth_Source_LocalDB extends sspmod_core_Auth_UserPassBa
 		if(($this->profil=='webmestre') && ($login=='webmestre') && ($password!='') )
 		{// Pour le webmestre d'un serveur
 			define('SACoche','index');
-			$auth = connecter_webmestre($password);
+			$auth = tester_authentification_webmestre($password);
 		} else if(($this->profil=='normal') && ($login!='') && ($password!='') )
 		{// Pour un utilisateur normal, y compris un administrateur
 			require_once("$path/_inc/fonction_requetes_structure.php");
 			require_once("$path/_inc/class.DB.php");
-			$auth = connecter_user(0,$login,$password,$mode_connection='normal');
+			list($auth,$auth_DB_ROW) = tester_authentification_user(0,$login,$password,$mode_connection='normal');
 		}
 		
 		

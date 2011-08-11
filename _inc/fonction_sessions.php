@@ -133,7 +133,7 @@ function gestion_session($TAB_PROFILS_AUTORISES)
 		$BASE= clean_entier($_REQUEST['f_base']);
 	} else {
 		if (isset($_COOKIE[COOKIE_STRUCTURE])) {
-			$BASE= clean_entier($_COOKIE['rne']);
+			$BASE= clean_entier($_COOKIE[COOKIE_STRUCTURE]);
 		}
 	}
 

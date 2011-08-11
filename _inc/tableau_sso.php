@@ -31,6 +31,7 @@ $tab_connexion_mode = array();
 $tab_connexion_mode['normal'] = 'Normal';
 $tab_connexion_mode['cas']    = 'Serveur CAS';
 $tab_connexion_mode['gepi']   = 'GEPI';
+$tab_connexion_mode['ssaml']   = 'SSAML';
 /*
 $tab_connexion_mode['ldap']   = '???';
 $tab_connexion_mode['itop']   = 'Machine virtuelle itop';
@@ -56,5 +57,7 @@ $tab_connexion_info['cas']['cartableenligne']  = array( 'serveur_host'=>'A-CHANG
 */
 
 $tab_connexion_info['gepi']['saml']            = array( 'saml_url'=>'http://' , 'saml_rne'=>$_SESSION['UAI'] , 'saml_certif'=>'AA:FD:FF:98:48:18:A8:56:73:32:73:8F:33:53:04:8C:36:9B:E6:B2' , 'txt'=>'S\'authentifier depuis GEPI (protocole SAML).' );
+
+$tab_connexion_info['ssaml']['configured_source']            = array( 'auth_source'=>'0', 'txt'=>'S\'authentifier en utilisant une source simplesaml préalablement configurée (fichier authsources.php).' );
 
 ?>

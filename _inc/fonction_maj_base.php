@@ -1155,6 +1155,8 @@ function maj_base($version_actuelle)
 		{
 			$version_actuelle = '2011-08-02';
 			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ("auth_simpleSAML_source" , "")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_devoir ADD gepi_cn_devoirs_id INT(11) COMMENT "Id de l\évaluation gepi"' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_groupe ADD gepi_id INT(11) COMMENT "Id du groupe gepi"' );
 		}
 	}
 	

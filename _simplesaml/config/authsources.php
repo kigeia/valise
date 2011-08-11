@@ -4,7 +4,7 @@ $config = array(
 
 	// This is a authentication source which handles admin authentication for saml.
 	//le mot de passe à utiliser est webmestre pour l'admin saml
-	'admin' => array(
+	/*'admin' => array(
 		'sacocheauth:LocalDB',
 		'profil' => 'webmestre',
 		'name' => array(
@@ -13,7 +13,7 @@ $config = array(
 		'description' => array(
 		    'fr' => 'Authentification spéciale pour l\'administrateur simplesaml',
 		),
-	),
+	),*/
 
 	//authentification sacoche webmestre
 	'webmestre' => array(

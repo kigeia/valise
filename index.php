@@ -41,7 +41,6 @@ require_once('./_inc/fonction_sessions.php');
 
 // Page appelée
 $PAGE    = (isset($_GET['page']))    ? $_GET['page']    : (isset($_POST['page'])    ? $_POST['page'] : 'public_accueil') ;
-if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '' && $PAGE == 'public_accueil') $PAGE = 'compte_accueil'; //on évite la page de login dans le cas simplesaml
 $SECTION = (isset($_GET['section'])) ? $_GET['section'] : (isset($_POST['section'])    ? $_POST['section'] : '') ;
 
 // Fichier d'informations sur l'hébergement (requis avant la gestion de la session).
@@ -59,7 +58,7 @@ if(!isset($tab_droits[$PAGE]))
 	$tab_messages_erreur[] = 'Erreur : droits de la page "'.$PAGE.'" manquants.';
 	$PAGE = (substr($PAGE,0,6)=='public') ? 'public_accueil' : 'compte_accueil' ;
 }
-gestion_session($tab_droits[$PAGE]);
+gestion_session($tab_droits[$PAGE],$PAGE);
 
 // Blocage éventuel par le webmestre ou un administrateur (on ne peut pas le tester avant car il faut avoir récupéré les données de session)
 tester_blocage_application($_SESSION['BASE'],$demande_connexion_profil=false);
@@ -204,10 +203,6 @@ if(!is_file($filename_php))
 {
 	$tab_messages_erreur[] = 'Erreur : page "'.$filename_php.'" manquante (supprimée, déplacée, non créée...).';
 	$PAGE = ($_SESSION['USER_PROFIL']=='public') ? 'public_accueil' :'compte_accueil' ;
-	if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {
-		header("Location: ./index.php?page=compte_accueil");
-		die();
-	}
 	$filename_php = './pages/'.$PAGE.'.php';
 }
 require($filename_php);

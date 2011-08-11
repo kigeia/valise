@@ -26,45 +26,63 @@
  */
 
 /**
- * non_nul() non_zero() non_vide() positif() non_note() is_renseigne()
- * Fonctions utilisées avec array_filter()
+ * Fonctions utilisées avec array_filter() ; teste si différent de FALSE.
+ * @return bool
  */
-
 function non_nul($n)
 {
-	return $n!==false ;
+	return $n!==FALSE ;
 }
+/**
+ * Fonctions utilisées avec array_filter() ; teste si différent de zéro.
+ * @return bool
+ */
 function non_zero($n)
 {
 	return $n!=0 ;
 }
+/**
+ * Fonctions utilisées avec array_filter() ; teste si différent de "".
+ * @return bool
+ */
 function non_vide($n)
 {
 	return $n!='' ;
 }
+/**
+ * Fonctions utilisées avec array_filter() ; teste si strictement positif.
+ * @return bool
+ */
 function positif($n)
 {
 	return $n>0 ;
 }
+/**
+ * Fonctions utilisées avec array_filter() ; teste si différent "X" et "REQ".
+ * @return bool
+ */
 function non_note($note)
 {
 	return ($note!='X')&&($note!='REQ') ;
 }
+/**
+ * Fonctions utilisées avec array_filter() ; teste si différent de 2.
+ * @return bool
+ */
 function is_renseigne($etat)
 {
 	return $etat!=2 ;
 }
 
 /**
- * test_A
  * Tester un item est considéré comme acquis au vu du score transmis.
+ * 
  * Le seuil peut être celui défini globalement (par défaut si rien de transmis) ou un seuil testé ; peut être appelé avec array_filter().
  * 
  * @param int $score
  * @param int $seuil (facultatif)
- * @return void
+ * @return bool
  */
-
 function test_A($score,$seuil=null)
 {
 	$seuil = ($seuil===null) ? $_SESSION['CALCUL_SEUIL']['V'] : $seuil ;
@@ -78,9 +96,8 @@ function test_A($score,$seuil=null)
  * 
  * @param int $score
  * @param int $seuil
- * @return void
+ * @return bool
  */
-
 function test_NA($score,$seuil=null)
 {
 	$seuil = ($seuil===null) ? $_SESSION['CALCUL_SEUIL']['R'] : $seuil ;
@@ -88,15 +105,13 @@ function test_NA($score,$seuil=null)
 }
 
 /**
- * calculer_score
  * Calculer le score d'un item, à partir des notes transmises et des paramètres de calcul.
  * 
  * @param array  $tab_devoirs      $tab_devoirs[$i]['note'] = note
  * @param string $calcul_methode   'geometrique' / 'arithmetique' / 'classique' / 'moyenne' / 'bestof'
  * @param int    $calcul_limite    nb maxi d'éval à prendre en compte
- * @return void
+ * @return int|false
  */
-
 function calculer_score($tab_devoirs,$calcul_methode,$calcul_limite)
 {
 	// on passe en revue les évaluations disponibles, et on retient les notes exploitables
@@ -114,7 +129,7 @@ function calculer_score($tab_devoirs,$calcul_methode,$calcul_limite)
 	$nb_note = count($tab_note);
 	if($nb_note==0)
 	{
-		return false;
+		return FALSE;
 	}
 	// si le paramétrage du référentiel l'indique, on tronque pour ne garder que les derniers résultats
 	if( ($calcul_limite) && ($nb_note>$calcul_limite) )
@@ -158,13 +173,11 @@ function calculer_score($tab_devoirs,$calcul_methode,$calcul_limite)
 }
 
 /**
- * ajouter_log_SACoche
  * Ajout d'un log dans un fichier d'actions sensibles (un fichier par structure)
  * 
  * @param string $contenu   description de l'action
  * @return void
  */
-
 function ajouter_log_SACoche($contenu)
 {
 	$chemin_fichier = './__private/log/base_'.$_SESSION['BASE'].'.php';
@@ -178,8 +191,7 @@ function ajouter_log_SACoche($contenu)
 }
 
 /**
- * ajouter_log_PHP
- * Ajout d'un log PHP dans le fichier du serveur Web ; serveur Sésamath uniquement
+ * Ajout d'un log PHP dans le fichier error-log du serveur Web
  * 
  * @param string $log_objet       objet du log
  * @param string $log_contenu     contenu du log
@@ -188,7 +200,6 @@ function ajouter_log_SACoche($contenu)
  * @param bool   $only_sesamath   [true] pour une inscription uniquement sur le serveur Sésamath (par défaut), [false] sinon
  * @return void
  */
-
 function ajouter_log_PHP($log_objet,$log_contenu,$log_fichier,$log_ligne,$only_sesamath=true)
 {
 	if( (!$only_sesamath) || (strpos(SERVEUR_ADRESSE,SERVEUR_PROJET)===0) )
@@ -199,15 +210,13 @@ function ajouter_log_PHP($log_objet,$log_contenu,$log_fichier,$log_ligne,$only_s
 }
 
 /**
- * compacter
- * Compression d'un fichier css ou js sur le serveur en production
+ * Compression ou minification d'un fichier css ou js sur le serveur en production
  * 
  * @param string $chemin    chemin complet vers le fichier
  * @param string $version   $version éventuelle du fichier pour éviter un pb de mise en cache
  * @param string $methode   soit "pack" soit "mini"
  * @return string           chemin complet vers le fichier à prendre en compte
  */
-
 function compacter($chemin,$version,$methode)
 {
 	$chemin_fichier_original  = $chemin;
@@ -259,17 +268,16 @@ function compacter($chemin,$version,$methode)
 }
 
 /**
- * charger_parametres_mysql_supplementaires
+ * Charger les parametres mysql de connexion d'un établissement qui n'auraient pas été chargé par le fichier index ou ajax.
  * 
  * Dans le cas d'une installation de type multi-structures, on peut avoir besoin d'effectuer une requête sur une base d'établissement sans y être connecté :
- * => pour savoir si le mode de connexion est SSO ou pas (./pages/public_accueil.ajax.php)
- * => pour l'identification (fonction connecter_user() dans ./_inc/fonction_requetes_administration)
+ * => pour savoir si le mode de connexion est SSO ou pas (./pages/public_*.php)
+ * => pour l'identification (fonction tester_authentification_user())
  * => pour le webmestre (création d'un admin, info sur les admins, initialisation du mdp...)
  * 
  * @param int   $BASE
- * @return void
+ * @return void | exit
  */
-
 function charger_parametres_mysql_supplementaires($BASE)
 {
 	global $CHEMIN_MYSQL;
@@ -282,18 +290,16 @@ function charger_parametres_mysql_supplementaires($BASE)
 	}
 	else
 	{
-		exit('Erreur : paramètres BDD n°'.$BASE.' manquants !');
+		affich_message_exit($titre='Paramètre incorrect',$contenu='Le fichier avec les paramètres de la base n°'.$BASE.' est manquant !');
 	}
 }
 
 /**
- * maj_base_si_besoin
  * Mettre à jour automatiquement la base si besoin ; à effectuer avant toute récupération des données sinon ça peut poser pb...
  * 
  * @param int   $BASE
  * @return void
  */
-
 function maj_base_si_besoin($BASE)
 {
 	$version_base = DB_version_base();
@@ -315,14 +321,13 @@ function maj_base_si_besoin($BASE)
 }
 
 /**
- * fabriquer_login
+ * Fabriquer un login à partir de nom/prénom selon le format paramétré par l'administrateur (reste à tester sa disponibilité).
  * 
  * @param string $prenom
  * @param string $nom
  * @param string $profil   eleve | parent | professeur | directeur
  * @return string
  */
-
 function fabriquer_login($prenom,$nom,$profil)
 {
 	$modele = $_SESSION['MODELE_'.strtoupper($profil)];
@@ -334,7 +339,7 @@ function fabriquer_login($prenom,$nom,$profil)
 }
 
 /**
- * fabriquer_mdp
+ * Fabriquer un mot de passe ; 8 caractères imposés.
  * 
  * Certains caractères sont évités :
  * "e" sinon un tableur peut interpréter le mot de passe comme un nombre avec exposant
@@ -345,32 +350,30 @@ function fabriquer_login($prenom,$nom,$profil)
  * @param void
  * @return string
  */
-
 function fabriquer_mdp()
 {
 	return mb_substr(str_shuffle('2345678923456789abcdfghknpqrstuvxyz'),0,8);
 }
 
 /**
- * crypter_mdp
+ * Crypter un mot de passe avant enregistrement dans la base.
+ * 
+ * Le "salage" complique la recherche d'un mdp à partir de son empreinte md5 en utilisant une table arc-en-ciel.
  * 
  * @param string $password
  * @return string
  */
-
 function crypter_mdp($password)
 {
-	// Le "salage" complique la recherche d'un mdp à partir de son empreinte md5 en utilisant une table arc-en-ciel
 	return md5('grain_de_sel'.$password);
 }
 
 /**
- * fabriquer_fichier_hebergeur_info
+ * Fabriquer ou mettre à jour le fichier de configuration de l'hébergement (gestion par le webmestre)
  * 
- * @param array tableau $constante_nom => $constante_valeur des paramètres à modfifier (sinon, on prend les constantes déjà définies)
+ * @param array tableau $constante_nom => $constante_valeur des paramètres à modifier (sinon, on prend les constantes déjà définies)
  * @return void
  */
-
 function fabriquer_fichier_hebergeur_info($tab_constantes_modifiees)
 {
 	global $CHEMIN_CONFIG;
@@ -390,7 +393,7 @@ function fabriquer_fichier_hebergeur_info($tab_constantes_modifiees)
 }
 
 /**
- * fabriquer_fichier_connexion_base
+ * Fabriquer ou mettre à jour le fichier de connexion à la base (soit celle du webmestre, soit celle d'un établissement).
  * 
  * @param int    $base_id   0 dans le cas d'une install mono-structure ou de la base du webmestre
  * @param string $BD_host
@@ -399,7 +402,6 @@ function fabriquer_fichier_hebergeur_info($tab_constantes_modifiees)
  * @param string $BD_pass
  * @return void
  */
-
 function fabriquer_fichier_connexion_base($base_id,$BD_host,$BD_port,$BD_name,$BD_user,$BD_pass)
 {
 	global $CHEMIN_MYSQL;
@@ -433,13 +435,12 @@ function fabriquer_fichier_connexion_base($base_id,$BD_host,$BD_port,$BD_name,$B
 }
 
 /**
- * modifier_mdp_webmestre
+ * Enregister le (nouveau) mot de passe du webmestre.
  * 
  * @param string $password_ancien
  * @param string $password_nouveau
- * @return string   'ok' ou 'Le mot de passe actuel est incorrect !'
+ * @return string   'ok' | 'Le mot de passe actuel est incorrect !'
  */
-
 function modifier_mdp_webmestre($password_ancien,$password_nouveau)
 {
 	// Tester si l'ancien mot de passe correspond à celui enregistré
@@ -455,14 +456,13 @@ function modifier_mdp_webmestre($password_ancien,$password_nouveau)
 }
 
 /**
- * bloquer_application
+ * Bloquer l'accès à SACoche (les profils concernés dépendent du profil qui exerce le blocage).
  * 
  * @param string $profil_demandeur (webmestre|administrateur|automate)
  * @param int    $id_base   (0 si demande mono-structure ou du webmestre multi-structures de bloquer tous les établissements)
  * @param string $motif
  * @return void
  */
-
 function bloquer_application($profil_demandeur,$id_base,$motif)
 {
 	global $CHEMIN_CONFIG;
@@ -473,13 +473,12 @@ function bloquer_application($profil_demandeur,$id_base,$motif)
 }
 
 /**
- * debloquer_application
+ * Débloquer l'accès à SACoche.
  * 
  * @param string $profil_demandeur (webmestre|administrateur|automate)
  * @param int    $id_base   (0 si demande mono-structure ou du webmestre multi-structures de débloquer tous les établissements)
  * @return void
  */
-
 function debloquer_application($profil_demandeur,$id_base)
 {
 	global $CHEMIN_CONFIG;
@@ -490,7 +489,8 @@ function debloquer_application($profil_demandeur,$id_base)
 }
 
 /**
- * annuler_blocage_anormal
+ * Annuler un blocage anormal à SACoche.
+ * 
  * Concerne un blocage demandé par l'automate pour un établissement donné.
  * Au cas où une procédure de sauvegarde / restauration / nettoyage / tranfert échouerait, un fichier de blocage automatique pourrait être créé et ne pas être effacé.
  * Pour cette raison on teste une durée de vie anormalement longue d'une tel fichier de blocage (puisqu'il ne devrait être que temporaire).
@@ -502,7 +502,6 @@ function debloquer_application($profil_demandeur,$id_base)
  * @param void
  * @return void
  */
-
 function annuler_blocage_anormal()
 {
 	if(isset($_SESSION['blocage_anormal']))
@@ -513,13 +512,12 @@ function annuler_blocage_anormal()
 }
 
 /**
- * connecter_webmestre
+ * Tester si mdp du webmestre transmis convient.
  * 
  * @param string    $password
- * @return string   'ok' (et dans ce cas la session est mise à jour) ou un message d'erreur
+ * @return string   'ok' ou un message d'erreur
  */
-
-function connecter_webmestre($password)
+function tester_authentification_webmestre($password)
 {
 	// Si tentatives trop rapprochées...
 	$delai_attente_consomme = time() - WEBMESTRE_ERREUR_DATE ;
@@ -538,7 +536,7 @@ function connecter_webmestre($password)
 	if($password_crypte!=WEBMESTRE_PASSWORD_MD5)
 	{
 		fabriquer_fichier_hebergeur_info( array('WEBMESTRE_ERREUR_DATE'=>time()) );
-		return 'Mot de passe incorrect ! Patientez 10s avant une nouvelle tentative.';
+		return'Mot de passe incorrect ! Patientez 10s avant une nouvelle tentative.';
 	}
 	return 'id:0';
 }
@@ -554,6 +552,17 @@ function connecter_webmestre($password)
 function enregistrer_informations_session_webmestre()
 {
 	// Si on arrive ici c'est que l'identification s'est bien effectuée !
+	return'ok';
+}
+
+/**
+ * Enregistrer en session les informations authentifiant le webmestre.
+ * 
+ * @param void
+ * @return void
+ */
+function enregistrer_session_webmestre()
+{
 	// Numéro de la base
 	$_SESSION['BASE']             = 0;
 	// Données associées à l'utilisateur.
@@ -569,16 +578,19 @@ function enregistrer_informations_session_webmestre()
 	$_SESSION['DUREE_INACTIVITE'] = 30;
 }
 /**
- * connecter_user
+ * Tester si les données transmises permettent d'authentifier un utilisateur (sauf webmestre).
+ * 
+ * En cas de connexion avec les identifiants SACoche, la reconnaissance s'effectue sur le couple login/password.
+ * En cas de connexion depuis un service SSO extérieur type CAS, la reconnaissance s'effectue en comparant l'identifiant transmis (via $login) avec l'id ENT de jointure connu de SACoche.
+ * En cas de connexion utilisant GEPI, la reconnaissance s'effectue en comparant le login GEPI transmis avec l'id Gepi de jointure connu de SACoche.
  * 
  * @param int       $BASE
  * @param string    $login
  * @param string    $password
- * @param string    $mode_connection   'normal' ou 'cas' ou ...
- * @return string   retourne 'ok' en cas de succès (et dans ce cas la session est mise à jour) ou un message d'erreur sinon
+ * @param string    $mode_connection   'normal' | 'cas' | 'gepi' | 'ldap' (?)
+ * @return array(string,array)   ('ok',$DB_ROW) ou (message_d_erreur,tableau_vide)
  */
-
-function connecter_user($BASE,$login,$password,$mode_connection)
+function tester_authentification_user($BASE,$login,$password,$mode_connection)
 {
 	// En cas de multi-structures, il faut charger les paramètres de connexion à la base concernée
 	// Sauf pour une connexion à un ENT, car alors il a déjà fallu les charger pour récupérer les paramètres de connexion à l'ENT
@@ -591,7 +603,13 @@ function connecter_user($BASE,$login,$password,$mode_connection)
 	// Si login non trouvé...
 	if(!count($DB_ROW))
 	{
-		return ($mode_connection=='normal') ? 'Nom d\'utilisateur incorrect !' : 'Identification réussie mais identifiant ENT "'.$login.'" inconnu dans SACoche !<br />Un administrateur doit renseigner que l\'identifiant ENT associé à votre compte SACoche est "'.$login.'"&hellip;' ;
+		switch($mode_connection)
+		{
+			case 'normal' : $message = 'Nom d\'utilisateur incorrect !'; break;
+			case 'cas'    : $message = 'Identification réussie mais identifiant SSO "'.$login.'" inconnu dans SACoche !<br />Un administrateur doit renseigner que l\'identifiant ENT associé à votre compte SACoche est "'.$login.'"&hellip;'; break;
+			case 'gepi'   : $message = 'Identification réussie mais login GEPI "'.$login.'" inconnu dans SACoche !<br />Un administrateur doit renseigner que l\'identifiant GEPI associé à votre compte SACoche est "'.$login.'"&hellip;'; break;
+		}
+		return array($message,array());
 	}
 	// Blocage éventuel par le webmestre ou un administrateur
 	require_once('fonction_redirection.php');
@@ -602,29 +620,36 @@ function connecter_user($BASE,$login,$password,$mode_connection)
 	if($delai_attente_consomme<3)
 	{
 		DB_STRUCTURE_modifier_date('tentative',$DB_ROW['user_id']);
-		return'Calmez-vous et patientez 10s avant toute nouvelle tentative !';
+		return array('Calmez-vous et patientez 10s avant toute nouvelle tentative !',array());
 	}
 	elseif($delai_attente_consomme<10)
 	{
 		$delai_attente_restant = 10-$delai_attente_consomme ;
-		return'Merci d\'attendre encore '.$delai_attente_restant.'s avant une nouvelle tentative.';
+		return array('Merci d\'attendre encore '.$delai_attente_restant.'s avant une nouvelle tentative.',array());
 	}
 	// Si mdp incorrect...
 	if( ($mode_connection=='normal') && ($DB_ROW['user_password']!=crypter_mdp($password)) )
 	{
 		DB_STRUCTURE_modifier_date('tentative',$DB_ROW['user_id']);
-		return'Mot de passe incorrect ! Patientez 10s avant une nouvelle tentative.';
+		return array('Mot de passe incorrect ! Patientez 10s avant une nouvelle tentative.',array());
 	}
 	// Si compte desactivé...
 	if($DB_ROW['user_statut']!=1)
 	{
-		return'Identification réussie mais ce compte est desactivé !';
+		return array('Identification réussie mais ce compte est desactivé !',array());
 	}
-	return 'id:'.$DB_ROW['user_id'];
+	// Mémoriser la date de la (dernière) connexion
+	DB_STRUCTURE_modifier_date('connexion',$DB_ROW['user_id']);
+	// Enregistrement d'un cookie sur le poste client servant à retenir le dernier établissement sélectionné si identification avec succès
+	setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'');
+	// Enregistrement d'un cookie sur le poste client servant à retenir le dernier mode de connexion utilisé si identification avec succès
+	setcookie(COOKIE_AUTHMODE,$mode_connection,0,'');
+	// Si on arrive ici c'est que l'identification s'est bien effectuée !
+	return array('ok',$DB_ROW);
 }
 
 /**
- * enregistrer_informations_session
+ * Enregistrer en session les informations authentifiant un utilisateur (sauf le webmestre).
  * 
  * @param int     $BASE
  * @param array   $DB_ROW   ligne issue de la table sacoche_user correspondant à l'utilisateur qui se connecte.
@@ -711,16 +736,16 @@ function enregistrer_informations_session($BASE,$mode_connection,$id)
 	adapter_session_daltonisme() ;
 	// Enregistrer en session le CSS personnalisé
 	actualiser_style_session();
-	return null;
+	// Juste pour davantage de lisibilité si besoin de debug...
+	ksort($_SESSION);
 }
 
 /**
- * adapter_session_daltonisme
+ * Compléter la session avec les informations de style dépendant du daltonisme + des choix paramétrés au niveau de l'établissement (couleurs, codes de notation).
  * 
  * @param void
  * @return void
  */
-
 function adapter_session_daltonisme()
 {
 	// codes de notation
@@ -737,12 +762,11 @@ function adapter_session_daltonisme()
 }
 
 /**
- * actualiser_style_session
+ * Compléter la session avec les informations de style dépendant des choix paramétrés au niveau de l'établissement (couleurs, codes de notation).
  * 
  * @param void
  * @return void
  */
-
 function actualiser_style_session()
 {
 	$_SESSION['CSS']  = '';
@@ -779,6 +803,14 @@ function actualiser_style_session()
 	$_SESSION['CSS'] .= '#tableau_validation tbody td[lang=done] {background-image:url(./_img/socle/done.gif);background-repeat:no-repeat;background-position:center center;} /* pas background pour ne pas écraser background-color défini avant */';
 }
 
+/**
+ * Envoyer un courriel au webmestre.
+ * 
+ * @param string   $adresse
+ * @param string   $objet
+ * @param string   $contenu
+ * @return bool
+ */
 function envoyer_webmestre_courriel($adresse,$objet,$contenu)
 {
 	$param = 'From: '.WEBMESTRE_PRENOM.' '.WEBMESTRE_NOM.' <'.WEBMESTRE_COURRIEL.'>'."\r\n";
@@ -792,8 +824,7 @@ function envoyer_webmestre_courriel($adresse,$objet,$contenu)
 }
 
 /**
- * afficher_arborescence_matiere_from_SQL
- * Retourner une liste ordonnée à afficher à partir d'une requête SQL transmise.
+ * Retourner une liste HTML ordonnée de l'arborescence d'un référentiel matière à partir d'une requête SQL transmise.
  * 
  * @param tab         $DB_TAB
  * @param bool        $dynamique   arborescence cliquable ou pas (plier/replier)
@@ -805,7 +836,6 @@ function envoyer_webmestre_courriel($adresse,$objet,$contenu)
  * @param bool        $aff_input   affichage ou pas des input checkbox avec label
  * @return string
  */
-
 function afficher_arborescence_matiere_from_SQL($DB_TAB,$dynamique,$reference,$aff_coef,$aff_cart,$aff_socle,$aff_lien,$aff_input)
 {
 	$input_all = ($aff_input) ? ' <input name="all_check" type="image" src="./_img/all_check.gif" title="Tout cocher." /> <input name="all_uncheck" type="image" src="./_img/all_uncheck.gif" title="Tout décocher." />' : '' ;
@@ -948,8 +978,7 @@ function afficher_arborescence_matiere_from_SQL($DB_TAB,$dynamique,$reference,$a
 }
 
 /**
- * afficher_arborescence_socle_from_SQL
- * Retourner une liste ordonnée à afficher à partir d'une requête SQL transmise.
+ * Retourner une liste HTML ordonnée de l'arborescence d'un référentiel socle à partir d'une requête SQL transmise.
  * 
  * @param tab         $DB_TAB
  * @param bool        $dynamique   arborescence cliquable ou pas (plier/replier)
@@ -958,7 +987,6 @@ function afficher_arborescence_matiere_from_SQL($DB_TAB,$dynamique,$reference,$a
  * @param bool        $ids         indiquer ou pas les identifiants des éléments (Pxxx / Sxxx / Exxx)
  * @return string
  */
-
 function afficher_arborescence_socle_from_SQL($DB_TAB,$dynamique,$reference,$aff_input,$ids)
 {
 	$input_texte = '';
@@ -1054,14 +1082,13 @@ function afficher_arborescence_socle_from_SQL($DB_TAB,$dynamique,$reference,$aff
 }
 
 /**
- * exporter_arborescence_to_XML
  * Fabriquer un export XML d'un référentiel (pour partage sur serveur central) à partir d'une requête SQL transmise.
- * Remarque : les ordres des domaines / thèmes / items ne sont pas transmis car il sont déjà indiqués par la position dans l'arborescence
+ * 
+ * Remarque : les ordres des domaines / thèmes / items ne sont pas transmis car il sont déduits par leur position dans l'arborescence.
  * 
  * @param tab  $DB_TAB
  * @return string
  */
-
 function exporter_arborescence_to_XML($DB_TAB)
 {
 	// Traiter le retour SQL : on remplit les tableaux suivants.
@@ -1119,9 +1146,9 @@ function exporter_arborescence_to_XML($DB_TAB)
 }
 
 /**
- * url_get_contents
  * Équivalent de file_get_contents pour récupérer un fichier sur un serveur distant.
- * On peut aussi l'utiliser pour récupérer le résultat d'un script PHP éxécuté sur un serveur distant.
+ * 
+ * On peut aussi l'utiliser pour récupérer le résultat d'un script PHP exécuté sur un serveur distant.
  * On peut alors envoyer au script des paramètres en POST.
  * 
  * @param string $url
@@ -1129,7 +1156,6 @@ function exporter_arborescence_to_XML($DB_TAB)
  * @param int    $timeout    valeur du timeout en s ; facultatif, par défaut 5 ; pour l'interrogation du LDAP (Bx) je suis obligé de monter à 30
  * @return string
  */
-
 function url_get_contents($url,$tab_post=false,$timeout=5)
 {
 	// Ne pas utiliser file_get_contents() car certains serveurs n'accepent pas d'utiliser une URL comme nom de fichier (gestionnaire fopen non activé).
@@ -1174,13 +1200,11 @@ function url_get_contents($url,$tab_post=false,$timeout=5)
 }
 
 /**
- * recuperer_numero_derniere_version
  * Récupérer le numéro de la dernière version de SACoche disponible auprès du serveur communautaire.
  * 
  * @param void
  * @return string 'AAAA-MM-JJi' ou message d'erreur
  */
-
 function recuperer_numero_derniere_version()
 {
 	$requete_reponse = url_get_contents(SERVEUR_VERSION);
@@ -1188,7 +1212,6 @@ function recuperer_numero_derniere_version()
 }
 
 /**
- * envoyer_arborescence_XML
  * Transmettre le XML d'un référentiel au serveur communautaire.
  * 
  * @param int       $sesamath_id
@@ -1198,7 +1221,6 @@ function recuperer_numero_derniere_version()
  * @param string    $arbreXML       si fourni vide, provoquera l'effacement du référentiel mis en partage
  * @return string   "ok" ou un message d'erreur
  */
-
 function envoyer_arborescence_XML($sesamath_id,$sesamath_key,$matiere_id,$niveau_id,$arbreXML)
 {
 	$tab_post = array();
@@ -1215,7 +1237,6 @@ function envoyer_arborescence_XML($sesamath_id,$sesamath_key,$matiere_id,$niveau
 }
 
 /**
- * recuperer_arborescence_XML
  * Demander à ce que nous soit retourné le XML d'un référentiel depuis le serveur communautaire.
  * 
  * @param int       $sesamath_id
@@ -1223,7 +1244,6 @@ function envoyer_arborescence_XML($sesamath_id,$sesamath_key,$matiere_id,$niveau
  * @param int       $referentiel_id
  * @return string   le XML ou un message d'erreur
  */
-
 function recuperer_arborescence_XML($sesamath_id,$sesamath_key,$referentiel_id)
 {
 	$tab_post = array();
@@ -1237,12 +1257,11 @@ function recuperer_arborescence_XML($sesamath_id,$sesamath_key,$referentiel_id)
 }
 
 /**
- * verifier_arborescence_XML
+ * Vérifier qu'une arborescence XML d'un référentiel est syntaxiquement valide.
  * 
  * @param string    $arbreXML
  * @return string   "ok" ou "Erreur..."
  */
-
 function verifier_arborescence_XML($arbreXML)
 {
 	// On ajoute déclaration et doctype au fichier (évite que l'utilisateur ait à se soucier de cette ligne et permet de le modifier en cas de réorganisation
@@ -1261,14 +1280,12 @@ function verifier_arborescence_XML($arbreXML)
 }
 
 /**
- * Sesamath_enregistrer_structure
  * Demander à ce que la structure soit identifiée et enregistrée dans la base du serveur communautaire.
  * 
  * @param int       $sesamath_id
  * @param string    $sesamath_key
  * @return string   'ok' ou un message d'erreur
  */
-
 function Sesamath_enregistrer_structure($sesamath_id,$sesamath_key)
 {
 	$tab_post = array();
@@ -1281,13 +1298,11 @@ function Sesamath_enregistrer_structure($sesamath_id,$sesamath_key)
 }
 
 /**
- * Sesamath_afficher_formulaire_geo1
  * Appel au serveur communautaire pour afficher le formulaire géographique n°1.
  * 
  * @param void
  * @return string   '<option>...</option>' ou un message d'erreur
  */
-
 function Sesamath_afficher_formulaire_geo1()
 {
 	$tab_post = array();
@@ -1298,13 +1313,11 @@ function Sesamath_afficher_formulaire_geo1()
 }
 
 /**
- * Sesamath_afficher_formulaire_geo2
  * Appel au serveur communautaire pour afficher le formulaire géographique n°2.
  * 
  * @param int       $geo1
  * @return string   '<option>...</option>' ou un message d'erreur
  */
-
 function Sesamath_afficher_formulaire_geo2($geo1)
 {
 	$tab_post = array();
@@ -1316,14 +1329,12 @@ function Sesamath_afficher_formulaire_geo2($geo1)
 }
 
 /**
- * Sesamath_afficher_formulaire_geo3
  * Appel au serveur communautaire pour afficher le formulaire géographique n°3.
  * 
  * @param int       $geo1
  * @param int       $geo2
  * @return string   '<option>...</option>' ou un message d'erreur
  */
-
 function Sesamath_afficher_formulaire_geo3($geo1,$geo2)
 {
 	$tab_post = array();
@@ -1336,13 +1347,11 @@ function Sesamath_afficher_formulaire_geo3($geo1,$geo2)
 }
 
 /**
- * Sesamath_lister_structures_by_commune
  * Appel au serveur communautaire pour lister les structures de la commune indiquée.
  * 
  * @param int       $geo3
  * @return string   '<option>...</option>' ou un message d'erreur
  */
-
 function Sesamath_lister_structures_by_commune($geo3)
 {
 	$tab_post = array();
@@ -1354,13 +1363,11 @@ function Sesamath_lister_structures_by_commune($geo3)
 }
 
 /**
- * Sesamath_recuperer_structure_by_UAI
  * Appel au serveur communautaire pour récupérer la structure du numéro UAI indiqué.
  * 
  * @param string    $uai
  * @return string   '<option>...</option>' ou un message d'erreur
  */
-
 function Sesamath_recuperer_structure_by_UAI($uai)
 {
 	$tab_post = array();
@@ -1372,14 +1379,12 @@ function Sesamath_recuperer_structure_by_UAI($uai)
 }
 
 /**
- * afficher_formulaire_structures_communautaires
  * Appel au serveur communautaire pour afficher le formulaire des structures ayant partagées au moins un référentiel.
  * 
  * @param int       $sesamath_id
  * @param string    $sesamath_key
  * @return string   '<option>...</option>' ou un message d'erreur
  */
-
 function afficher_formulaire_structures_communautaires($sesamath_id,$sesamath_key)
 {
 	$tab_post = array();
@@ -1391,7 +1396,6 @@ function afficher_formulaire_structures_communautaires($sesamath_id,$sesamath_ke
 }
 
 /**
- * afficher_liste_referentiels
  * Appel au serveur communautaire pour lister les référentiels partagés trouvés selon les critères retenus (matière / niveau / structure).
  * 
  * @param int       $sesamath_id
@@ -1401,7 +1405,6 @@ function afficher_formulaire_structures_communautaires($sesamath_id,$sesamath_ke
  * @param int       $structure_id
  * @return string   listing ou un message d'erreur
  */
-
 function afficher_liste_referentiels($sesamath_id,$sesamath_key,$matiere_id,$niveau_id,$structure_id)
 {
 	$tab_post = array();
@@ -1416,7 +1419,6 @@ function afficher_liste_referentiels($sesamath_id,$sesamath_key,$matiere_id,$niv
 }
 
 /**
- * afficher_contenu_referentiel
  * Appel au serveur communautaire voir le contenu d'un référentiel partagé.
  * 
  * @param int       $sesamath_id
@@ -1424,7 +1426,6 @@ function afficher_liste_referentiels($sesamath_id,$sesamath_key,$matiere_id,$niv
  * @param int       $referentiel_id
  * @return string   arborescence ou un message d'erreur
  */
-
 function afficher_contenu_referentiel($sesamath_id,$sesamath_key,$referentiel_id)
 {
 	$tab_post = array();
@@ -1437,39 +1438,33 @@ function afficher_contenu_referentiel($sesamath_id,$sesamath_key,$referentiel_id
 }
 
 /**
- * Lister_Contenu_Dossier
  * Liste le contenu d'un dossier (fichiers et dossiers).
  * 
  * @param string   $dossier
  * @return array
  */
-
 function Lister_Contenu_Dossier($dossier)
 {
 	return array_diff( scandir($dossier) , array('.','..') );
 }
 
 /**
- * Lister_Contenu_Dossier_Programme
  * Liste les noms des fichiers contenus dans un dossier, sans le contenu temporaire ou personnel.
  * 
  * @param string   $dossier
  * @return array
  */
-
 function Lister_Contenu_Dossier_Programme($dossier)
 {
 	return array_diff( scandir($dossier) , array('.','..','__private','__tmp','webservices','.svn') );
 }
 
 /**
- * Creer_Dossier
  * Tester l'existence d'un dossier, le créer, tester son accès en écriture.
  * 
  * @param string   $dossier
  * @return bool
  */
-
 function Creer_Dossier($dossier)
 {
 	global $affichage;
@@ -1477,7 +1472,7 @@ function Creer_Dossier($dossier)
 	if(is_dir($dossier))
 	{
 		$affichage .= '<label for="rien" class="valide">Dossier &laquo;&nbsp;<b>'.$dossier.'</b>&nbsp;&raquo; déjà en place.</label><br />'."\r\n";
-		return true;
+		return TRUE;
 	}
 	// Le dossier a-t-il bien été créé ?
 	@umask(0000); // Met le chmod à 666 - 000 = 666 pour les fichiers prochains fichiers créés (et à 777 - 000 = 777 pour les dossiers).
@@ -1485,7 +1480,7 @@ function Creer_Dossier($dossier)
 	if(!$test)
 	{
 		$affichage .= '<label for="rien" class="erreur">Echec lors de la création du dossier &laquo;&nbsp;<b>'.$dossier.'</b>&nbsp;&raquo; : veuillez le créer manuellement.</label><br />'."\r\n";
-		return false;
+		return FALSE;
 	}
 	$affichage .= '<label for="rien" class="valide">Dossier &laquo;&nbsp;<b>'.$dossier.'</b>&nbsp;&raquo; créé.</label><br />'."\r\n";
 	// Le dossier est-il accessible en écriture ?
@@ -1493,21 +1488,19 @@ function Creer_Dossier($dossier)
 	if(!$test)
 	{
 		$affichage .= '<label for="rien" class="erreur">Dossier &laquo;&nbsp;<b>'.$dossier.'</b>&nbsp;&raquo; inaccessible en écriture : veuillez en changer les droits manuellement.</label><br />'."\r\n";
-		return false;
+		return FALSE;
 	}
 	// Si on arrive là, c'est bon...
 	$affichage .= '<label for="rien" class="valide">Dossier &laquo;&nbsp;<b>'.$dossier.'</b>&nbsp;&raquo; accessible en écriture.</label><br />'."\r\n";
-	return true;
+	return TRUE;
 }
 
 /**
- * Vider_Dossier
  * Vider un dossier ne contenant que d'éventuels fichiers.
  * 
  * @param string   $dossier
  * @return void
  */
-
 function Vider_Dossier($dossier)
 {
 	$tab_fichier = Lister_Contenu_Dossier($dossier);
@@ -1518,13 +1511,11 @@ function Vider_Dossier($dossier)
 }
 
 /**
- * Creer_ou_Vider_Dossier
  * Créer un dossier s'il n'existe pas, le vider de ses éventueles fichiers sinon.
  * 
  * @param string   $dossier
  * @return void
  */
-
 function Creer_ou_Vider_Dossier($dossier)
 {
 	if(!is_dir($dossier))
@@ -1538,13 +1529,11 @@ function Creer_ou_Vider_Dossier($dossier)
 }
 
 /**
- * Supprimer_Dossier
  * Supprimer un dossier, après avoir effacé récursivement son contenu.
  * 
  * @param string   $dossier
  * @return void
  */
-
 function Supprimer_Dossier($dossier)
 {
 	$tab_contenu = Lister_Contenu_Dossier($dossier);
@@ -1564,15 +1553,13 @@ function Supprimer_Dossier($dossier)
 }
 
 /**
- * Analyser_Dossier
- * Recense récursivement les dossiers présents et les md5 des fichiers (utiliser pour la maj automatique par le webmestre).
+ * Recense récursivement les dossiers présents et les md5 des fichiers (utilisé pour la maj automatique par le webmestre).
  * 
  * @param string   $dossier
  * @param int      $longueur_prefixe   longueur de $dossier lors du premier appel
  * @param string   $indice   "avant" ou "apres"
  * @return void
  */
-
 function Analyser_Dossier($dossier,$longueur_prefixe,$indice)
 {
 	$tab_contenu = Lister_Contenu_Dossier_Programme($dossier);
@@ -1592,7 +1579,6 @@ function Analyser_Dossier($dossier,$longueur_prefixe,$indice)
 }
 
 /**
- * Ecrire_Fichier
  * Ecrire du contenu dans un fichier, exit() en cas d'erreur
  * 
  * @param string   $fichier_chemin
@@ -1600,7 +1586,6 @@ function Analyser_Dossier($dossier,$longueur_prefixe,$indice)
  * @param int      facultatif ; si constante FILE_APPEND envoyée, alors ajoute en fin de fichier au lieu d'écraser le contenu
  * @return void
  */
-
 function Ecrire_Fichier($fichier_chemin,$fichier_contenu,$file_append=0)
 {
 	@umask(0000); // Met le chmod à 666 - 000 = 666 pour les fichiers prochains fichiers créés (et à 777 - 000 = 777 pour les dossiers).
@@ -1612,13 +1597,11 @@ function Ecrire_Fichier($fichier_chemin,$fichier_contenu,$file_append=0)
 }
 
 /**
- * adresse_RSS
  * Retourne le chemin du fichier RSS d'un prof ; s'il n'existe pas, en créer un vierge (pour recueillir les demandes d'évaluations des élèves).
  * 
  * @param int     $prof_id
  * @return string
  */
-
 function adresse_RSS($prof_id)
 {
 	// Le nom du RSS est tordu pour le rendre un minimum privé ; il peut être retrouvé, mais très difficilement, par un bidouilleur qui met le nez dans le code, mais il n'y a rien de confidentiel non plus.
@@ -1652,7 +1635,6 @@ function adresse_RSS($prof_id)
 }
 
 /**
- * Modifier_RSS
  * Mettre à jour le fichier RSS vierge d'un prof avec une demande d'évaluation d'élève.
  * 
  * @param string   $fichier_chemin
@@ -1661,7 +1643,6 @@ function adresse_RSS($prof_id)
  * @param string   $guid
  * @return void
  */
-
 function Modifier_RSS($fichier_chemin,$titre,$texte,$guid)
 {
 	// Ajouter l'article
@@ -1692,14 +1673,12 @@ function Modifier_RSS($fichier_chemin,$titre,$texte,$guid)
 }
 
 /**
- * extraire_lignes
- * Pour retourner un tableau de lignes à partir d'un texte en se basant sur les retours chariot.
+ * Retourner un tableau de lignes à partir d'un texte en se basant sur les retours chariot.
  * Utilisé notamment lors de la récupération d'un fichier CSV.
  * 
  * @param string   $texte
  * @return array
  */
-
 function extraire_lignes($texte)
 {
 	$texte = trim($texte);
@@ -1709,13 +1688,11 @@ function extraire_lignes($texte)
 }
 
 /**
- * extraire_separateur_csv
  * Déterminer la nature du séparateur d'un fichier CSV.
  * 
  * @param string   $ligne   la première ligne du fichier
  * @return string
  */
-
 function extraire_separateur_csv($ligne)
 {
 	$tab_separateur = array( ';'=>0 , ','=>0 , ':'=>0 , "\t"=>0 );
@@ -1729,29 +1706,27 @@ function extraire_separateur_csv($ligne)
 }
 
 /**
- * tester_courriel
  * Tester si une adresse de courriel semble normale.
+ * 
  * Utilisé pour une récupération via un CSV parce que pour un champ de saisie javascript fait déjà le ménage.
  * http://fr2.php.net/manual/fr/function.preg-match.php#96910
  * 
  * @param string   $courriel
  * @return bool
  */
-
 function tester_courriel($courriel)
 {
 	return preg_match('/^[^@]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$/',$courriel) ? TRUE : FALSE;
 }
 
 /**
- * tester_UAI
  * Tester si un numéro UAI est valide.
+ * 
  * Utilisé pour une récupération via un CSV parce que pour un champ de saisie javascript fait déjà le ménage.
  * 
  * @param string   $uai
  * @return bool
  */
-
 function tester_UAI($uai)
 {
 	// Il faut 7 chiffres suivis d'une lettre.
@@ -1769,14 +1744,13 @@ function tester_UAI($uai)
 }
 
 /**
- * tester_date
  * Tester si une date est valide : format AAAA-MM-JJ par exemple.
+ * 
  * Utilisé pour une récupération via un CSV parce que pour un champ de saisie javascript fait déjà le ménage.
  * 
  * @param string   $date
  * @return bool
  */
-
 function tester_date($date)
 {
 	$date_unix = strtotime($date);

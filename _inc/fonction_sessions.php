@@ -147,7 +147,6 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 	{
 		${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
 	}
-	//print_r($DB_TAB);die;
 		
 	if (isset($connexion_mode) && $connexion_mode = 'ssaml' && isset($connexion_nom) && $connexion_nom == 'configured_source') {
 		//on saute la page d'acceuil

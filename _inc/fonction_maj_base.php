@@ -1148,13 +1148,14 @@ function maj_base($version_actuelle)
 	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//	MAJ 2011-08-02 => xx
 	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	if($version_actuelle=='2011-08-02')
 	{
-		if('xx1'!=DB_version_base())
-		{
-			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.'xx1'.'" WHERE parametre_nom="version_base" LIMIT 1' );
+		if($version_actuelle==DB_version_base())
+			{
+			$version_actuelle = 'dev';
+			//DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base" LIMIT 1' );
 			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ("auth_simpleSAML_source" , "")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ("integration_gepi" , "no")' );
 			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_devoir ADD gepi_cn_devoirs_id INT(11) COMMENT "Id de l\évaluation gepi"' );
 			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_groupe ADD gepi_id INT(11) COMMENT "Id du groupe gepi"' );
 		}

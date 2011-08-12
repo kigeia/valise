@@ -281,6 +281,21 @@ entete();
 		echo'<div id="cadre_haut">'."\r\n";
 		echo'	<div id="info">'."\r\n";
 		echo'		<span class="button"><img alt="site officiel" src="./_img/favicon.gif" /> <a class="lien_ext" href="'.SERVEUR_PROJET.'">Site officiel</a></span>'."\r\n";
+		
+		$path = dirname((__FILE__));
+		require_once("$path/__private/config/constantes.php");
+		require_once("$path/__private/mysql/serveur_sacoche_structure.php");
+		require_once("$path/_inc/class.DB.config.sacoche_structure.php");
+		require_once("$path/_inc/fonction_requetes_structure.php");
+	    $DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url","gepi_rne","integration_gepi"');
+		foreach($DB_TAB as $DB_ROW)
+		{
+			${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
+		}
+		if ($integration_gepi == 'yes') {
+			echo'		<span class="button"> <a class="lien_ext" href="'.$gepi_url.'?rne='.$gepi_rne.'">Gepi</a></span>'."\r\n";
+		}
+		
 		echo'		<span class="button"><img alt="structure" src="./_img/home.png" /> '.html($_SESSION['DENOMINATION']).'</span>'."\r\n";
 		echo'		<span class="button"><img alt="'.$_SESSION['USER_PROFIL'].'" src="./_img/menu/profil_'.$_SESSION['USER_PROFIL'].'.png" /> '.html($_SESSION['USER_PRENOM'].' '.$_SESSION['USER_NOM']).' ('.$_SESSION['USER_PROFIL'].')</span>'."\r\n";
 		echo'		<span class="button"><span id="clock"><img alt="" src="./_img/clock_fixe.png" /> '.$_SESSION['DUREE_INACTIVITE'].' min</span><img alt="" src="./_img/point.gif" /></span>'."\r\n";

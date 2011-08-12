@@ -91,15 +91,27 @@ $url_sso = SERVEUR_ADRESSE.'/?sso'.$get_base;
 		<label class="tab" for="auth_source">Source <img alt="" src="./_img/bulle_aide.png" title="Choisir une source de configuration."/></label>
 				<?php 
 				//on va voir si il y a simplesaml de configuré
-				if (file_exists(dirname(__FILE__).'/../_simplesaml/config/authsources.php')) {
+				if (file_exists(dirname(__FILE__).'/../_lib/SimpleSAMLphp/config/authsources.php')) {
 					echo "<select name=\"auth_simpleSAML_source\">\n";
 					echo "<option value='unset'></option>";
-					include_once(dirname(__FILE__).'/../_simplesaml/lib/_autoload.php');
+					include_once(dirname(__FILE__).'/../_lib/SimpleSAMLphp/lib/_autoload.php');
 					$config = SimpleSAML_Configuration::getOptionalConfig('authsources.php');
 					$sources = $config->getOptions();
+				    //on va récupérer la source déjà configurée
+					$path = dirname(dirname((__FILE__)));
+					require_once("$path/__private/config/constantes.php");
+					require_once("$path/__private/mysql/serveur_sacoche_structure.php");
+					require_once("$path/_inc/class.DB.config.sacoche_structure.php");
+					require_once("$path/_inc/fonction_requetes_structure.php");
+				    $DB_TAB = DB_STRUCTURE_lister_parametres('"auth_simpleSAML_source"');
+					$selected_source = '';
+				    if ($DB_TAB)
+					{
+						$selected_source = $DB_TAB['parametre_valeur'];
+					}
 					foreach($sources as $source) {
 						echo "<option value='$source'";
-						if (isset($_SESSION["auth_simpleSAML_source"]) && $source == $_SESSION["auth_simpleSAML_source"]) {
+						if ($source == $selected_source) {
 							echo 'selected';
 						}
 						echo ">";

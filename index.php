@@ -40,8 +40,8 @@ require_once('./_inc/config_serveur.php');
 require_once('./_inc/fonction_sessions.php');
 
 // Page appelée
-$PAGE    = (isset($_GET['page']))    ? $_GET['page']    : (isset($_POST['page'])    ? $_POST['page'] : 'public_accueil') ;
-$SECTION = (isset($_GET['section'])) ? $_GET['section'] : (isset($_POST['section'])    ? $_POST['section'] : '') ;
+$PAGE    = (isset($_REQUEST['page']))    ? $_REQUEST['page']    : ( (isset($_GET['sso'])) ? 'compte_accueil' : 'public_accueil' ) ;
+$SECTION = (isset($_REQUEST['section'])) ? $_REQUEST['section'] : '' ;
 
 // Fichier d'informations sur l'hébergement (requis avant la gestion de la session).
 $fichier_constantes = $CHEMIN_CONFIG.'constantes.php';

@@ -11,7 +11,7 @@ $config = array (
 	 * Setup the following parameters to match the directory of your installation.
 	 * See the user manual for more details.
 	 */
-	'baseurlpath'           => 'SACoche/_simplesaml/www/',
+	'baseurlpath'           => 'SACoche/_lib/SimpleSAMLphp/www/',
 	'certdir'               => 'cert/',
 	'loggingdir'            => 'log/',
 	'datadir'               => 'data/',
@@ -501,7 +501,7 @@ $config = array (
 );
 
 
-$path = dirname(dirname(dirname(__FILE__)));
+$path = dirname(dirname(dirname(dirname(__FILE__))));
 require_once("$path/__private/config/constantes.php");
 $config['technicalcontact_email'] = WEBMESTRE_COURRIEL;
 

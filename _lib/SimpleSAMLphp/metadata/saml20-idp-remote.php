@@ -14,7 +14,7 @@ $metadata['gepi-idp'] = array(
 	'certFingerprint'      => 'AA:FD:FF:98:48:18:A8:56:73:32:73:8F:33:53:04:8C:36:9B:E6:B2'
 );
 
-$path = dirname(dirname(dirname(__FILE__)));
+$path = dirname(dirname(dirname(dirname(__FILE__))));
 require_once("$path/__private/config/constantes.php");
 require_once("$path/__private/mysql/serveur_sacoche_structure.php");
 require_once("$path/_inc/class.DB.config.sacoche_structure.php");

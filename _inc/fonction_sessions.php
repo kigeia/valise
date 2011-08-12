@@ -104,7 +104,7 @@ function init_session()
  */
 function close_session()
 {
-	include_once(dirname(__FILE__).'/../_simplesaml/lib/_autoload.php');
+//	include_once(dirname(dirname(__FILE__)).'/_lib/SimpleSAMLphp/lib/_autoload.php');
 //	$auth = new SimpleSAML_Auth_Simple(SIMPLESAML_AUTHSOURCE);
 //	if ($auth->isAuthenticated()) {
 //		$auth->logout();
@@ -154,7 +154,7 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 			header("Location: ./index.php?page=compte_accueil");
 			die();
 		}
-		include_once(dirname(__FILE__).'/../_simplesaml/lib/_autoload.php');
+		include_once(dirname(dirname(__FILE__)).'/_lib/SimpleSAMLphp/lib/_autoload.php');
 		$auth = new SimpleSAML_Auth_SacocheSimple();
 		if (!$auth->isAuthenticated()) {
 			//purge des attributs de session sacoche

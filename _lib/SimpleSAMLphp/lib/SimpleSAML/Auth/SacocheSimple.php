@@ -22,7 +22,7 @@ class SimpleSAML_Auth_SacocheSimple extends SimpleSAML_Auth_Simple {
 				//Cela sert si le mode d'authentification a chang� au cours de la session de l'utilisateur
 				$auth = $_SESSION['utilisateur_saml_source'];
 			} else {
-			    //on va s�lectionner la source d'authentification gepi
+			    //on va récupérer la source configurée
 				$path = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))));
 				require_once("$path/__private/config/constantes.php");
 				require_once("$path/__private/mysql/serveur_sacoche_structure.php");

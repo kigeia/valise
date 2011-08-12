@@ -62,26 +62,29 @@ class sspmod_sacocheauth_Auth_Source_LocalDB extends sspmod_core_Auth_UserPassBa
 		assert('is_string($login)');
 		assert('is_string($password)');
 
-		$path = dirname(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))));
+		$path = dirname(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))))));
 		require_once("$path/__private/config/constantes.php");
+		if (!defined('SACoche')) {
+			define('SACoche','index');
+		}
+		require_once("$path/_inc/constantes.php");
 		require_once("$path/__private/mysql/serveur_sacoche_structure.php");
 		require_once("$path/_inc/class.DB.config.sacoche_structure.php");
 		require_once("$path/_inc/fonction_divers.php");
 		
-		$auth = '';
+		$auth_resultat = '';
 		if(($this->profil=='webmestre') && ($login=='webmestre') && ($password!='') )
 		{// Pour le webmestre d'un serveur
-			define('SACoche','index');
-			$auth = tester_authentification_webmestre($password);
+			$auth_resultat = tester_authentification_webmestre($password);
 		} else if(($this->profil=='normal') && ($login!='') && ($password!='') )
 		{// Pour un utilisateur normal, y compris un administrateur
 			require_once("$path/_inc/fonction_requetes_structure.php");
 			require_once("$path/_lib/DB/DB.class.php");
-			list($auth,$auth_DB_ROW) = tester_authentification_user(0,$login,$password,$mode_connection='normal');
+			list($auth_resultat,$auth_DB_ROW) = tester_authentification_user(0,$login,$password,$mode_connection='normal');
 		}
 		
 		
-		if (substr($auth,0,3) != 'id:') {
+		if($auth_resultat!='ok') {
 			# Echec d'authentification.
 			session_write_close();
 			/* No rows returned - invalid username/password. */
@@ -99,7 +102,7 @@ class sspmod_sacocheauth_Auth_Source_LocalDB extends sspmod_core_Auth_UserPassBa
 			$attributes['USER_ID'][]          = 0;
 		} else if(($this->profil=='normal') && ($login!='') && ($password!='') )
 		{
-			$attributes['USER_ID'][]          = substr($auth,3);
+			$attributes['USER_ID'][]          = $auth_DB_ROW['user_id'];
 		}
 		
 		SimpleSAML_Logger::info('sacocheauth:' . $this->authId . ': Attributes: ' .

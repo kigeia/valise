@@ -204,7 +204,8 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 				if ($attr['USER_ID'][0] == 0) {
 					enregistrer_informations_session_webmestre();
 				} else {
-					enregistrer_informations_session($BASE,'normal',$attr['USER_ID'][0]);
+					$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id('normal',$attr['USER_ID'][0]);
+					enregistrer_session_user($BASE,$DB_ROW);
 				}
 			} else {
 				//si on a pas d'attribut USER_ID c'est qu'on a une authentification externe. On va rechercher sur l'attribut USER_ID_ENT

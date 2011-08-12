@@ -1726,7 +1726,7 @@ function DB_STRUCTURE_lister_devoirs_prof($prof_id,$groupe_id,$date_debut_mysql,
 {
 	// DB::query(SACOCHE_STRUCTURE_BD_NAME , 'SET group_concat_max_len = ...'); // Pour lever si besoin une limitation de GROUP_CONCAT (group_concat_max_len est par défaut limité à une chaine de 1024 caractères).
 	// Il faut ajouter dans la requête des "DISTINCT" sinon la liaison avec "sacoche_jointure_user_groupe" duplique tout x le nb d'élèves associés pour une évaluation sur une sélection d'élèves.
-	$DB_SQL = 'SELECT devoir_id, devoir_date, devoir_visible_date, devoir_info, groupe_id, groupe_type, groupe_nom, ';
+	$DB_SQL = 'SELECT devoir_id, devoir_date, devoir_visible_date, devoir_info, gepi_cn_devoirs_id, groupe_id, groupe_type, groupe_nom, ';
 	$DB_SQL.= 'GROUP_CONCAT(DISTINCT item_id SEPARATOR "_") AS items_listing, COUNT(DISTINCT item_id) AS items_nombre ';
 	if(!$groupe_id)
 	{

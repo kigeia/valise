@@ -143,6 +143,15 @@ if( ($action=='Afficher_evaluations') && $aff_classe_txt && $aff_classe_id && ( 
 		echo		'<q class="saisir" title="Saisir les acquisitions des élèves à cette évaluation."></q>';
 		echo		'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
 		echo		'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
+		if ($DB_ROW['gepi_cn_devoirs_id'] != 0) {
+			$ROW = DB_STRUCTURE_lister_parametres('"gepi_url"');
+			$gepi_url = $ROW['parametre_valeur'];
+			if ($gepi_url != '' && $gepi_url != 'http://') {
+				echo '<input type="hidden" name="gepi_devoir_url" value="'.$gepi_url.'/cahier_notes/index.php?id_devoir='.$DB_ROW['gepi_cn_devoirs_id'].'"/>'; 
+				echo '<q class="retour_gepi" title="Retourner sur gepi."></q>';
+				echo '<q class="retour_gepi_note" title="Importer les notes sur gepi."></q>';
+			}
+		}
 		echo	'</td>';
 		echo'</tr>';
 	}

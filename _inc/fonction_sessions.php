@@ -135,6 +135,8 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 			$BASE= clean_entier($_COOKIE[COOKIE_STRUCTURE]);
 		}
 	}
+	setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'');
+	
 
 	$path = dirname(dirname(__FILE__));
 	require_once("$path/__private/config/constantes.php");

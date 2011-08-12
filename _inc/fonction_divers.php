@@ -1747,7 +1747,7 @@ function tester_date($date)
  * @return int
  */
 
-function importer_groupe_gepi($groupe_gepi)
+function importer_groupe_gepi($period_num,$groupe_gepi)
 {
 	//on regarde si le groupe existe déjà ou pas
 	$DB_SQL = 'SELECT groupe_id ';
@@ -1757,15 +1757,11 @@ function importer_groupe_gepi($groupe_gepi)
 	$DB_VAR = array(':gepi_id'=>$groupe_gepi['id']);
 	$row = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 	if (count($row)) {
-		//echo 'trouvé';die;
 		//on va faire un update du groupe
-		//print_r($groupe_gepi);
 		$sacoche_groupe_id = $row[0];
 		DB_STRUCTURE_modifier_groupe($sacoche_groupe_id,$groupe_gepi['classlist_string'],$groupe_gepi['classlist_string'].' '.$groupe_gepi['name'],0);
 	} else {
-		//echo 'non trouvé';die;
 		//on va faire une création de groupe
-		//print_r($groupe_gepi);die;
 		$sacoche_groupe_id = DB_STRUCTURE_ajouter_groupe('groupe',0,$groupe_gepi['classlist_string'],$groupe_gepi['classlist_string'].' '.$groupe_gepi['name'],0,$groupe_gepi['id']);
 	}
 	
@@ -1778,8 +1774,7 @@ function importer_groupe_gepi($groupe_gepi)
 	}
 
 	//on va importer les élèves de ce groupe
-	//print_r($groupe_gepi);die;
-	foreach ($groupe_gepi['eleves'][2]['users'] as $eleve_tableau) {
+	foreach ($groupe_gepi['eleves'][$period_num]['users'] as $eleve_tableau) {
 		$eleve_id = importer_eleve_gepi($eleve_tableau);
 		DB_STRUCTURE_modifier_liaison_user_groupe($eleve_id,'eleve',$sacoche_groupe_id,'groupe',true);
 	}
@@ -1797,7 +1792,6 @@ function importer_groupe_gepi($groupe_gepi)
 
 function importer_eleve_gepi($eleve_tableau)
 {
-	//print_r($eleve_tableau);die;
 	$user_id = DB_STRUCTURE_tester_utilisateur_SconetId($eleve_tableau['sconet_id'],'eleve');
 	if ($user_id) {
 		//l'utilisateur existe déjà

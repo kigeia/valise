@@ -117,6 +117,8 @@ if($f_connexion_mode=='gepi')
 if($f_connexion_mode=='ssaml')
 {
 	// C'est ok
+	$_SESSION['CONNEXION_MODE']   = $f_connexion_mode;
+	$_SESSION['CONNEXION_NOM']    = $f_connexion_nom;
 	DB_STRUCTURE_modifier_parametres( array('connexion_mode'=>$f_connexion_mode,'connexion_nom'=>$f_connexion_nom,'auth_simpleSAML_source'=>$auth_simpleSAML_source) );
 	exit('ok');
 }

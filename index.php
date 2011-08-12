@@ -58,6 +58,43 @@ if(!isset($tab_droits[$PAGE]))
 	$tab_messages_erreur[] = 'Erreur : droits de la page "'.$PAGE.'" manquants.';
 	$PAGE = (substr($PAGE,0,6)=='public') ? 'public_accueil' : 'compte_accueil' ;
 }
+
+if (isset($_REQUEST['f_action']) && $_REQUEST['f_action'] == 'logout') {
+	//echo 'on va faire un logout';die;
+	close_session();open_new_session();init_session();
+	//on regarde si on reste sur sacoche ou si on va au portail
+	$path = dirname(__FILE__);
+	require_once("$path/__private/config/constantes.php");
+	require_once("$path/__private/mysql/serveur_sacoche_structure.php");
+	require_once("$path/_inc/class.DB.config.sacoche_structure.php");
+	require_once("$path/_inc/fonction_requetes_structure.php");
+	require_once("$path/_lib/DB/DB.class.php");
+	$DB_TAB = DB_STRUCTURE_lister_parametres('"connexion_mode","connexion_nom","auth_simpleSAML_source","gepi_url","gepi_rne","cas_serveur_host"');
+	foreach($DB_TAB as $DB_ROW)
+	{
+		${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
+	}
+	if ($connexion_mode == 'normal'
+	|| ($connexion_mode == 'ssaml' && $connexion_nom == 'configured_source' && false === strpos($auth_simpleSAML_source, 'distant'))) {
+		if ($connexion_mode == 'ssaml' && $connexion_nom == 'configured_source') {
+			include_once(dirname(dirname(__FILE__)).'/_lib/SimpleSAMLphp/lib/_autoload.php');
+			$auth = new SimpleSAML_Auth_SacocheSimple();
+			$auth->logout();
+		}
+		close_session();open_new_session();init_session();
+		header("Location: ./index.php");
+	} else {
+		close_session();open_new_session();init_session();
+		$url = '';
+		if ($connexion_mode == 'cas') {
+			$url = $cas_serveur_host;
+		}else {
+			$url = $gepi_url;
+		}
+		header("Location: ".$url);
+		die;
+	}
+}
 gestion_session($tab_droits[$PAGE],$PAGE);
 
 // Blocage éventuel par le webmestre ou un administrateur (on ne peut pas le tester avant car il faut avoir récupéré les données de session)
@@ -247,7 +284,26 @@ entete();
 		echo'		<span class="button"><img alt="structure" src="./_img/home.png" /> '.html($_SESSION['DENOMINATION']).'</span>'."\r\n";
 		echo'		<span class="button"><img alt="'.$_SESSION['USER_PROFIL'].'" src="./_img/menu/profil_'.$_SESSION['USER_PROFIL'].'.png" /> '.html($_SESSION['USER_PRENOM'].' '.$_SESSION['USER_NOM']).' ('.$_SESSION['USER_PROFIL'].')</span>'."\r\n";
 		echo'		<span class="button"><span id="clock"><img alt="" src="./_img/clock_fixe.png" /> '.$_SESSION['DUREE_INACTIVITE'].' min</span><img alt="" src="./_img/point.gif" /></span>'."\r\n";
-		echo'		<button id="deconnecter"><img alt="" src="./_img/bouton/deconnecter.png" /> Déconnexion</button>'."\r\n";
+		//dans certains cas, on affiche pas de bouton déconnecter mais un bouton retour au portail
+		$path = dirname(__FILE__);
+		require_once("$path/__private/config/constantes.php");
+		require_once("$path/__private/mysql/serveur_sacoche_structure.php");
+		require_once("$path/_inc/class.DB.config.sacoche_structure.php");
+		require_once("$path/_inc/fonction_requetes_structure.php");
+		require_once("$path/_lib/DB/DB.class.php");
+		$DB_TAB = DB_STRUCTURE_lister_parametres('"connexion_mode","connexion_nom","auth_simpleSAML_source","gepi_url","gepi_rne"');
+		foreach($DB_TAB as $DB_ROW)
+		{
+			${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
+		}
+		echo'		<button id="deconnecter"><img alt="" src="./_img/bouton/deconnecter.png" />';
+		if ($connexion_mode == 'normal'
+		|| ($connexion_mode == 'ssaml' && $connexion_nom == 'configured_source' && false === strpos($auth_simpleSAML_source, 'distant'))) {
+			echo 'Déconnexion';
+		} else {
+			echo 'Retour au portail';
+		}
+		echo '</button>'."\r\n";
 		echo'	</div>'."\r\n";
 		echo'	<img id="logo" alt="SACoche" src="./_img/logo_petit2.png" />'."\r\n";
 		$fichier_menu = ($_SESSION['USER_PROFIL']!='webmestre') ? '__menu_'.$_SESSION['USER_PROFIL'] : '__menu_'.$_SESSION['USER_PROFIL'].'_'.HEBERGEUR_INSTALLATION ;

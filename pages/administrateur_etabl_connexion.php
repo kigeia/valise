@@ -51,10 +51,22 @@ foreach($tab_connexion_info['cas'] as $connexion_nom => $tab_info)
 	$tab_param_js .= 'tab_param["cas"]["'.$connexion_nom.'"]="'.html($tab_info['serveur_host'].']¤['.$tab_info['serveur_port'].']¤['.$tab_info['serveur_root']).'";';
 }
 
+
+$path = dirname(dirname((__FILE__)));
+require_once("$path/__private/config/constantes.php");
+require_once("$path/__private/mysql/serveur_sacoche_structure.php");
+require_once("$path/_inc/class.DB.config.sacoche_structure.php");
+require_once("$path/_inc/fonction_requetes_structure.php");
+    $DB_TAB = DB_STRUCTURE_lister_parametres('"auth_simpleSAML_source","gepi_url","gepi_rne","gepi_certificat_empreinte"');
+foreach($DB_TAB as $DB_ROW)
+{
+	${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
+}
+	
 $tab_param_js .= 'tab_param["gepi"] = new Array();';
 foreach($tab_connexion_info['gepi'] as $connexion_nom => $tab_info)
 {
-	$tab_param_js .= 'tab_param["gepi"]["'.$connexion_nom.'"]="'.html($tab_info['saml_url'].']¤['.$tab_info['saml_rne'].']¤['.$tab_info['saml_certif']).'";';
+	$tab_param_js .= 'tab_param["gepi"]["'.$connexion_nom.'"]="'.$gepi_url.']¤['.$gepi_rne.']¤['.$gepi_certificat_empreinte.'";';
 }
 
 
@@ -83,9 +95,9 @@ $url_sso = SERVEUR_ADRESSE.'/?sso'.$get_base;
 		<label class="tab" for="cas_serveur_root">Chemin <img alt="" src="./_img/bulle_aide.png" title="En général vide.<br />Parfois 'cas'." /> :</label><input id="cas_serveur_root" name="cas_serveur_root" size="10" type="text" value="<?php echo html($_SESSION['CAS_SERVEUR_ROOT']) ?>" /><br />
 	</div>
 	<div id="gepi_options" class="hide">
-		<label class="tab" for="gepi_saml_url">Adresse (URL) <img alt="" src="./_img/bulle_aide.png" title="Adresse web de GEPI.<br />http://adresse_web_de_mon_gepi" /> :</label><input id="gepi_saml_url" name="gepi_saml_url" size="30" type="text" value="<?php echo html($_SESSION['GEPI_URL']) ?>" /><br />
-		<label class="tab" for="gepi_saml_rne">UAI (ex-RNE) <img alt="" src="./_img/bulle_aide.png" title="Indispensable uniquement si installation multisite de GEPI." /> :</label><input id="gepi_saml_rne" name="gepi_saml_rne" size="10" type="text" value="<?php echo ($_SESSION['GEPI_RNE']) ? html($_SESSION['GEPI_RNE']) : html($_SESSION['UAI']) ; ?>" /><br />
-		<label class="tab" for="gepi_saml_certif">Signature <img alt="" src="./_img/bulle_aide.png" title="[ Expliquer où trouver l'empreinte du sertificat... ]" /> :</label><input id="gepi_saml_certif" name="gepi_saml_certif" size="60" type="text" value="<?php echo html($_SESSION['GEPI_CERTIFICAT_EMPREINTE']) ?>" /><br />
+		<label class="tab" for="gepi_saml_url">Adresse (URL) <img alt="" src="./_img/bulle_aide.png" title="Adresse web de GEPI.<br />http://adresse_web_de_mon_gepi" /> :</label><input id="gepi_saml_url" name="gepi_saml_url" size="30" type="text" value="<?php echo $gepi_url; ?>" /><br />
+		<label class="tab" for="gepi_saml_rne">UAI (ex-RNE) <img alt="" src="./_img/bulle_aide.png" title="Indispensable uniquement si installation multisite de GEPI." /> :</label><input id="gepi_saml_rne" name="gepi_saml_rne" size="10" type="text" value="<?php echo $gepi_rne ?>" /><br />
+		<label class="tab" for="gepi_saml_certif">Signature <img alt="" src="./_img/bulle_aide.png" title="[ Expliquer où trouver l'empreinte du sertificat... ]" /> :</label><input id="gepi_saml_certif" name="gepi_saml_certif" size="60" type="text" value="<?php echo $gepi_certificat_empreinte ?>" /><br />
 	</div>
 	<div id="ssaml_configured_source_options" class="hide">
 		<label class="tab" for="auth_source">Source <img alt="" src="./_img/bulle_aide.png" title="Choisir une source de configuration."/></label>
@@ -98,20 +110,9 @@ $url_sso = SERVEUR_ADRESSE.'/?sso'.$get_base;
 					$config = SimpleSAML_Configuration::getOptionalConfig('authsources.php');
 					$sources = $config->getOptions();
 				    //on va récupérer la source déjà configurée
-					$path = dirname(dirname((__FILE__)));
-					require_once("$path/__private/config/constantes.php");
-					require_once("$path/__private/mysql/serveur_sacoche_structure.php");
-					require_once("$path/_inc/class.DB.config.sacoche_structure.php");
-					require_once("$path/_inc/fonction_requetes_structure.php");
-				    $DB_TAB = DB_STRUCTURE_lister_parametres('"auth_simpleSAML_source"');
-					$selected_source = '';
-				    if ($DB_TAB)
-					{
-						$selected_source = $DB_TAB['parametre_valeur'];
-					}
 					foreach($sources as $source) {
 						echo "<option value='$source'";
-						if ($source == $selected_source) {
+						if ($source == $auth_simpleSAML_source) {
 							echo 'selected';
 						}
 						echo ">";
@@ -124,11 +125,6 @@ $url_sso = SERVEUR_ADRESSE.'/?sso'.$get_base;
 			</select>
 			
 			<br />
-	</div>
-	<div id="ssaml_idp_options" class="hide">
-		<label class="tab" for="gepi_saml_url">Adresse (URL) <img alt="" src="./_img/bulle_aide.png" title="Adresse web de GEPI.<br />http://adresse_web_de_mon_gepi" /> :</label><input id="gepi_saml_url" name="gepi_saml_url" size="30" type="text" value="<?php echo html($_SESSION['GEPI_URL']) ?>" /><br />
-		<label class="tab" for="gepi_saml_rne">UAI (ex-RNE) <img alt="" src="./_img/bulle_aide.png" title="Indispensable uniquement si installation multisite de GEPI." /> :</label><input id="gepi_saml_rne" name="gepi_saml_rne" size="10" type="text" value="<?php echo ($_SESSION['GEPI_RNE']) ? html($_SESSION['GEPI_RNE']) : html($_SESSION['UAI']) ; ?>" /><br />
-		<label class="tab" for="gepi_saml_certif">Empreinte <img alt="" src="./_img/bulle_aide.png" title="[ Expliquer où trouver l'empreinte du sertificat... ]" /> :</label><input id="gepi_saml_certif" name="gepi_saml_certif" size="60" type="text" value="<?php echo html($_SESSION['GEPI_CERTIFICAT_EMPREINTE']) ?>" /><br />
 	</div>
 	<?php echo $choix ?>
 	<span class="tab"></span><button id="bouton_valider" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Valider ce mode d'identification.</button><label id="ajax_msg">&nbsp;</label>

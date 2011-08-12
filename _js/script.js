@@ -531,7 +531,7 @@ $(document).ready
 		(
 			function()
 			{
-				window.document.location.href='./index.php';
+				window.document.location.href='./index.php?f_action=logout';
 			}
 		);
 

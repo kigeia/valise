@@ -166,10 +166,19 @@ if(count($tab_id_classe_groupe))
 					echo		'<q class="saisir" title="Saisir les acquisitions des élèves à cette évaluation."></q>';
 					echo		'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
 					echo		'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
-					echo		'<q class="retour_gepi" title="Retourner sur gepi."></q>';
-					echo		'<q class="retour_gepi_note" title="Importer les notes sur gepi."></q>';
+					$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url"');
+					if ($DB_TAB) {
+						$gepi_url = $DB_TAB['parametre_valeur'];
+
+						//on récupère d'id du groupe gepi
+						$DB_SQL = 'SELECT gepi_id FROM sacoche_groupe WHERE groupe_id=:groupe_id LIMIT 1';
+						$DB_VAR = array(':groupe_id'=>$DB_ROW['groupe_id']);
+						$gepi_groupe_id = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+						echo '<input type="hidden" name="gepi_devoir_url" value="'.$gepi_url.'/cahier_notes/index.php?id_groupe='.$gepi_groupe_id.'&id_devoir='.$gepi_cn_devoirs_array['id'].'"/>'; 
+						echo '<q class="retour_gepi" title="Retourner sur gepi."></q>';
+						echo '<q class="retour_gepi_note" title="Importer les notes sur gepi."></q>';
+					}
 					echo	'</td>';
-					echo '<input type="hidden" name="gepi_cn_devoirs_id" value="'.$gepi_cn_devoirs_array['id'].'"/>'; 
 					echo'</tr>';
 				} else {
 					echo'<tr>';

@@ -432,8 +432,9 @@ $(document).ready
 		var retour_gepi = function()
 		{
 			// Récupérer les informations de la ligne concernée
-			var gepi_cn_devoirs_id    = $(this).parent().next().val();
-			window.location = "../javascriptredirect.php"
+			var gepi_retour_url    = $(this).prev().val();
+			alert(gepi_retour_url);
+			window.location = gepi_retour_url;
 		};
 
 		/**

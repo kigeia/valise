@@ -101,7 +101,7 @@ $(document).ready
 					if (connexion_nom=='configured_source') {
 						var valeur = tab_param[connexion_mode][connexion_nom];
 						var tab_infos = valeur.split(']¤[');
-						$('#auth_source').val( tab_infos[0] );
+						$('#auth_simpleSAML_source').val( tab_infos[0] );
 						$(this).parent().parent().next().after( $('#ssaml_configured_source_options') );
 						$('#ssaml_configured_source_options').show();
 						$('#lien_direct').show();
@@ -135,8 +135,8 @@ $(document).ready
 				}
 				else if( (connexion_mode=='ssaml') && (connexion_nom=='configured_source') )
 				{
-					$(this).parent().parent().next().after( $('#ssaml_configured_source') );
-					$('#ssaml_configured_source').show();
+					$(this).parent().parent().next().after( $('#ssaml_configured_source_options') );
+					$('#ssaml_configured_source_options').show();
 				}
 			}
 		);

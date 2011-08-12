@@ -31,7 +31,7 @@ $VERSION_JS_FILE += 20;
 //ajout du groupe en provenance de gepi
 if (isset($_POST['gepi_current_group'])) {
 	$gepi_current_group = json_decode($_POST['gepi_current_group'],true);
-	$sacoche_groupe_id = importer_groupe_gepi(json_decode($_POST['gepi_current_group'],true));
+	$sacoche_groupe_id = importer_groupe_gepi($_POST['period_num'],json_decode($_POST['gepi_current_group'],true));
 }
 ?>
 
@@ -122,7 +122,7 @@ if(count($tab_id_classe_groupe))
 	<?php } ?>
 </fieldset></form>
 
-<form action="" id="form1">
+<form action="" id="form1" name="form1">
 	<hr />
 	<p id="p_alerte" class="danger hide">Une évaluation dont la saisie a commencé ne devrait pas voir ses items modifiés.<br />En particulier, retirer des items d'une évaluation efface les scores correspondants qui sont saisis !</p>
 	<table class="form">
@@ -142,21 +142,21 @@ if(count($tab_id_classe_groupe))
 			<?php } else { 
 				$gepi_cn_devoirs_array = json_decode($_POST['gepi_cn_devoirs_array'], true);
 				//on va rechercher si le devoir existe déjà
-				$DB_ROW = DB_STRUCTURE_recuperer_devoir_gepi($gepi_cn_devoirs_array['id']);
-				//print_r($DB_ROW);die;
+				$DB_ROW_DEVOIR = DB_STRUCTURE_recuperer_devoir_gepi($gepi_cn_devoirs_array['id']);
 				if ($DB_ROW) {		
 					// Formater la date et la référence de l'évaluation
-					$date_affich = convert_date_mysql_to_french($DB_ROW['devoir_date']);
-					$date_visible = ($DB_ROW['devoir_date']==$DB_ROW['devoir_visible_date']) ? 'identique' : convert_date_mysql_to_french($DB_ROW['devoir_visible_date']);
-					$ref = $DB_ROW['devoir_id'].'_'.strtoupper($DB_ROW['groupe_type']{0}).$DB_ROW['groupe_id'];
-					$cs = ($DB_ROW['items_nombre']>1) ? 's' : '';
+					$date_affich = convert_date_mysql_to_french($DB_ROW_DEVOIR['devoir_date']);
+					$date_visible = ($DB_ROW_DEVOIR['devoir_date']==$DB_ROW_DEVOIR['devoir_visible_date']) ? 'identique' : convert_date_mysql_to_french($DB_ROW_DEVOIR['devoir_visible_date']);
+					$ref = $DB_ROW_DEVOIR['devoir_id'].'_'.strtoupper($DB_ROW['groupe_type']{0}).$DB_ROW_DEVOIR['groupe_id'];
+					$s = ($DB_ROW_DEVOIR['items_nombre']>1) ? 's' : '';
+					// Afficher une ligne du tableau
 					// Afficher une ligne du tableau
 					echo'<tr>';
-					echo	'<td><i>'.html($DB_ROW['devoir_date']).'</i>'.html($date_affich).'</td>';
+					echo	'<td><i>'.html($DB_ROW_DEVOIR['devoir_date']).'</i>'.html($date_affich).'</td>';
 					echo	'<td>'.html($date_visible).'</td>';
-					echo	'<td>'.html($DB_ROW['groupe_nom']).'</td>';
-					echo	'<td>'.html($DB_ROW['devoir_info']).'</td>';
-					echo	'<td lang="'.html($DB_ROW['items_listing']).'">'.html($DB_ROW['items_nombre']).' item'.$cs.'</td>';
+					echo	'<td>'.html($DB_ROW_DEVOIR['groupe_nom']).'</td>';
+					echo	'<td>'.html($DB_ROW_DEVOIR['devoir_info']).'</td>';
+					echo	'<td lang="'.html($DB_ROW_DEVOIR['items_listing']).'">'.html($DB_ROW_DEVOIR['items_nombre']).' item'.$s.'</td>';
 					echo	'<td class="nu" lang="'.$ref.'">';
 					echo		'<q class="modifier" title="Modifier cette évaluation (date, description, ...)."></q>';
 					echo		'<q class="ordonner" title="Réordonner les items de cette évaluation."></q>';
@@ -166,17 +166,49 @@ if(count($tab_id_classe_groupe))
 					echo		'<q class="saisir" title="Saisir les acquisitions des élèves à cette évaluation."></q>';
 					echo		'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
 					echo		'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
-					$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url"');
-					if ($DB_TAB) {
-						$gepi_url = $DB_TAB['parametre_valeur'];
-
-						//on récupère d'id du groupe gepi
-						$DB_SQL = 'SELECT gepi_id FROM sacoche_groupe WHERE groupe_id=:groupe_id LIMIT 1';
-						$DB_VAR = array(':groupe_id'=>$DB_ROW['groupe_id']);
-						$gepi_groupe_id = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
-						echo '<input type="hidden" name="gepi_devoir_url" value="'.$gepi_url.'/cahier_notes/index.php?id_groupe='.$gepi_groupe_id.'&id_devoir='.$gepi_cn_devoirs_array['id'].'"/>'; 
-						echo '<q class="retour_gepi" title="Retourner sur gepi."></q>';
-						echo '<q class="retour_gepi_note" title="Importer les notes sur gepi."></q>';
+					if ($DB_ROW_DEVOIR['gepi_cn_devoirs_id'] != 0) {
+						$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url","gepi_rne"');
+						foreach($DB_TAB as $DB_ROW)
+						{
+							${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
+						}
+						if ($gepi_url != '' && $gepi_url != 'http://') {
+							echo '<input type="hidden" name="gepi_devoir_url" value="'.$gepi_url.'/cahier_notes/index.php?id_devoir='.$DB_ROW_DEVOIR['gepi_cn_devoirs_id'].'&rne='.$gepi_rne.'"/>'; 
+							echo '<q class="retourner" title="Retourner sur gepi."></q>';
+			
+							//on va construire un tableau des résultats de l'évaluation en pourcentage de réussite
+							// on passe en revue les évaluations disponibles, et on retient les notes exploitables
+							$output_array = array();
+							$tab_modele_bon = array('RR','R','V','VV');	// les notes prises en compte dans le calcul du score
+							//print_r($_SESSION['CALCUL_VALEUR']);die;
+							$DB_TAB = DB_STRUCTURE_lister_saisies_devoir($DB_ROW_DEVOIR['devoir_id'],$with_REQ=true);
+							foreach($DB_TAB as $DB_ROW_SASIE)
+							{
+								$id_gepi = $DB_ROW_SASIE['user_id_gepi'];
+								if (!isset($output_array[$id_gepi])) {
+									$output_array[$id_gepi] = 0;
+								}
+								if(in_array($DB_ROW_SASIE['saisie_note'],$tab_modele_bon)) {
+									$output_array[$id_gepi] += ($_SESSION['CALCUL_VALEUR'][$DB_ROW_SASIE['saisie_note']]/$DB_ROW_DEVOIR['items_nombre']);
+								}
+							}
+							echo '<q class="envoyer" title="Importer les notes sur gepi."></q>';
+			
+							echo '<input type="hidden" name="gepi_retour_note_url" id="gepi_retour_note_url" value="'.$gepi_url.'/cahier_notes/saisie_notes.php">';
+							echo '<input type="hidden" name="import_sacoche" value="yes"/>';
+							echo '<input type="hidden" name="is_posted" value="yes"/>';
+							echo '<input type="hidden" name="rne" value="'.$gepi_rne.'"/>';
+							echo '<input type="hidden" name="id_devoir" value="'.$DB_ROW_DEVOIR['gepi_cn_devoirs_id'].'"/>';
+							$i=0;
+							foreach($output_array as $id => $pourcent) {
+								echo '<input name="log_eleve['.$i.']" type="hidden" value="'.$id.'"/>';
+								echo '<input name="note_eleve['.$i.']" type="hidden" value="'.$pourcent.'"/>';
+								echo '<input name="comment_eleve['.$i.']" type="hidden" value=""/>';
+								$i = $i+1;
+							}
+							echo '<input type="hidden" name="indice_max_log_eleve" value="'.count($output_array).'"/>';
+							echo '</form>';
+						}
 					}
 					echo	'</td>';
 					echo'</tr>';

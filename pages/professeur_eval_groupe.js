@@ -426,26 +426,29 @@ $(document).ready
 		};
 
 		/**
-		 * Voir les répartitions des élèves à une évaluation : chargement des données
+		 * Retourne vers gepi
 		 * @return void
 		 */
-		var retour_gepi = function()
+		var retourner = function()
 		{
 			// Récupérer les informations de la ligne concernée
 			var gepi_retour_url    = $(this).prev().val();
-			alert(gepi_retour_url);
 			window.location = gepi_retour_url;
 		};
 
 		/**
-		 * Voir les répartitions des élèves à une évaluation : chargement des données
+		 * Envoi les donnée à gepi
 		 * @return void
 		 */
-		var retour_gepi_note = function()
+		var envoyer = function()
 		{
 			// Récupérer les informations de la ligne concernée
-			var gepi_cn_devoirs_id    = $(this).parent().next();
-			alert(gepi_cn_devoirs_id);
+			var url = $('#gepi_retour_note_url').val();
+			$('#form1').attr("action", url);
+			$('#form1').attr("method", "post");
+			// Envoi du formulaire (avec jquery.form.js)
+			document.form1.submit();
+
 		};
 
 		/**
@@ -554,8 +557,8 @@ $(document).ready
 		$('q.voir').live(            'click' , voir );
 		$('q.voir_repart').live(     'click' , voir_repart );
 		$('q.choisir_compet').live(  'click' , choisir_compet );
-		$('q.retour_gepi').live(  'click' , retour_gepi );
-		$('q.retour_gepi_note').live(  'click' , retour_gepi_note );
+		$('q.retourner').live(  'click' , retourner );
+		$('q.envoyer').live(  'click' , envoyer );
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur le checkbox pour choisir ou non une date visible différente de la date du devoir

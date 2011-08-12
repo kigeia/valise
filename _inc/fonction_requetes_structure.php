@@ -1761,7 +1761,7 @@ function DB_STRUCTURE_recuperer_devoir_gepi($gepi_cn_devoir_id)
 {
 	// DB::query(SACOCHE_STRUCTURE_BD_NAME , 'SET group_concat_max_len = ...'); // Pour lever si besoin une limitation de GROUP_CONCAT (group_concat_max_len est par défaut limité à une chaine de 1024 caractères).
 	// Il faut ajouter dans la requête des "DISTINCT" sinon la liaison avec "sacoche_jointure_user_groupe" duplique tout x le nb d'élèves associés pour une évaluation sur une sélection d'élèves.
-	$DB_SQL = 'SELECT devoir_id, devoir_date, devoir_visible_date, devoir_info, groupe_id, groupe_type, groupe_nom, ';
+	$DB_SQL = 'SELECT devoir_id, devoir_date, devoir_visible_date, devoir_info,gepi_cn_devoirs_id, groupe_id, groupe_type, groupe_nom, ';
 	$DB_SQL.= 'GROUP_CONCAT(DISTINCT item_id SEPARATOR "_") AS items_listing, COUNT(DISTINCT item_id) AS items_nombre ';
 	$DB_SQL .= ', '.'GROUP_CONCAT(DISTINCT user_id SEPARATOR "_") AS users_listing, COUNT(DISTINCT user_id) AS users_nombre ';
 	$DB_SQL.= 'FROM sacoche_devoir ';
@@ -1839,7 +1839,7 @@ function DB_STRUCTURE_lister_items_devoir($devoir_id,$info_pour_eleve=false)
 function DB_STRUCTURE_lister_saisies_devoir($devoir_id,$with_REQ)
 {
 	// On évite les élèves désactivés pour ces opérations effectuées sur les pages de saisies d'évaluations
-	$DB_SQL = 'SELECT eleve_id,item_id,saisie_note FROM sacoche_saisie ';
+	$DB_SQL = 'SELECT eleve_id,user_id_gepi,item_id,saisie_note FROM sacoche_saisie ';
 	$DB_SQL.= 'LEFT JOIN sacoche_user ON sacoche_saisie.eleve_id=sacoche_user.user_id ';
 	$DB_SQL.= 'WHERE devoir_id=:devoir_id AND user_statut=:statut ';
 	if(!$with_REQ)

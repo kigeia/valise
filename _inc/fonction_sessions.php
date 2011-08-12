@@ -270,7 +270,7 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 		open_new_session(); init_session();
 		if(!$TAB_PROFILS_AUTORISES['public'])
 		{
-			if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {$auth->requireAuth();}
+			if (isset($connexion_mode) && $connexion_mode = 'ssaml' && isset($connexion_nom) && $connexion_nom == 'configured_source') {$auth->requireAuth();}
 			// 1.1. Demande d'accès à une page réservée, donc besoin d'identification
 			if(isset($_GET['verif_cookie']))
 			{
@@ -294,7 +294,7 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 		open_old_session();
 		if(!isset($_SESSION['USER_PROFIL']))
 		{
-			if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {$auth->requireAuth();}
+			if (isset($connexion_mode) && $connexion_mode = 'ssaml' && isset($connexion_nom) && $connexion_nom == 'configured_source') {$auth->requireAuth();}
 			// 2.1. Pas de session retrouvée (sinon cette variable serait renseignée)
 			if(!$TAB_PROFILS_AUTORISES['public'])
 			{
@@ -313,7 +313,7 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 			// 2.2. Session retrouvée, utilisateur non identifié
 			if(!$TAB_PROFILS_AUTORISES['public'])
 			{
-				if (defined('SIMPLESAML_AUTHSOURCE') && SIMPLESAML_AUTHSOURCE != '') {$auth->requireAuth();}
+				if (isset($connexion_mode) && $connexion_mode = 'ssaml' && isset($connexion_nom) && $connexion_nom == 'configured_source') {$auth->requireAuth();}
 				// 2.2.1. Espace non identifié => Espace identifié : redirection pour identification
 				redirection_SSO_ou_message_exit(); // Pas d'initialisation de session sinon la redirection avec le SSO tourne en boucle.
  			}

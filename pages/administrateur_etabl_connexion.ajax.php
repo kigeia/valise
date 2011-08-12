@@ -37,6 +37,7 @@ $gepi_saml_url    = (isset($_POST['gepi_saml_url']))    ? clean_texte($_POST['ge
 $gepi_saml_rne    = (isset($_POST['gepi_saml_rne']))    ? clean_texte($_POST['gepi_saml_rne'])     : '';
 $gepi_saml_certif = (isset($_POST['gepi_saml_certif'])) ? clean_texte($_POST['gepi_saml_certif'])  : '';
 $auth_simpleSAML_source = (isset($_POST['auth_simpleSAML_source'])) ? clean_texte($_POST['auth_simpleSAML_source'])  : '';
+$integration_gepi = (isset($_POST['integration_gepi'])) ? clean_texte($_POST['integration_gepi'])  : 'no';
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Mode de connexion (normal, SSO...)
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
@@ -47,6 +48,8 @@ if(!isset($tab_connexion_info[$f_connexion_mode][$f_connexion_nom]))
 {
 	exit('Erreur avec les données transmises !');
 }
+
+DB_STRUCTURE_modifier_parametres( array('integration_gepi'=>$integration_gepi) );
 
 if($f_connexion_mode=='normal')
 {

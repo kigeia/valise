@@ -145,12 +145,12 @@ if( ($action=='Afficher_evaluations') && $aff_classe_txt && $aff_classe_id && ( 
 		echo		'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
 		echo		'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
 		if ($DB_ROW_DEVOIR['gepi_cn_devoirs_id'] != 0) {
-			$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url","gepi_rne"');
+			$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url","gepi_rne", "integration_gepi"');
 			foreach($DB_TAB as $DB_ROW)
 			{
 				${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
 			}
-			if ($gepi_url != '' && $gepi_url != 'http://') {
+			if ($integration_gepi == 'yes' && $gepi_url != '' && $gepi_url != 'http://') {
 				echo '<input type="hidden" name="gepi_devoir_url" value="'.$gepi_url.'/cahier_notes/index.php?id_devoir='.$DB_ROW_DEVOIR['gepi_cn_devoirs_id'].'&rne='.$gepi_rne.'"/>'; 
 				echo '<q class="retourner" title="Retourner sur gepi."></q>';
 

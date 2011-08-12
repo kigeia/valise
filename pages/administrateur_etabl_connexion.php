@@ -26,7 +26,7 @@
  */
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
-$TITRE = "Mode d'identification";
+$TITRE = "Mode d'identification et intégration gepi";
 $VERSION_JS_FILE += 4;
 
 require_once('./_inc/tableau_sso.php');
@@ -57,7 +57,7 @@ require_once("$path/__private/config/constantes.php");
 require_once("$path/__private/mysql/serveur_sacoche_structure.php");
 require_once("$path/_inc/class.DB.config.sacoche_structure.php");
 require_once("$path/_inc/fonction_requetes_structure.php");
-    $DB_TAB = DB_STRUCTURE_lister_parametres('"auth_simpleSAML_source","gepi_url","gepi_rne","gepi_certificat_empreinte"');
+    $DB_TAB = DB_STRUCTURE_lister_parametres('"auth_simpleSAML_source","gepi_url","gepi_rne","gepi_certificat_empreinte","integration_gepi"');
 foreach($DB_TAB as $DB_ROW)
 {
 	${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
@@ -127,7 +127,15 @@ $url_sso = SERVEUR_ADRESSE.'/?sso'.$get_base;
 			<br />
 	</div>
 	<?php echo $choix ?>
+	<p><span class="tab">
+	<input type="checkbox" name="integration_gepi" value="yes" <?php if ($integration_gepi == 'yes') {echo 'checked';} ?>/> Utiliser l'intégration avec gépi (Ce paramètre est indépendemment du mode d'identification, il permet de mettre des liens vers votre application gepi)
+	<br/><label class="tab" for="gepi_saml_url">Adresse (URL) <img alt="" src="./_img/bulle_aide.png" title="Adresse web de GEPI.<br />http://adresse_web_de_mon_gepi" /> :</label><input id="gepi_saml_url" name="gepi_saml_url" size="30" type="text" value="<?php echo $gepi_url; ?>" /><br />
+	
+	</span></p>
+
 	<span class="tab"></span><button id="bouton_valider" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Valider ce mode d'identification.</button><label id="ajax_msg">&nbsp;</label>
+
+
 </fieldset></form>
 
 <p><span class="astuce">Pour importer les identifiants de l'ENT, utiliser ensuite la page "<a href="./index.php?page=administrateur_fichier_identifiant">importer / imposer des identifiants</a>".</span></p>

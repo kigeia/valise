@@ -21,19 +21,8 @@ class SimpleSAML_Auth_SacocheSimple extends SimpleSAML_Auth_Simple {
 				//on prend la source pr�cis�e pr�cedemment en session.
 				//Cela sert si le mode d'authentification a chang� au cours de la session de l'utilisateur
 				$auth = $_SESSION['utilisateur_saml_source'];
-			} else {
-			    //on va récupérer la source configurée
-				$path = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))));
-				require_once("$path/__private/config/constantes.php");
-				require_once("$path/__private/mysql/serveur_sacoche_structure.php");
-				require_once("$path/_inc/class.DB.config.sacoche_structure.php");
-				require_once("$path/_inc/fonction_requetes_structure.php");
-				
-			    $DB_TAB = DB_STRUCTURE_lister_parametres('"auth_simpleSAML_source"');
-				if ($DB_TAB)
-				{
-					$auth = $DB_TAB['parametre_valeur'];
-				}
+			} else if (isset($_SESSION['AUTH_SIMPLESAML_SOURCE'])) {
+			    $auth = $_SESSION['AUTH_SIMPLESAML_SOURCE'];
 			}
 		}
 		
@@ -46,11 +35,6 @@ class SimpleSAML_Auth_SacocheSimple extends SimpleSAML_Auth_Simple {
 		if (!in_array($auth, $sources)) {
 			//si la source pr�cis�e n'est pas trouv�e, utilisation par d�faut d'une source proposant tout les choix possible
 			//(voir le fichier authsources.php)
-			if ($auth == 'unset') {
-				//l'admin a r�gl� la source � unset, ce n'est pas la peine de mettre un message d'erreur
-			} else {
-				echo 'Erreur simplesaml : source '.$auth.' non configurée. Utilisation par défaut de la source : «Authentification au choix entre toutes les sources configurees».';
-			}
 			$auth = 'Authentification au choix entre toutes les sources configurees';
 		}
 		
@@ -79,6 +63,7 @@ class SimpleSAML_Auth_SacocheSimple extends SimpleSAML_Auth_Simple {
 	 * @param array $params  Various options to the authentication request.
 	 */
 	public function login(array $params = array()) {
+		
 		if (!isset($params['multiauth:preselect'])) {
 			if (isset($_REQUEST['source'])) {
 				$params['multiauth:preselect'] = $_REQUEST['source'];
@@ -87,10 +72,10 @@ class SimpleSAML_Auth_SacocheSimple extends SimpleSAML_Auth_Simple {
 			}
 		}
 
-		if (!isset($params['core:organization'])) {
+		if (!isset($params['core:organization'])) {//organization (rne) pour l'authentification
 			$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_rne"');
 			if ($DB_TAB) {
-				$params['core:organization'] = $DB_TAB[0]['parametre_valeur'];
+				$params['core:organization'] = $DB_TAB['parametre_valeur'];
 			} elseif (isset($_REQUEST['organization'])) {
 				$params['core:organization'] = $_REQUEST['organization'];
 			} else if (isset($_COOKIE['organization'])) {
@@ -99,8 +84,6 @@ class SimpleSAML_Auth_SacocheSimple extends SimpleSAML_Auth_Simple {
 				$params['core:organization'] = $_REQUEST['rne'];
 			} else if (isset($_COOKIE['RNE'])) {
 				$params['core:organization'] = $_COOKIE['RNE'];
-			} else {
-				
 			}
 		}
 		

@@ -595,11 +595,14 @@ function tester_authentification_user($BASE,$login,$password,$mode_connection)
 {
 	// En cas de multi-structures, il faut charger les paramètres de connexion à la base concernée
 	// Sauf pour une connexion à un ENT, car alors il a déjà fallu les charger pour récupérer les paramètres de connexion à l'ENT
-	if( ($BASE) && ($mode_connection=='normal') )
+	if( ($BASE) && 
+		($mode_connection=='normal' && !defined('SACOCHE_STRUCTURE_BD_HOST')))
 	{
 		charger_parametres_mysql_supplementaires($BASE);
 	}
 	// Récupérer les données associées à l'utilisateur.
+	require_once(dirname(__FILE__).'/fonction_requetes_structure.php');
+	require_once(dirname(__FILE__).'/../_lib/DB/DB.class.php');
 	$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur($mode_connection,$login);
 	// Si login non trouvé...
 	if(!count($DB_ROW))

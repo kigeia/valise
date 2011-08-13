@@ -7,6 +7,7 @@ CREATE TABLE sacoche_groupe (
 	groupe_ref     CHAR(8)                                 COLLATE utf8_unicode_ci NOT NULL DEFAULT "",
 	groupe_nom     VARCHAR(20)                             COLLATE utf8_unicode_ci NOT NULL DEFAULT "",
 	niveau_id      TINYINT(3)                              UNSIGNED                NOT NULL DEFAULT 0,
+  	gepi_id        int(11) DEFAULT NULL COMMENT 'Id du groupe gepi',
 	PRIMARY KEY (groupe_id),
 	KEY niveau_id (niveau_id),
 	KEY groupe_type (groupe_type),

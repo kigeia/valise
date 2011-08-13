@@ -72,6 +72,8 @@ INSERT INTO sacoche_parametre VALUES
 ( "acquis_texte_A"                 , "A" ),
 ( "acquis_legende_NA"              , "Non acquis." ),
 ( "acquis_legende_VA"              , "Partiellement acquis." ),
-( "acquis_legende_A"               , "Acquis." );
+( "acquis_legende_A"               , "Acquis." ),
+( "auth_simpleSAML_source"               , "" ),
+( "integration_gepi"               , "" );
 
 ALTER TABLE sacoche_parametre ENABLE KEYS;

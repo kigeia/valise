@@ -32,12 +32,18 @@
 define('SESSION_NOM','SACoche-session');
 
 //on précise un chemin de base pour le cookie, utile en cas de plusieurs applications sur le même serveur
-$cookiePath = parse_url(HEBERGEUR_ADRESSE_SITE,PHP_URL_PATH);
-if (substr($cookiePath,strlen($cookiePath)-1) != '/') {
-	$cookiePath .= '/';
+if(is_file(dirname(__FILE__).'/../__private/config/constantes.php')) {
+	require_once(dirname(__FILE__).'/../__private/config/constantes.php');
 }
-session_set_cookie_params(0,$cookiePath);
-define('COOKIE_PATH',$cookiePath);
+if (defined('HEBERGEUR_ADRESSE_SITE')) {
+	$cookiePath = parse_url(HEBERGEUR_ADRESSE_SITE,PHP_URL_PATH);
+	if (substr($cookiePath,strlen($cookiePath)-1) != '/') {
+		$cookiePath .= '/';
+	}
+	session_set_cookie_params(0,$cookiePath);
+	define('COOKIE_PATH',$cookiePath);
+}
+
 
 session_name(SESSION_NOM);
 session_cache_limiter('nocache');
@@ -108,8 +114,9 @@ function close_session()
 //	if ($auth->isAuthenticated()) {
 //		$auth->logout();
 //	}
+	session_start();
 	$_SESSION = array();
-	setcookie(session_name(),'',time()-42000,'');
+	setcookie(session_name(),'',time()-42000,COOKIE_PATH);
 	session_destroy();
 }
 
@@ -121,147 +128,181 @@ function close_session()
  */
 function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 {
-	//récupération de l'organisation (appelé rne ou base)
-	//pour sacoche c'est dans la requete : id, f_base, ou le cookie
-	$BASE = 0;
-	require_once(dirname(__FILE__).'/fonction_clean.php');
-	if (isset($_REQUEST['id'])) {
-		$BASE = clean_entier($_REQUEST['id']);
-	} else if (isset($_REQUEST['f_base'])) {
-		$BASE= clean_entier($_REQUEST['f_base']);
-	} else {
-		if (isset($_COOKIE[COOKIE_STRUCTURE])) {
-			$BASE= clean_entier($_COOKIE[COOKIE_STRUCTURE]);
-		}
-	}
-	setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'');
 	
-
-	$path = dirname(dirname(__FILE__));
-	require_once("$path/__private/config/constantes.php");
-	require_once("$path/__private/mysql/serveur_sacoche_structure.php");
-	require_once("$path/_inc/class.DB.config.sacoche_structure.php");
-	require_once("$path/_inc/fonction_requetes_structure.php");
-	require_once("$path/_lib/DB/DB.class.php");
-	$DB_TAB = DB_STRUCTURE_lister_parametres('"connexion_mode","connexion_nom"');
-	foreach($DB_TAB as $DB_ROW)
-	{
-		${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
+	//récupération de l'organisation (appelé rne ou base)
+	//pour sacoche c'est dans la requete : id, f_base, ou le cookie, ou dans la session
+	if (isset($_SESSION) && isset($_SESSION['BASE'])) {
+		$BASE = $_SESSION['BASE'];
+	} else {
+		if (isset($_REQUEST['id'])) {
+			$BASE = $_REQUEST['id'];
+		} else if (isset($_REQUEST['f_base'])) {
+			$BASE= $_REQUEST['f_base'];
+		} else {
+			if (isset($_COOKIE[COOKIE_STRUCTURE])) {
+				$BASE = $_COOKIE[COOKIE_STRUCTURE];
+			}
+		}
+		if (isset($BASE)) {
+			$_SESSION['BASE'] = $BASE;
+			setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'');
+		} else {
+			$BASE = 0;
+		}
 	}
-		
-	if (isset($connexion_mode) && $connexion_mode = 'ssaml' && isset($connexion_nom) && $connexion_nom == 'configured_source') {
-		//on saute la page d'acceuil
-		if ($PAGE == 'public_accueil') {
-			header("Location: ./index.php?page=compte_accueil");
-			die();
+	
+	//on regarde si on peut initialiser la session
+	$path = dirname(dirname(__FILE__));
+	if ($BASE == 0) {
+		if (is_file("$path/__private/mysql/serveur_sacoche_structure_0.php")) {
+			require_once("$path/__private/mysql/serveur_sacoche_structure.php");
+		} else if (is_file("$path/__private/mysql/serveur_sacoche_structure.php")) {
+			require_once("$path/__private/mysql/serveur_sacoche_structure.php");	
 		}
-		include_once(dirname(dirname(__FILE__)).'/_lib/SimpleSAMLphp/lib/_autoload.php');
-		$auth = new SimpleSAML_Auth_SacocheSimple();
-		if (!$auth->isAuthenticated()) {
-			//purge des attributs de session sacoche
-			unset($_SESSION['USER_PROFIL']);
-			unset($_SESSION['USER_ID']);
-			unset($_SESSION['USER_ID_ENT']);
-			unset($_SESSION['USER_ID_GEPI']);
+	} else {
+		if (is_file("$path/__private/mysql/serveur_sacoche_structure_$BASE.php")) {
+			require_once("$path/__private/mysql/serveur_sacoche_structure_$BASE.php");
 		}
-		
-		//on forge une extension saml pour tramsmettre l'établissement précisé dans sacoche
-		$ext = array();
-		if ($BASE != 0) {
-			$dom = new DOMDocument();
-			$ce = $dom->createElementNS('gepi_name_space', 'gepi_name_space:organization', $BASE);
-			$ext[] = new SAML2_XML_Chunk($ce);
-		}
-		$auth_params = array('saml:Extensions' => $ext);
-		if (isset($_REQUEST['source'])) {
-			$auth_params['multiauth:preselect'] = $_REQUEST['source'];
-		}
-		$auth->requireAuth($auth_params);//authentification
+	}
 
-		setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'/');//l'utilisateur est bien authentifié pour cet établissement, on le met en cookie
-		
-		$attr = $auth->getAttributes();
-		
-		if (//si l'utilisateur est authentifié mais que il n'est pas chargé en session ou que c'est un autre utilisateur en session on charge le nouvel utilisateur
-			!isset($_SESSION['USER_ID']) || 
-			(
-				isset($attr['USER_ID'][0]) && $attr['USER_ID'][0] != $_SESSION['USER_ID']
-			) ||
-			!isset($_SESSION['USER_ID_ENT']) || 
-			(
-				isset($attr['USER_ID_ENT'][0]) && $attr['USER_ID_ENT'][0] != $_SESSION['USER_ID_ENT']
-			)
-			
-		) {
-			//l'utilisateur est authentifié mais les attributs ne sont pas encore chargés en session
-			require_once(dirname(__FILE__).'/fonction_divers.php');
-			require_once(dirname(__FILE__).'/../_lib/DB/DB.class.php');
-			require_once(dirname(__FILE__)."/fonction_requetes_structure.php");
-			require_once(dirname(__FILE__)."/../__private/mysql/serveur_sacoche_structure.php");
-			require_once(dirname(__FILE__).'/class.DB.config.sacoche_structure.php');
-						
-			if (isset($attr['USER_ID'][0])) {
-				//si on a un attribut USER_ID c'est qu'on a une authentification locale
-				if ($attr['USER_ID'][0] == 0) {
-					enregistrer_informations_session_webmestre();
-				} else {
-					$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id('normal',$attr['USER_ID'][0]);
-					enregistrer_session_user($BASE,$DB_ROW);
-				}
-			} else {
-				//si on a pas d'attribut USER_ID c'est qu'on a une authentification externe. On va rechercher sur l'attribut USER_ID_ENT
-				$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id('gepi',$attr['USER_ID_ENT'][0]);
-				$user_id = -1;
-				if(!count($DB_ROW)) {
-					//l'utilisateur n'est pas dans la base on va l'importer
-					$user_id = DB_STRUCTURE_ajouter_utilisateur(
-						'', //sconet_id
-						'', //sconet_num
-						'', //reference
-						$attr['USER_PROFIL'][0],
-						$attr['USER_NOM'][0],
-						$attr['USER_PRENOM'][0],
-						$attr['USER_ID_GEPI'][0], //on met l'id gepi (qui correspond au login gepi) pour le user_login
-						'', //pas de password pour une authentification externe
-						'', //classe
-						$attr['USER_ID_ENT'][0],
-						$attr['USER_ID_GEPI'][0]
-						);
-				} else {
-					$user_id = (int) $DB_ROW['user_id'];
-				}
-				
-				//on va mettre à jours l'utilisateur avec les données transmises
-				$DB_VAR = array();
-				if (isset($attr['USER_PROFIL'])) $DB_VAR[':profil'] = $attr['USER_PROFIL'][0];
-				if (isset($attr['USER_NOM'])) $DB_VAR[':nom'] = $attr['USER_NOM'][0];
-				if (isset($attr['USER_PRENOM'])) $DB_VAR[':prenom'] = $attr['USER_PRENOM'][0];
-				if (isset($attr['USER_ID_GEPI'])) $DB_VAR[':login'] = $attr['USER_ID_GEPI'][0];
-				if (isset($attr['USER_ID_GEPI'])) $DB_VAR[':id_gepi'] = $attr['USER_ID_GEPI'][0];
-				if (!empty($DB_VAR)) DB_STRUCTURE_modifier_utilisateur($user_id,$DB_VAR);
-				//on met à jour les matières
-				if (isset($attr['matieres'])) {
-					// Récupérer la liste des matiere_id
-					$DB_SQL = 'SELECT matiere_id FROM sacoche_matiere ';
-					$DB_SQL.= 'WHERE matiere_ref=:matiere_ref limit 1;';
-					foreach($attr['matieres'] as $matiere_ref) {
-						$DB_VAR = array(':matiere_ref'=>$matiere_ref);
-						$DB_ROW = DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
-						if(count($DB_ROW)) {
-							DB_STRUCTURE_modifier_liaison_professeur_matiere($user_id,$DB_ROW['matiere_id'],true);
-						}
-					}
-				}	
-				$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur('gepi',$attr['USER_ID_GEPI'][0]);
-				DB_STRUCTURE_modifier_date('connexion',$DB_ROW['user_id']);
-				$result = enregistrer_session_user($BASE,$DB_ROW);
-				if ($result != null) {
-					echo 'il y a une erreur car normalement on vient d enregistrer le profil mais il ne semble pas être dans la base : '.$result;
-				}
+	if (!defined('SACOCHE_STRUCTURE_BD_HOST')) {
+		//on est dans la procédure d'instalation probablement, ce n'est pas la peine de tester le mode d'identification, on ne va accepter après que les pages publiques
+	} else {
+		require_once("$path/_inc/class.DB.config.sacoche_structure.php");
+		require_once(dirname(__FILE__)."/fonction_requetes_structure.php");
+		require_once("$path/_lib/DB/DB.class.php");
+		require_once(dirname(__FILE__).'/fonction_divers.php');
+		$DB_TAB = DB_STRUCTURE_lister_parametres('"connexion_mode","connexion_nom","auth_simpleSAML_source"');
+		foreach($DB_TAB as $DB_ROW)
+		{
+			${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
+		}
+
+	
+		if (isset($connexion_mode) && $connexion_mode = 'ssaml' && isset($connexion_nom) && $connexion_nom == 'configured_source') {
+			//on saute la page d'acceuil
+			if ($PAGE == 'public_accueil') {
+				header("Location: ./index.php?page=compte_accueil");
+				die();
+			}
+			$_SESSION['AUTH_SIMPLESAML_SOURCE'] = $auth_simpleSAML_source;
+			include_once(dirname(dirname(__FILE__)).'/_lib/SimpleSAMLphp/lib/_autoload.php');
+			$auth = new SimpleSAML_Auth_SacocheSimple();
+			if (!$auth->isAuthenticated()) {
+				//purge des attributs de session sacoche
+				unset($_SESSION['USER_PROFIL']);
+				unset($_SESSION['USER_ID']);
+				unset($_SESSION['USER_ID_ENT']);
+				unset($_SESSION['USER_ID_GEPI']);
 			}
 			
-			require_once(dirname(__FILE__).'/fonction_divers.php');
-			maj_base_si_besoin($BASE);
+			//on forge une extension saml pour tramsmettre l'établissement précisé dans sacoche
+			$ext = array();
+			if ($BASE != 0) {
+				$dom = new DOMDocument();
+				$ce = $dom->createElementNS('gepi_name_space', 'gepi_name_space:organization', $BASE);
+				$ext[] = new SAML2_XML_Chunk($ce);
+			}
+			$auth_params = array('saml:Extensions' => $ext);
+			if (isset($_REQUEST['source'])) {
+				$auth_params['multiauth:preselect'] = $_REQUEST['source'];
+			}
+			setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'/');//l'utilisateur est bien authentifié pour cet établissement, on le met en cookie
+			
+			$auth->requireAuth($auth_params);//authentification
+	
+			
+			$attr = $auth->getAttributes();
+			
+			if (//si l'utilisateur est authentifié mais que il n'est pas chargé en session ou que c'est un autre utilisateur en session on charge le nouvel utilisateur
+				!isset($_SESSION['USER_ID']) || 
+				(
+					isset($attr['USER_ID'][0]) && $attr['USER_ID'][0] != $_SESSION['USER_ID']
+				) ||
+				!isset($_SESSION['USER_ID_ENT']) || 
+				(
+					isset($attr['USER_ID_ENT'][0]) && $attr['USER_ID_ENT'][0] != $_SESSION['USER_ID_ENT']
+				)
+				
+			) {
+				//l'utilisateur est authentifié mais les attributs ne sont pas encore chargés en session
+//				require_once(dirname(__FILE__).'/fonction_divers.php');
+//				require_once(dirname(__FILE__).'/../_lib/DB/DB.class.php');
+//				require_once(dirname(__FILE__)."/fonction_requetes_structure.php");
+//				require_once(dirname(__FILE__)."/../__private/mysql/serveur_sacoche_structure.php");
+//				require_once(dirname(__FILE__).'/class.DB.config.sacoche_structure.php');
+							
+				if (isset($attr['USER_ID'][0])) {
+					//si on a un attribut USER_ID c'est qu'on a une authentification locale
+					if ($attr['USER_ID'][0] == 0) {
+						enregistrer_informations_session_webmestre();
+					} else {
+						$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id('normal',$attr['USER_ID'][0]);
+						require_once(dirname(__FILE__).'/fonction_divers.php');
+						enregistrer_session_user($BASE,$DB_ROW);
+					}
+				} else {
+					//si on a pas d'attribut USER_ID c'est qu'on a une authentification externe. On va rechercher sur l'attribut USER_ID_ENT
+					$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id('gepi',$attr['USER_ID_ENT'][0]);
+					$user_id = -1;
+					if(!count($DB_ROW)) {
+						//l'utilisateur n'est pas dans la base on va l'importer
+						//mais avant, on vérifie qu'il n'y pas déja un utilisateur avec ce même login
+						$login = $attr['USER_ID_ENT'][0];
+						$DB_SQL = 'SELECT sacoche_user.* FROM sacoche_user WHERE user_login=:login ';
+						$DB_VAR = array(':login'=>$login);
+						$DB_ROW_TEST = DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+						if (count($DB_ROW_TEST)) {
+							$login .= '_gepi';
+						}
+						$user_id = DB_STRUCTURE_ajouter_utilisateur(
+							'', //sconet_id
+							'', //sconet_num
+							'', //reference
+							$attr['USER_PROFIL'][0],
+							$attr['USER_NOM'][0],
+							$attr['USER_PRENOM'][0],
+							$login, //on met l'id gepi (qui correspond au login gepi) pour le user_login
+							'', //pas de password pour une authentification externe
+							'', //classe
+							$attr['USER_ID_ENT'][0],
+							$attr['USER_ID_GEPI'][0]
+							);
+					} else {
+						$user_id = (int) $DB_ROW['user_id'];
+					}
+					
+					//on va mettre à jours l'utilisateur avec les données transmises
+					$DB_VAR = array();
+					if (isset($attr['USER_PROFIL'])) $DB_VAR[':profil'] = $attr['USER_PROFIL'][0];
+					if (isset($attr['USER_NOM'])) $DB_VAR[':nom'] = $attr['USER_NOM'][0];
+					if (isset($attr['USER_PRENOM'])) $DB_VAR[':prenom'] = $attr['USER_PRENOM'][0];
+					if (isset($attr['USER_ID_GEPI'])) $DB_VAR[':id_gepi'] = $attr['USER_ID_GEPI'][0];
+					if (!empty($DB_VAR)) DB_STRUCTURE_modifier_utilisateur($user_id,$DB_VAR);
+					//on met à jour les matières
+					if (isset($attr['matieres'])) {
+						// Récupérer la liste des matiere_id
+						$DB_SQL = 'SELECT matiere_id FROM sacoche_matiere ';
+						$DB_SQL.= 'WHERE matiere_ref=:matiere_ref limit 1;';
+						foreach($attr['matieres'] as $matiere_ref) {
+							$DB_VAR = array(':matiere_ref'=>$matiere_ref);
+							$DB_ROW = DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+							if(count($DB_ROW)) {
+								DB_STRUCTURE_modifier_liaison_professeur_matiere($user_id,$DB_ROW['matiere_id'],true);
+							}
+						}
+					}	
+					$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur('gepi',$attr['USER_ID_GEPI'][0]);
+					DB_STRUCTURE_modifier_date('connexion',$DB_ROW['user_id']);
+					$result = enregistrer_session_user($BASE,$DB_ROW);
+					if ($result != null) {
+						echo 'il y a une erreur car normalement on vient d enregistrer le profil mais il ne semble pas être dans la base : '.$result;
+					}
+				}
+				
+				require_once(dirname(__FILE__).'/fonction_divers.php');
+				maj_base_si_besoin($BASE);
+			}
 		}
 	}
 	

@@ -30,7 +30,6 @@
 
 // Paramétrage de la session
 define('SESSION_NOM','SACoche-session');
-require_once(dirname(__FILE__).'/../__private/config/constantes.php');
 
 //on précise un chemin de base pour le cookie, utile en cas de plusieurs applications sur le même serveur
 $cookiePath = parse_url(HEBERGEUR_ADRESSE_SITE,PHP_URL_PATH);

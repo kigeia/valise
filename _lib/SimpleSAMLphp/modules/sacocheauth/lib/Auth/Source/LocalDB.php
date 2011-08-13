@@ -63,28 +63,36 @@ class sspmod_sacocheauth_Auth_Source_LocalDB extends sspmod_core_Auth_UserPassBa
 		assert('is_string($password)');
 
 		$path = dirname(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))))));
-		require_once("$path/__private/config/constantes.php");
-		if (!defined('SACoche')) {
-			define('SACoche','index');
-		}
-		require_once("$path/_inc/constantes.php");
-		require_once("$path/__private/mysql/serveur_sacoche_structure.php");
-		require_once("$path/_inc/class.DB.config.sacoche_structure.php");
-		require_once("$path/_inc/fonction_divers.php");
 		
 		$auth_resultat = '';
 		if(($this->profil=='webmestre') && ($login=='webmestre') && ($password!='') )
 		{// Pour le webmestre d'un serveur
+			require_once("$path/_inc/fonction_divers.php");
 			$auth_resultat = tester_authentification_webmestre($password);
 		} else if(($this->profil=='normal') && ($login!='') && ($password!='') )
 		{// Pour un utilisateur normal, y compris un administrateur
-			require_once("$path/_inc/fonction_requetes_structure.php");
-			require_once("$path/_lib/DB/DB.class.php");
-			if (isset($_COOKIE[COOKIE_STRUCTURE])) {
-				$BASE= $_COOKIE[COOKIE_STRUCTURE];
-			} else {
-				$BASE=0;
+			$path = dirname(dirname(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__))))))));
+			if (!defined('SACoche')) {
+				define('SACoche','ssaml');
 			}
+			require_once("$path/_inc/constantes.php");
+			$BASE = 0;
+			if (isset($_SESSION['BASE'])) {
+				$BASE = $_SESSION['BASE'];
+			} elseif (isset($_REQUEST['BASE'])) {
+				$BASE = $_REQUEST['BASE'];
+			} elseif (isset($_REQUEST['ID'])) {
+				$BASE = $_REQUEST['ID'];
+			} elseif (isset($_COOKIE[COOKIE_STRUCTURE])) {
+				$BASE = $_COOKIE[COOKIE_STRUCTURE];
+			}
+			if ($BASE == 0) {
+				require_once("$path/__private/mysql/serveur_sacoche_structure.php");
+			} else {
+				require_once("$path/__private/mysql/serveur_sacoche_structure_$BASE.php");
+			}
+			require_once($path.'/_inc/class.DB.config.sacoche_structure.php');
+			require_once("$path/_inc/fonction_divers.php");
 			list($auth_resultat,$auth_DB_ROW) = tester_authentification_user($BASE,$login,$password,$mode_connection='normal');
 		}
 		

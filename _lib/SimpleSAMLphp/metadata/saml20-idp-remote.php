@@ -16,7 +16,20 @@ $metadata['gepi-idp'] = array(
 
 $path = dirname(dirname(dirname(dirname(__FILE__))));
 require_once("$path/__private/config/constantes.php");
-require_once("$path/__private/mysql/serveur_sacoche_structure.php");
+if (!defined('SACoche')) {
+	define('SACoche','ssaml');
+}
+require_once("$path/_inc/constantes.php");
+$BASE = 0;
+if (isset($_COOKIE[COOKIE_STRUCTURE])) {
+	$BASE = $_COOKIE[COOKIE_STRUCTURE];
+}
+
+if ($BASE == 0) {
+	require_once("$path/__private/mysql/serveur_sacoche_structure.php");
+} else {
+	require_once("$path/__private/mysql/serveur_sacoche_structure_$BASE.php");
+}
 require_once("$path/_inc/class.DB.config.sacoche_structure.php");
 require_once("$path/_inc/fonction_requetes_structure.php");
 require_once("$path/_lib/DB/DB.class.php");

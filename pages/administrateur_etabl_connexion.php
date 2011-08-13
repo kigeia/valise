@@ -52,12 +52,7 @@ foreach($tab_connexion_info['cas'] as $connexion_nom => $tab_info)
 }
 
 
-$path = dirname(dirname((__FILE__)));
-require_once("$path/__private/config/constantes.php");
-require_once("$path/__private/mysql/serveur_sacoche_structure.php");
-require_once("$path/_inc/class.DB.config.sacoche_structure.php");
-require_once("$path/_inc/fonction_requetes_structure.php");
-    $DB_TAB = DB_STRUCTURE_lister_parametres('"auth_simpleSAML_source","gepi_url","gepi_rne","gepi_certificat_empreinte","integration_gepi"');
+$DB_TAB = DB_STRUCTURE_lister_parametres('"auth_simpleSAML_source","gepi_url","gepi_rne","gepi_certificat_empreinte","integration_gepi"');
 foreach($DB_TAB as $DB_ROW)
 {
 	${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
@@ -66,6 +61,15 @@ foreach($DB_TAB as $DB_ROW)
 $tab_param_js .= 'tab_param["gepi"] = new Array();';
 foreach($tab_connexion_info['gepi'] as $connexion_nom => $tab_info)
 {
+	if ($gepi_url == '') {
+		$gepi_url = $tab_connexion_info['gepi']['saml']['saml_url'];
+	}
+	if ($gepi_rne == '') {
+		$gepi_rne = $tab_connexion_info['gepi']['saml']['saml_rne'];
+	}
+	if ($gepi_certificat_empreinte == '') {
+		$gepi_certificat_empreinte =  $tab_connexion_info['gepi']['saml']['saml_certif'];
+	}
 	$tab_param_js .= 'tab_param["gepi"]["'.$connexion_nom.'"]="'.$gepi_url.']¤['.$gepi_rne.']¤['.$gepi_certificat_empreinte.'";';
 }
 

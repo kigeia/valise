@@ -19,20 +19,13 @@ require_once("$path/__private/config/constantes.php");
 if (!defined('SACoche')) {
 	define('SACoche','ssaml');
 }
-require_once("$path/_inc/constantes.php");
-$BASE = 0;
-if (isset($_COOKIE[COOKIE_STRUCTURE])) {
-	$BASE = $_COOKIE[COOKIE_STRUCTURE];
+require_once($path.'/_inc/config_serveur.php');
+$return_base = load_sacoche_mysql_config();
+if ($return_base === false) {
+	echo 'erreur : pas de base trouvée<br/>';
+	var_dump(debug_backtrace());
+	die;
 }
-
-if ($BASE == 0) {
-	require_once("$path/__private/mysql/serveur_sacoche_structure.php");
-} else {
-	require_once("$path/__private/mysql/serveur_sacoche_structure_$BASE.php");
-}
-require_once("$path/_inc/class.DB.config.sacoche_structure.php");
-require_once("$path/_inc/fonction_requetes_structure.php");
-require_once("$path/_lib/DB/DB.class.php");
 
 $DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url","gepi_rne","gepi_certificat_empreinte"');
 foreach($DB_TAB as $DB_ROW)

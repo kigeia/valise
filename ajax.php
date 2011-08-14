@@ -56,7 +56,6 @@ if( (!is_file($fichier_constantes)) && ($PAGE!='public_installation') )
 {
 	affich_message_exit($titre='Informations hébergement manquantes',$contenu='Informations concernant l\'hébergeur manquantes.<br /><a href="./index.php?page=public_installation">Procédure d\'installation du site SACoche.</a>');
 }
-require_once($fichier_constantes);
 
 // Ouverture de la session et gestion des droits d'accès
 require_once('./_inc/tableau_droits.php');

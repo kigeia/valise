@@ -87,7 +87,7 @@ class SimpleSAML_Auth_SacocheSimple extends SimpleSAML_Auth_Simple {
 			}
 		}
 		
-		if (!isset($params['core:organization'])) {
+		if (isset($params['core:organization'])) {
 			//on passe le paramètre en extension
 			$ext = array();
 			$dom = new DOMDocument();

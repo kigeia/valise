@@ -657,9 +657,8 @@ function tester_authentification_user($BASE,$login,$password,$mode_connection)
  * 
  * @param int     $BASE
  * @param array   $DB_ROW   ligne issue de la table sacoche_user correspondant à l'utilisateur qui se connecte.
- * @return string message d'erreur ou null si pas d'erreur.
+ * @return void
  */
-
 function enregistrer_session_user($BASE,$DB_ROW)
 {
 	// Enregistrer en session le numéro de la base
@@ -724,7 +723,7 @@ function enregistrer_session_user($BASE,$DB_ROW)
 	actualiser_style_session();
 	// Juste pour davantage de lisibilité si besoin de debug...
 	ksort($_SESSION);
-	}
+}
 
 /**
  * Compléter la session avec les informations de style dépendant du daltonisme + des choix paramétrés au niveau de l'établissement (couleurs, codes de notation).

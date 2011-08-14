@@ -2214,7 +2214,7 @@ function DB_STRUCTURE_tester_utilisateur_idENT($user_id_ent,$user_id=false)
  *
  * @param string $user_id_gepi
  * @param int    $user_id       inutile si recherche pour un ajout, mais id à éviter si recherche pour une modification
- * @return int
+ * @return int $user_id ou null si non trouvé
  */
 function DB_STRUCTURE_tester_utilisateur_idGepi($user_id_gepi,$user_id=false)
 {
@@ -2241,7 +2241,7 @@ function DB_STRUCTURE_tester_utilisateur_idGepi($user_id_gepi,$user_id=false)
  * @param int    $user_sconet_id
  * @param string $user_profil
  * @param int    $user_id       inutile si recherche pour un ajout, mais id à éviter si recherche pour une modification
- * @return int
+ * @return int $user_id ou null si non trouvé
  */
 function DB_STRUCTURE_tester_utilisateur_SconetId($user_sconet_id,$user_profil,$user_id=false)
 {

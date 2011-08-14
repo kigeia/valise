@@ -127,8 +127,10 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 	$path = dirname(dirname(__FILE__));
 	require_once($path.'/_inc/config_serveur.php');
 	$BASE = load_sacoche_mysql_config();
-	
-	if ($BASE !== false) {
+	//connexion ssaml
+	if ($BASE !== false &&  //on ne teste pas la connexion ssaml si la base n'est pas connue
+		//on ne teste pas la connexion ssaml en mode public, sauf si on est sur la page d'acceuil et que la base est connue, car on va zapper la page d'auccueil
+		(!$TAB_PROFILS_AUTORISES['public'] || ($PAGE == 'public_accueil' && false === strpos($_SERVER['REQUEST_URI'],'ajax.php')))) { 
 		//si le return est false on ne passe pas dans cette branche car on est certainement en procédure d'instalation
 		setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'');
 		require_once($path.'/_inc/fonction_requetes_structure.php');

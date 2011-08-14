@@ -220,7 +220,7 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 							$attr['USER_NOM'][0],
 							$attr['USER_PRENOM'][0],
 							$login, //on met l'id gepi (qui correspond au login gepi) pour le user_login
-							'', //pas de password pour une authentification externe
+							fabriquer_mdp(), //password random pour une authentification externe
 							'', //classe
 							$attr['USER_ID_ENT'][0],
 							$attr['USER_ID_GEPI'][0]

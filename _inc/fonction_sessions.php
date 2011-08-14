@@ -189,12 +189,6 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 				
 			) {
 				//l'utilisateur est authentifié mais les attributs ne sont pas encore chargés en session
-//				require_once(dirname(__FILE__).'/fonction_divers.php');
-//				require_once(dirname(__FILE__).'/../_lib/DB/DB.class.php');
-//				require_once(dirname(__FILE__)."/fonction_requetes_structure.php");
-//				require_once(dirname(__FILE__)."/../__private/mysql/serveur_sacoche_structure.php");
-//				require_once(dirname(__FILE__).'/class.DB.config.sacoche_structure.php');
-							
 				if (isset($attr['USER_ID'][0])) {
 					//si on a un attribut USER_ID c'est qu'on a une authentification locale
 					if ($attr['USER_ID'][0] == 0) {

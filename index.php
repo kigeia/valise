@@ -60,7 +60,7 @@ if(!isset($tab_droits[$PAGE]))
 
 if (isset($_REQUEST['f_action']) && $_REQUEST['f_action'] == 'logout') {
 	open_old_session();
-	if (isset($_SESSION['BASE'])) {
+	if (isset($_SESSION['USER_PROFIL'])) {
 		if ($_SESSION['CONNEXION_MODE'] == 'cas') {
 			$url = $_SESSION['CAS_SERVEUR_HOST'];
 			close_session();
@@ -73,10 +73,13 @@ if (isset($_REQUEST['f_action']) && $_REQUEST['f_action'] == 'logout') {
 			header("Location: ".$url);
 			die;
 		} else if ($_SESSION['CONNEXION_MODE'] == 'ssaml' && $_SESSION['CONNEXION_NOM'] == 'configured_source') {
-			include_once(dirname(dirname(__FILE__)).'/_lib/SimpleSAMLphp/lib/_autoload.php');
+			include_once(dirname(__FILE__).'/_lib/SimpleSAMLphp/lib/_autoload.php');
 			$auth = new SimpleSAML_Auth_SacocheSimple();
-			$auth->logout();
+			if ($auth->isAuthenticated()) {
+				$auth->logout();
+			}
 			close_session();
+			header("Location: ./index.php");
 			die;
 		}
 	}
@@ -278,7 +281,7 @@ entete();
 		echo'		<span class="button"><img alt="'.$_SESSION['USER_PROFIL'].'" src="./_img/menu/profil_'.$_SESSION['USER_PROFIL'].'.png" /> '.html($_SESSION['USER_PRENOM'].' '.$_SESSION['USER_NOM']).' ('.$_SESSION['USER_PROFIL'].')</span>'."\r\n";
 		echo'		<span class="button"><span id="clock"><img alt="" src="./_img/clock_fixe.png" /> '.$_SESSION['DUREE_INACTIVITE'].' min</span><img alt="" src="./_img/point.gif" /></span>'."\r\n";
 		echo'		<button id="deconnecter"><img alt="" src="./_img/bouton/deconnecter.png" />';
-		if ($_SESSION['CONNEXION_MODE'] == 'cas' || ($_SESSION['CONNEXION_MODE'] == 'ssaml' && $_SESSION['CONNEXION_NOM'] == 'configured_source') ) {
+		if ($_SESSION['CONNEXION_MODE'] == 'cas' || ($_SESSION['CONNEXION_MODE'] == 'ssaml' && $_SESSION['CONNEXION_NOM'] == 'configured_source' && false !== strpos($_SESSION['AUTH_SIMPLESAML_SOURCE'], 'distant')) ) {
 			echo 'Retour au portail';
 		} else {
 			echo 'Déconnexion';

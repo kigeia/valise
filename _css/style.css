@@ -324,7 +324,7 @@ table#statistiques td {text-align:center}
 /* Marqueur invisible pour le tri d'un tableau                                                         */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-table i {display:none}
+/*table i {display:none} désactivé car empeche de voir les ligne de stacktrace php*/
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Infobulles                                                                                          */

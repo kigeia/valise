@@ -109,12 +109,9 @@ function init_session()
  */
 function close_session()
 {
-//	include_once(dirname(dirname(__FILE__)).'/_lib/SimpleSAMLphp/lib/_autoload.php');
-//	$auth = new SimpleSAML_Auth_Simple(SIMPLESAML_AUTHSOURCE);
-//	if ($auth->isAuthenticated()) {
-//		$auth->logout();
-//	}
-	session_start();
+	if (session_id() == '') {
+		session_start();
+	}
 	$_SESSION = array();
 	setcookie(session_name(),'',time()-42000,COOKIE_PATH);
 	session_destroy();
@@ -128,50 +125,15 @@ function close_session()
  */
 function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 {
-	
-	//récupération de l'organisation (appelé rne ou base)
-	//pour sacoche c'est dans la requete : id, f_base, ou le cookie, ou dans la session
-	if (isset($_SESSION) && isset($_SESSION['BASE'])) {
-		$BASE = $_SESSION['BASE'];
-	} else {
-		if (isset($_REQUEST['id'])) {
-			$BASE = $_REQUEST['id'];
-		} else if (isset($_REQUEST['f_base'])) {
-			$BASE= $_REQUEST['f_base'];
-		} else {
-			if (isset($_COOKIE[COOKIE_STRUCTURE])) {
-				$BASE = $_COOKIE[COOKIE_STRUCTURE];
-			}
-		}
-		if (isset($BASE)) {
-			$_SESSION['BASE'] = $BASE;
-			setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'');
-		} else {
-			$BASE = 0;
-		}
-	}
-	
-	//on regarde si on peut initialiser la session
 	$path = dirname(dirname(__FILE__));
-	if ($BASE == 0) {
-		if (is_file("$path/__private/mysql/serveur_sacoche_structure_0.php")) {
-			require_once("$path/__private/mysql/serveur_sacoche_structure.php");
-		} else if (is_file("$path/__private/mysql/serveur_sacoche_structure.php")) {
-			require_once("$path/__private/mysql/serveur_sacoche_structure.php");	
-		}
-	} else {
-		if (is_file("$path/__private/mysql/serveur_sacoche_structure_$BASE.php")) {
-			require_once("$path/__private/mysql/serveur_sacoche_structure_$BASE.php");
-		}
-	}
-
-	if (!defined('SACOCHE_STRUCTURE_BD_HOST')) {
-		//on est dans la procédure d'instalation probablement, ce n'est pas la peine de tester le mode d'identification, on ne va accepter après que les pages publiques
-	} else {
-		require_once("$path/_inc/class.DB.config.sacoche_structure.php");
-		require_once(dirname(__FILE__)."/fonction_requetes_structure.php");
-		require_once("$path/_lib/DB/DB.class.php");
-		require_once(dirname(__FILE__).'/fonction_divers.php');
+	require_once($path.'/_inc/config_serveur.php');
+	$BASE = load_sacoche_mysql_config();
+	
+	if ($BASE !== false) {
+		//si le return est false on ne passe pas dans cette branche car on est certainement en procédure d'instalation
+		setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'');
+		require_once($path.'/_inc/fonction_requetes_structure.php');
+		require_once($path.'/_inc/fonction_divers.php');
 		$DB_TAB = DB_STRUCTURE_lister_parametres('"connexion_mode","connexion_nom","auth_simpleSAML_source"');
 		foreach($DB_TAB as $DB_ROW)
 		{

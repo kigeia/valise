@@ -75,25 +75,14 @@ class sspmod_sacocheauth_Auth_Source_LocalDB extends sspmod_core_Auth_UserPassBa
 			if (!defined('SACoche')) {
 				define('SACoche','ssaml');
 			}
-			require_once("$path/_inc/constantes.php");
-			$BASE = 0;
-			if (isset($_SESSION['BASE'])) {
-				$BASE = $_SESSION['BASE'];
-			} elseif (isset($_REQUEST['BASE'])) {
-				$BASE = $_REQUEST['BASE'];
-			} elseif (isset($_REQUEST['ID'])) {
-				$BASE = $_REQUEST['ID'];
-			} elseif (isset($_COOKIE[COOKIE_STRUCTURE])) {
-				$BASE = $_COOKIE[COOKIE_STRUCTURE];
+			
+			require_once($path.'/_inc/config_serveur.php');
+			$return_base = load_sacoche_mysql_config();
+			if ($return_base === false) {
+				throw new SimpleSAML_Error_Excepition('Impossible de charger la base');
 			}
-			if ($BASE == 0) {
-				require_once("$path/__private/mysql/serveur_sacoche_structure.php");
-			} else {
-				require_once("$path/__private/mysql/serveur_sacoche_structure_$BASE.php");
-			}
-			require_once($path.'/_inc/class.DB.config.sacoche_structure.php');
 			require_once("$path/_inc/fonction_divers.php");
-			list($auth_resultat,$auth_DB_ROW) = tester_authentification_user($BASE,$login,$password,$mode_connection='normal');
+			list($auth_resultat,$auth_DB_ROW) = tester_authentification_user($return_base,$login,$password,$mode_connection='normal');
 		}
 		
 		

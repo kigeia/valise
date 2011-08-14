@@ -57,7 +57,7 @@ INSERT INTO sacoche_parametre VALUES
 ( "css_background-color_A"         , "#99ff99" ),
 ( "gepi_url"                       , "" ),
 ( "gepi_rne"                       , "" ),
-( "gepi_certificat_empreinte"      , "" ),
+( "gepi_certificat_empreinte"      , "AA:FD:FF:98:48:18:A8:56:73:32:73:8F:33:53:04:8C:36:9B:E6:B2" ),
 ( "note_image_style"               , "Lomer" ),
 ( "note_texte_RR"                  , "RR" ),
 ( "note_texte_R"                   , "R" ),

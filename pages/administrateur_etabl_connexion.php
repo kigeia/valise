@@ -133,7 +133,7 @@ $url_sso = SERVEUR_ADRESSE.'/?sso'.$get_base;
 	<?php echo $choix ?>
 	<p><span class="tab">
 	<input type="checkbox" name="integration_gepi" value="yes" <?php if ($integration_gepi == 'yes') {echo 'checked';} ?>/> Utiliser l'intégration avec gépi (Ce paramètre est indépendemment du mode d'identification, il permet de mettre des liens vers votre application gepi)
-	<br/><label class="tab" for="gepi_saml_url">Adresse (URL) <img alt="" src="./_img/bulle_aide.png" title="Adresse web de GEPI.<br />http://adresse_web_de_mon_gepi" /> :</label><input id="gepi_saml_url" name="gepi_saml_url" size="30" type="text" value="<?php echo $gepi_url; ?>" /><br />
+	<br/><label class="tab" for="gepi_integration_url">Adresse (URL) <img alt="" src="./_img/bulle_aide.png" title="Adresse web de GEPI.<br />http://adresse_web_de_mon_gepi" /> :</label><input id="gepi_integration_url" name="gepi_integration_url" size="30" type="text" value="<?php echo $gepi_url; ?>" /><br />
 	
 	</span></p>
 

@@ -34,6 +34,7 @@ $cas_serveur_host = (isset($_POST['cas_serveur_host'])) ? clean_texte($_POST['ca
 $cas_serveur_port = (isset($_POST['cas_serveur_port'])) ? clean_entier($_POST['cas_serveur_port']) : 0;
 $cas_serveur_root = (isset($_POST['cas_serveur_root'])) ? clean_texte($_POST['cas_serveur_root'])  : '';
 $gepi_saml_url    = (isset($_POST['gepi_saml_url']))    ? clean_texte($_POST['gepi_saml_url'])     : '';
+$gepi_integration_url    = (isset($_POST['gepi_integration_url']))    ? clean_texte($_POST['gepi_integration_url'])     : '';
 $gepi_saml_rne    = (isset($_POST['gepi_saml_rne']))    ? clean_texte($_POST['gepi_saml_rne'])     : '';
 $gepi_saml_certif = (isset($_POST['gepi_saml_certif'])) ? clean_texte($_POST['gepi_saml_certif'])  : '';
 $auth_simpleSAML_source = (isset($_POST['auth_simpleSAML_source'])) ? clean_texte($_POST['auth_simpleSAML_source'])  : '';
@@ -50,7 +51,17 @@ if(!isset($tab_connexion_info[$f_connexion_mode][$f_connexion_nom]))
 }
 
 DB_STRUCTURE_modifier_parametres( array('integration_gepi'=>$integration_gepi) );
-
+$_SESSION['INTEGRATION_GEPI'] = $integration_gepi;
+if ($integration_gepi != 'no') {
+	$gepi_integration_url = (substr($gepi_integration_url,-1)=='/') ? substr($gepi_integration_url,0,-1) : $gepi_integration_url ;
+	$fichier_distant = url_get_contents($gepi_integration_url.'/bandeau.css'); // Le mieux serait d'appeler le fichier du web-services... si un jour il y en a un...
+	if(substr($fichier_distant,0,6)=='Erreur')
+	{
+		exit('Adresse d\'intégration de Gepi incorrecte [ '.$fichier_distant.' ]');
+	}
+	DB_STRUCTURE_modifier_parametres( array('gepi_url'=>$gepi_integration_url) );
+	$_SESSION['GEPI_URL'] = $gepi_integration_url;
+}
 if($f_connexion_mode=='normal')
 {
 	DB_STRUCTURE_modifier_parametres( array('connexion_mode'=>$f_connexion_mode,'connexion_nom'=>$f_connexion_nom) );

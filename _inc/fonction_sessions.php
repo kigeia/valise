@@ -109,12 +109,11 @@ function init_session()
  */
 function close_session()
 {
-	if (session_id() == '') {
-		session_start();
+	if (defined('SID')){
+		session_destroy();
+		$_SESSION = array();
+		setcookie(session_name(),'',time()-42000,COOKIE_PATH);
 	}
-	$_SESSION = array();
-	setcookie(session_name(),'',time()-42000,COOKIE_PATH);
-	session_destroy();
 }
 
 /*

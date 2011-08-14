@@ -104,35 +104,47 @@ mb_internal_encoding(CHARSET);
  */
 
 function load_sacoche_mysql_config($BASE = null) {
+	
 	$path = dirname(dirname(__FILE__));
-	//récupération de l'organisation (appelé rne ou base)
-	//pour sacoche c'est dans la requete : id, f_base, ou le cookie, ou dans la session
-	require_once($path.'/_inc/constantes.php');
-	if (isset($_REQUEST['id'])) {
-		$BASE = $_REQUEST['id'];
-	} else if (isset($_REQUEST['f_base'])) {
-		$BASE = $_REQUEST['f_base'];
-	} else if (isset($_REQUEST['base'])) {
-		$BASE = $_REQUEST['base'];
-	} else if (isset($_COOKIE) && isset($_COOKIE[COOKIE_STRUCTURE])) {
-		$BASE = $_COOKIE[COOKIE_STRUCTURE];
-	} else if (isset($_SESSION) && isset($_SESSION['BASE'])) {
-		$BASE = $_SESSION['BASE'];
-	}
-	if (isset($BASE) && $BASE != 0) {
-		//on le met dans la session, ça peut toujours servir
-		$_SESSION['BASE'] = $BASE;
-		//on regarde si le fichier de configuration existe
-		if (is_file($path.'/__private/mysql/serveur_sacoche_structure_'.$BASE.'.php')) {
-			require_once($path.'/__private/mysql/serveur_sacoche_structure_'.$BASE.'.php');
-		} else {
-			return false;
-		}
+	
+	if (!file_exists($path.'/__private/config/constantes.php')) {
+		return false;
 	} else {
+		require_once($path.'/__private/config/constantes.php');
+	}
+	
+	if (HEBERGEUR_INSTALLATION == 'mono-structure') {
 		//on regarde si le fichier de configuration existe
 		if (is_file($path.'/__private/mysql/serveur_sacoche_structure.php')) {
 			require_once($path.'/__private/mysql/serveur_sacoche_structure.php');
 			$BASE = 0;
+		} else {
+			return false;
+		}
+	} else {
+		//récupération de l'organisation (appelé rne ou base)
+		//pour sacoche c'est dans la requete : id, f_base, ou le cookie, ou dans la session
+		require_once($path.'/_inc/constantes.php');
+		if (isset($_REQUEST['id'])) {
+			$BASE = $_REQUEST['id'];
+		} else if (isset($_REQUEST['f_base'])) {
+			$BASE = $_REQUEST['f_base'];
+		} else if (isset($_REQUEST['base'])) {
+			$BASE = $_REQUEST['base'];
+		} else if (isset($_COOKIE) && isset($_COOKIE[COOKIE_STRUCTURE])) {
+			$BASE = $_COOKIE[COOKIE_STRUCTURE];
+		} else if (isset($_SESSION) && isset($_SESSION['BASE'])) {
+			$BASE = $_SESSION['BASE'];
+		}
+		if (isset($BASE) && $BASE != 0) {
+			//on le met dans la session, ça peut toujours servir
+			$_SESSION['BASE'] = $BASE;
+			//on regarde si le fichier de configuration existe
+			if (is_file($path.'/__private/mysql/serveur_sacoche_structure_'.$BASE.'.php')) {
+				require_once($path.'/__private/mysql/serveur_sacoche_structure_'.$BASE.'.php');
+			} else {
+				return false;
+			}
 		} else {
 			return false;
 		}

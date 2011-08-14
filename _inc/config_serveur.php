@@ -25,6 +25,8 @@
  * 
  */
 
+require_once(dirname(__FILE__).'/constantes.php');
+
 // Vérifier la version de PHP
 $version_php_mini = '5.1';
 if(version_compare(PHP_VERSION,$version_php_mini,'<'))
@@ -78,8 +80,10 @@ ini_set('magic_quotes_sybase',0);
 ini_set('session.gc_maxlifetime',3000);
 // Le module doit utiliser seulement les cookies pour stocker les identifiants de sessions du côté du navigateur.
 // Protection contre les attaques qui utilisent des identifiants de sessions dans les URL.
-ini_set('session.use_trans_sid', 0); 
-ini_set('session.use_only_cookies',1);
+if (session_id() == '') {
+	ini_set('session.use_trans_sid', 0); 
+	ini_set('session.use_only_cookies',1);
+}
 
 // Ne pas autoriser les balises courtes d'ouverture de PHP (et possibilité d'utiliser XML sans passer par echo).
 ini_set('short_open_tag',0);
@@ -90,5 +94,54 @@ ini_set('zend.ze1_compatibility_mode',0);
 
 // Modifier l'encodage interne pour les fonctions mb_* (manipulation de chaînes de caractères multi-octets)
 mb_internal_encoding(CHARSET);
+
+/**
+ * load_sacoche_mysql_configD
+ * Charge la base de donnée avec le bon numéro de base. Retourne faux si non chargé.
+ *
+ * @param int $BASE
+ * @return false | int | string false si la base n'est pas chargée, le numéro de la base si elle est chargée
+ */
+
+function load_sacoche_mysql_config($BASE = null) {
+	$path = dirname(dirname(__FILE__));
+	//récupération de l'organisation (appelé rne ou base)
+	//pour sacoche c'est dans la requete : id, f_base, ou le cookie, ou dans la session
+	require_once($path.'/_inc/constantes.php');
+	if (isset($_REQUEST['id'])) {
+		$BASE = $_REQUEST['id'];
+	} else if (isset($_REQUEST['f_base'])) {
+		$BASE = $_REQUEST['f_base'];
+	} else if (isset($_REQUEST['base'])) {
+		$BASE = $_REQUEST['base'];
+	} else if (isset($_COOKIE) && isset($_COOKIE[COOKIE_STRUCTURE])) {
+		$BASE = $_COOKIE[COOKIE_STRUCTURE];
+	} else if (isset($_SESSION) && isset($_SESSION['BASE'])) {
+		$BASE = $_SESSION['BASE'];
+	}
+	if (isset($BASE) && $BASE != 0) {
+		//on le met dans la session, ça peut toujours servir
+		$_SESSION['BASE'] = $BASE;
+		//on regarde si le fichier de configuration existe
+		if (is_file($path.'/__private/mysql/serveur_sacoche_structure_'.$BASE.'.php')) {
+			require_once($path.'/__private/mysql/serveur_sacoche_structure_'.$BASE.'.php');
+		} else {
+			return false;
+		}
+	} else {
+		//on regarde si le fichier de configuration existe
+		if (is_file($path.'/__private/mysql/serveur_sacoche_structure.php')) {
+			require_once($path.'/__private/mysql/serveur_sacoche_structure.php');
+			$BASE = 0;
+		} else {
+			return false;
+		}
+	}
+	
+	require_once($path.'/_inc/class.DB.config.sacoche_structure.php');
+	require_once($path.'/_inc/fonction_requetes_structure.php');
+	require_once($path.'/_lib/DB/DB.class.php');
+	return $BASE;
+}
 
 ?>

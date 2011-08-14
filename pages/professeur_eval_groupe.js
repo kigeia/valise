@@ -617,6 +617,10 @@ $(document).ready
 				$('#table_saisir').html("&nbsp;");
 				$('#zone_saisir').css("display","none");
 				$('#form0 , #form1').show('fast');
+				/*recharge l'évaluation*/
+				$('#form0').attr('f_action','Afficher_evaluations');
+				$('#form0').attr('f_devoir_id',$('#f_zone_saisir_devoir_id').val());
+				$('#form0').submit();
 				return(false);
 			}
 		);
@@ -1538,7 +1542,7 @@ $(document).ready
 		function retour_form_valide0(responseHTML)
 		{
 			initialiser_compteur();
-			if( (responseHTML.substring(0,4)!='<tr>') && (responseHTML!='') )
+			if( (responseHTML.substring(0,3)!='<tr') && (responseHTML!='') )
 			{
 				$('#ajax_msg0').removeAttr("class").addClass("alerte").html(responseHTML);
 			}

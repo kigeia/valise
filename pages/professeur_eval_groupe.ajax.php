@@ -47,6 +47,7 @@ $marge_min      = (isset($_POST['f_marge_min']))       ? clean_texte($_POST['f_m
 $couleur        = (isset($_POST['f_couleur']))         ? clean_texte($_POST['f_couleur'])               : '';
 $only_req       = (isset($_POST['f_restriction_req'])) ? true                                           : false;
 $gepi_cn_devoirs_id       = (isset($_POST['f_gepi_cn_devoirs_id'])) ? clean_texte($_POST['f_gepi_cn_devoirs_id'])  : null;
+$devoir_id       = (isset($_POST['f_devoir_id'])) ? clean_texte($_POST['f_devoir_id'])  : '';
 
 $dossier_export = './__tmp/export/';
 $fnom = 'saisie_'.$_SESSION['BASE'].'_'.$_SESSION['USER_ID'].'_'.$ref;
@@ -92,10 +93,12 @@ $nb_items = count($tab_items);
 //	Afficher une liste d'évaluations
 //	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-if( ($action=='Afficher_evaluations') && $aff_classe_txt && $aff_classe_id && ( $aff_periode || ($date_debut && $date_fin) ) )
+if( ($action=='Afficher_evaluations') && $devoir_id != '' || ($aff_classe_txt && $aff_classe_id && ( $aff_periode || ($date_debut && $date_fin) )) )
 {
 	// Restreindre la recherche à une période donnée, cas d'une date personnalisée
-	if($aff_periode==0)
+	if ($devoir_id != null) {
+		$DB_ROW = DB_STRUCTURE_recuperer_devoir($devoir_id);
+	} elseif($aff_periode==0)
 	{
 		// Formater les dates
 		$date_debut_mysql = convert_date_french_to_mysql($date_debut);
@@ -129,7 +132,7 @@ if( ($action=='Afficher_evaluations') && $aff_classe_txt && $aff_classe_id && ( 
 		$s = ($DB_ROW_DEVOIR['items_nombre']>1) ? 's' : '';
 		
 		// Afficher une ligne du tableau
-		echo'<tr>';
+		echo'<tr id='.$DB_ROW_DEVOIR['devoir_id'].'>';
 		echo	'<td><i>'.html($DB_ROW_DEVOIR['devoir_date']).'</i>'.html($date_affich).'</td>';
 		echo	'<td>'.html($date_visible).'</td>';
 		echo	'<td>'.html($DB_ROW_DEVOIR['groupe_nom']).'</td>';
@@ -265,6 +268,50 @@ if( (($action=='ajouter')||(($action=='dupliquer')&&($devoir_id))) && $date && $
 	echo	'<q class="saisir" title="Saisir les acquisitions des élèves à cette évaluation."></q>';
 	echo	'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
 	echo	'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
+	if ($gepi_cn_devoirs_id != null) {
+		$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url","gepi_rne", "integration_gepi"');
+		foreach($DB_TAB as $DB_ROW)
+		{
+			${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
+		}
+		if ($integration_gepi == 'yes' && $gepi_url != '' && $gepi_url != 'http://') {
+			echo '<input type="hidden" name="gepi_devoir_url" value="'.$gepi_url.'/cahier_notes/index.php?id_devoir='.$gepi_cn_devoirs_id.'&rne='.$gepi_rne.'"/>'; 
+			echo '<q class="retourner" title="Retourner sur gepi."></q>';
+
+			//on va construire un tableau des résultats de l'évaluation en pourcentage de réussite
+			// on passe en revue les évaluations disponibles, et on retient les notes exploitables
+			$output_array = array();
+			$tab_modele_bon = array('RR','R','V','VV');	// les notes prises en compte dans le calcul du score
+			//print_r($_SESSION['CALCUL_VALEUR']);die;
+			$DB_TAB = DB_STRUCTURE_lister_saisies_devoir($devoir_id2,$with_REQ=true);
+			foreach($DB_TAB as $DB_ROW_SASIE)
+			{
+				$id_gepi = $DB_ROW_SASIE['user_id_gepi'];
+				if (!isset($output_array[$id_gepi])) {
+					$output_array[$id_gepi] = 0;
+				}
+				if(in_array($DB_ROW_SASIE['saisie_note'],$tab_modele_bon)) {
+					$output_array[$id_gepi] += ($_SESSION['CALCUL_VALEUR'][$DB_ROW_SASIE['saisie_note']]/$DB_ROW_DEVOIR['items_nombre']);
+				}
+			}
+			echo '<q class="envoyer" title="Importer les notes sur gepi."></q>';
+
+			echo '<input type="hidden" name="gepi_retour_note_url" id="gepi_retour_note_url" value="'.$gepi_url.'/cahier_notes/saisie_notes.php">';
+			echo '<input type="hidden" name="import_sacoche" value="yes"/>';
+			echo '<input type="hidden" name="is_posted" value="yes"/>';
+			echo '<input type="hidden" name="rne" value="'.$gepi_rne.'"/>';
+			echo '<input type="hidden" name="id_devoir" value="'.$gepi_cn_devoirs_id.'"/>';
+			$i=0;
+			foreach($output_array as $id => $pourcent) {
+				echo '<input name="log_eleve['.$i.']" type="hidden" value="'.$id.'"/>';
+				echo '<input name="note_eleve['.$i.']" type="hidden" value="'.$pourcent.'"/>';
+				echo '<input name="comment_eleve['.$i.']" type="hidden" value=""/>';
+				$i = $i+1;
+			}
+			echo '<input type="hidden" name="indice_max_log_eleve" value="'.count($output_array).'"/>';
+			echo '</form>';
+		}
+	}
 	echo'</td>';
 	exit();
 }
@@ -388,7 +435,7 @@ if( ($action=='saisir') && $devoir_id && $groupe_type && $groupe_id && $date && 
 	$tab_affich[0][0].= '<label for="radio_souris"><input type="radio" id="radio_souris" name="mode_saisie" value="souris" /> <img alt="" src="./_img/pilot_mouse.png" /> Piloter à la souris</label> <img alt="" src="./_img/bulle_aide.png" title="Survoler une case du tableau avec la souris<br />puis cliquer sur une des images proposées." /><p />';
 	$tab_affich[0][0].= '<label for="check_largeur"><input type="checkbox" id="check_largeur" name="check_largeur" value="retrecir_largeur" /> <img alt="" src="./_img/retrecir_largeur.gif" /> Largeur optimale</label> <img alt="" src="./_img/bulle_aide.png" title="Diminuer la largeur des colonnes<br />si les élèves sont nombreux." /><br />';
 	$tab_affich[0][0].= '<label for="check_hauteur"><input type="checkbox" id="check_hauteur" name="check_hauteur" value="retrecir_hauteur" /> <img alt="" src="./_img/retrecir_hauteur.gif" /> Hauteur optimale</label> <img alt="" src="./_img/bulle_aide.png" title="Diminuer la hauteur des lignes<br />si les items sont nombreux." /><p />';
-	$tab_affich[0][0].= '<button id="Enregistrer_saisie" type="button"><img alt="" src="./_img/bouton/valider.png" /> Enregistrer les saisies</button><input type="hidden" name="f_ref" id="f_ref" value="'.$ref.'" /><input id="f_date" name="f_date" type="hidden" value="'.$date.'" /><input id="f_date_visible" name="f_date_visible" type="hidden" value="'.$date_visible.'" /><input id="f_info" name="f_info" type="hidden" value="'.html($info).'" /><br />';
+	$tab_affich[0][0].= '<button id="Enregistrer_saisie" type="button"><img alt="" src="./_img/bouton/valider.png" /> Enregistrer les saisies</button><input type="hidden" name="f_ref" id="f_ref" value="'.$ref.'" /><input type="hidden" name="f_zone_saisir_devoir_id" id="f_zone_saisir_devoir_id" value="'.$devoir_id.'" /><input id="f_date" name="f_date" type="hidden" value="'.$date.'" /><input id="f_date_visible" name="f_date_visible" type="hidden" value="'.$date_visible.'" /><input id="f_info" name="f_info" type="hidden" value="'.html($info).'" /><br />';
 	$tab_affich[0][0].= '<button id="fermer_zone_saisir" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>';
 	$tab_affich[0][0].= '</td>';
 	// première ligne (noms prénoms des élèves)

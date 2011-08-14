@@ -107,6 +107,7 @@ if(count($tab_id_classe_groupe))
 <hr />
 
 <form action="" id="form0"><fieldset>
+	<input type="hidden" name="f_devoir_id" id="f_devoir_id" value=""/>
 	<?php if (!isset($_POST['gepi_cn_devoirs_row'])) { ?>
 	<label class="tab" for="f_aff_classe">Classe / groupe :</label><select id="f_aff_classe" name="f_aff_classe"><?php echo $select_eleve ?></select>
 	<div id="zone_periodes" class="hide">
@@ -143,15 +144,15 @@ if(count($tab_id_classe_groupe))
 				$gepi_cn_devoirs_array = json_decode($_POST['gepi_cn_devoirs_array'], true);
 				//on va rechercher si le devoir existe déjà
 				$DB_ROW_DEVOIR = DB_STRUCTURE_recuperer_devoir_gepi($gepi_cn_devoirs_array['id']);
-				if ($DB_ROW) {		
+				if ($DB_ROW_DEVOIR) {		
 					// Formater la date et la référence de l'évaluation
 					$date_affich = convert_date_mysql_to_french($DB_ROW_DEVOIR['devoir_date']);
 					$date_visible = ($DB_ROW_DEVOIR['devoir_date']==$DB_ROW_DEVOIR['devoir_visible_date']) ? 'identique' : convert_date_mysql_to_french($DB_ROW_DEVOIR['devoir_visible_date']);
-					$ref = $DB_ROW_DEVOIR['devoir_id'].'_'.strtoupper($DB_ROW['groupe_type']{0}).$DB_ROW_DEVOIR['groupe_id'];
+					$ref = $DB_ROW_DEVOIR['devoir_id'].'_'.strtoupper($DB_ROW_DEVOIR['groupe_type']{0}).$DB_ROW_DEVOIR['groupe_id'];
 					$s = ($DB_ROW_DEVOIR['items_nombre']>1) ? 's' : '';
 					// Afficher une ligne du tableau
 					// Afficher une ligne du tableau
-					echo'<tr>';
+					echo'<tr id='.$DB_ROW_DEVOIR['devoir_id'].'>';
 					echo	'<td><i>'.html($DB_ROW_DEVOIR['devoir_date']).'</i>'.html($date_affich).'</td>';
 					echo	'<td>'.html($date_visible).'</td>';
 					echo	'<td>'.html($DB_ROW_DEVOIR['groupe_nom']).'</td>';

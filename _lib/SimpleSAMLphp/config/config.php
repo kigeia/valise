@@ -511,6 +511,7 @@ $config['session.cookie.path'] = COOKIE_PATH;
 
 if (defined('HEBERGEUR_ADRESSE_SITE')) {
 	$basepath = parse_url(HEBERGEUR_ADRESSE_SITE,PHP_URL_PATH);
+	$basepath = substr($basepath,1);
 	$basepath = (substr($basepath,-1)=='/') ? substr($basepath,0,-1) : $basepath ;
 	$config['baseurlpath'] = $basepath.'/_lib/SimpleSAMLphp/www/';
 }

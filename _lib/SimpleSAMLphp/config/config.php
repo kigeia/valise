@@ -11,7 +11,7 @@ $config = array (
 	 * Setup the following parameters to match the directory of your installation.
 	 * See the user manual for more details.
 	 */
-	'baseurlpath'           => 'SACoche/_lib/SimpleSAMLphp/www/',
+	'baseurlpath'           => 'sacoche/_lib/SimpleSAMLphp/www/',
 	'certdir'               => 'cert/',
 	'loggingdir'            => 'log/',
 	'datadir'               => 'data/',
@@ -508,3 +508,10 @@ $config['technicalcontact_email'] = WEBMESTRE_COURRIEL;
 require_once("$path/_inc/fonction_sessions.php");
 $config['session.phpsession.cookiename'] = SESSION_NOM;	
 $config['session.cookie.path'] = COOKIE_PATH;
+
+if (defined('HEBERGEUR_ADRESSE_SITE')) {
+	$basepath = parse_url(HEBERGEUR_ADRESSE_SITE,PHP_URL_PATH);
+	$basepath = (substr($basepath,-1)=='/') ? substr($basepath,0,-1) : $basepath ;
+	$config['baseurlpath'] = $basepath.'/_lib/SimpleSAMLphp/www/';
+}
+

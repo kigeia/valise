@@ -208,7 +208,6 @@ if(count($tab_id_classe_groupe))
 								$i = $i+1;
 							}
 							echo '<input type="hidden" name="indice_max_log_eleve" value="'.count($output_array).'"/>';
-							echo '</form>';
 						}
 					}
 					echo	'</td>';

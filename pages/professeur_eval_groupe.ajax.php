@@ -188,7 +188,6 @@ if( ($action=='Afficher_evaluations') && $devoir_id != '' || ($aff_classe_txt &&
 					$i = $i+1;
 				}
 				echo '<input type="hidden" name="indice_max_log_eleve" value="'.count($output_array).'"/>';
-				echo '</form>';
 			}
 		}
 		echo	'</td>';
@@ -309,7 +308,6 @@ if( (($action=='ajouter')||(($action=='dupliquer')&&($devoir_id))) && $date && $
 				$i = $i+1;
 			}
 			echo '<input type="hidden" name="indice_max_log_eleve" value="'.count($output_array).'"/>';
-			echo '</form>';
 		}
 	}
 	echo'</td>';

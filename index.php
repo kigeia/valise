@@ -215,7 +215,7 @@ $filename_js_normal = './pages/'.$PAGE.'.js';
 $SCRIPT = (is_file($filename_js_normal)) ? '<script type="text/javascript" charset="utf-8" src="'.compacter($filename_js_normal,$VERSION_JS_FILE,'pack').'"></script>' : '' ;
 
 // Titre du navigateur
-$TITRE_NAVIGATEUR = 'SACoche » Espace '.$_SESSION['USER_PROFIL'].' » ';
+$TITRE_NAVIGATEUR = 'Valise » Espace '.$_SESSION['USER_PROFIL'].' » ';
 $TITRE_NAVIGATEUR.= ($TITRE) ? $TITRE : 'Evaluer par comptétences et valider le socle commun' ;
 
 // Affichage de l'en-tête

@@ -43,11 +43,18 @@ require_once('./_inc/fonction_sessions.php');
 $PAGE    = (isset($_REQUEST['page']))    ? $_REQUEST['page']    : ( (isset($_GET['sso'])) ? 'compte_accueil' : 'public_accueil' ) ;
 $SECTION = (isset($_REQUEST['section'])) ? $_REQUEST['section'] : '' ;
 
+if (isset($_REQUEST['sso']))   { $PAGE = 'compte_accueil'; }
+else                          { $PAGE = 'public_accueil'; }
+
 // Fichier d'informations sur l'hébergement (requis avant la gestion de la session).
 $fichier_constantes = $CHEMIN_CONFIG.'constantes.php';
-if( (!is_file($fichier_constantes)) && ($PAGE!='public_installation') )
+if(is_file($fichier_constantes))
 {
-	affich_message_exit($titre='Informations hébergement manquantes',$contenu='Informations concernant l\'hébergeur manquantes.<br /><a href="./index.php?page=public_installation">Procédure d\'installation du site SACoche.</a>');
+	require_once($fichier_constantes);
+}
+elseif($PAGE!='public_installation')
+{
+	affich_message_exit($titre='Informations hébergement manquantes',$contenu='Informations concernant l\'hébergeur manquantes.',$lien='<a href="./index.php?page=public_installation">Procédure d\'installation de SACoche.</a>');
 }
 
 // Ouverture de la session et gestion des droits d'accès
@@ -181,7 +188,7 @@ if(is_file($fichier_constantes))
 	}
 	elseif($PAGE!='public_installation')
 	{
-		affich_message_exit($titre='Paramètres BDD manquants',$contenu='Paramètres de connexion à la base de données manquants.<br /><a href="./index.php?page=public_installation">Procédure d\'installation du site SACoche.</a>');
+		affich_message_exit($titre='Paramètres BDD manquants',$contenu='Paramètres de connexion à la base de données manquants.',$lien='<a href="./index.php?page=public_installation">Procédure d\'installation de SACoche.</a>');
 	}
 	// DEBUT PATCH MYSQL 2
 	// A compter du 05/12/2010, 2 users MySQL sont créés par établissement (localhost & %) ; il faut créer les manquants antérieurs sinon erreur lors de la suppression. [à retirer dans quelques mois]

@@ -553,7 +553,7 @@ if( $step==20 )
 			exit('Erreur : le fichier transmis n\'est pas correct (erreur de numéro UAI) !');
 		}
 		//
-		// On recence les adresses dans un tableau temporaire.
+		// On recense les adresses dans un tableau temporaire.
 		//
 		$tab_adresses = array();
 		if( ($xml->DONNEES) && ($xml->DONNEES->ADRESSES) && ($xml->DONNEES->ADRESSES->ADRESSE) )
@@ -564,7 +564,8 @@ if( $step==20 )
 			}
 		}
 		//
-		// On recence les liens de responsabilités dans un tableau temporaire.
+		// On recense les liens de responsabilités dans un tableau temporaire.
+		// On ne garde que les resp. légaux, les contacts n'ont pas à avoir accès aux notes ou à un éventuel bulletin.
 		//
 		$tab_enfants = array();
 		$nb_lien_responsabilite = 0;
@@ -572,8 +573,12 @@ if( $step==20 )
 		{
 			foreach ($xml->DONNEES->RESPONSABLES->RESPONSABLE_ELEVE as $responsable)
 			{
-				$tab_enfants[clean_entier($responsable->PERSONNE_ID)][clean_entier($responsable->ELEVE_ID)] = clean_entier($responsable->RESP_LEGAL);
-				$nb_lien_responsabilite++;
+				$num_responsable = clean_entier($responsable->RESP_LEGAL);
+				if($num_responsable)
+				{
+					$tab_enfants[clean_entier($responsable->PERSONNE_ID)][clean_entier($responsable->ELEVE_ID)] = $num_responsable;
+					$nb_lien_responsabilite++;
+				}
 			}
 		}
 		// L'import Sconet peut apporter beaucoup de parents rattachés à des élèves sortis de l'établissement et encore présents dans le fichier.
@@ -1698,11 +1703,14 @@ if( $step==52 )
 		$profil = ($is_profil_eleve) ? 'eleve' : ( ($is_profil_parent) ? 'parent' : array('professeur','directeur') ) ;
 		$fnom = 'identifiants_'.$_SESSION['BASE'].'_'.$profil.'_'.time();
 		$zip = new ZipArchive();
-		if ($zip->open($dossier_login_mdp.$fnom.'.zip', ZIPARCHIVE::CREATE)===TRUE)
+		$result_open = $zip->open($dossier_login_mdp.$fnom.'.zip', ZIPARCHIVE::CREATE);
+		if($result_open!==TRUE)
 		{
-			$zip->addFromString($fnom.'.csv',csv($fcontenu_csv));
-			$zip->close();
+			require('./_inc/tableau_zip_error.php');
+			exit('Problème de création de l\'archive ZIP ('.$result_open.$tab_zip_error[$result_open].') !');
 		}
+		$zip->addFromString($fnom.'.csv',csv($fcontenu_csv));
+		$zip->close();
 		// On archive les nouveaux identifiants dans un fichier pdf (classe fpdf + script étiquettes)
 		require_once('./_lib/FPDF/PDF_Label.php');
 		$pdf = new PDF_Label(array('paper-size'=>'A4', 'metric'=>'mm', 'marginLeft'=>5, 'marginTop'=>5, 'NX'=>3, 'NY'=>8, 'SpaceX'=>7, 'SpaceY'=>5, 'width'=>60, 'height'=>30, 'font-size'=>11));
@@ -1749,7 +1757,7 @@ if( $step==52 )
 }
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-//	Étape 53 - Récupérer les identifiants des nouveaux utilisateurs (sconet_professeurs_directeurs | tableur_professeurs_directeurs | sconet_eleves | base-eleves_eleves | tableur_eleves)
+//	Étape 53 - Récupérer les identifiants des nouveaux utilisateurs (sconet_professeurs_directeurs | tableur_professeurs_directeurs | sconet_eleves | sconet_parents | base-eleves_eleves | tableur_eleves)
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 
 if( $step==53 )
@@ -2274,7 +2282,6 @@ if( $step==81 )
 	$tab_memo_analyse = array();
 	foreach($tab_fichier_parents_par_eleve as $eleve_sconet_id => $tab_parent)
 	{
-		$contact_num = 3;
 		foreach($tab_parent as $i_fichier => $resp_legal_num)
 		{
 			// Au passage, on vérifie que l'élève est dans la base avec son id sconet, sinon c'est cuit...
@@ -2282,11 +2289,6 @@ if( $step==81 )
 			{
 				$eleve_id  = $tab_base_parents_par_eleve[$eleve_sconet_id]['eleve']['id'];
 				$parent_id = $tab_i_fichier_TO_id_base[$i_fichier];
-				if(($resp_legal_num!=1)&&($resp_legal_num!=2))
-				{
-					$resp_legal_num = $contact_num;
-					$contact_num++;
-				}
 				$tab_memo_analyse[$eleve_id][$parent_id] = $resp_legal_num;
 			}
 		}
@@ -2305,8 +2307,8 @@ if( $step==81 )
 			$nb_differences = 0;
 			$td_contenu = array();
 			// On fait des modifs s'il n'y a pas le même nombre de responsables ou si un responsable est différent ou si l'ordre des responsables est différent
-			// On commence par les resp 1 et 2
-			for($num=1 ; $num<3 ; $num++)
+			$num = 1;
+			while( count($tab_fichier_parents_par_eleve[$eleve_sconet_id]) || count($tab_base_eleve_infos['parent']) )
 			{
 				$parent_id_fichier     = array_search($num,$tab_fichier_parents_par_eleve[$eleve_sconet_id]);
 				$parent_sconet_id_base = (isset($tab_base_eleve_infos['parent'][$num])) ? $tab_base_eleve_infos['parent'][$num]['sconet_id'] : FALSE ;
@@ -2332,33 +2334,6 @@ if( $step==81 )
 				if($parent_sconet_id_base)
 				{
 					unset($tab_base_eleve_infos['parent'][$num]);
-				}
-			}
-			// on poursuit par les contacts supplémentaires éventuels s'il en reste (dans Sconet il peut y en avoir même sans resp 1 et 2)
-			$num = 1;
-			while( count($tab_fichier_parents_par_eleve[$eleve_sconet_id]) || count($tab_base_eleve_infos['parent']) )
-			{
-				$parent_id_fichier = (count($tab_fichier_parents_par_eleve[$eleve_sconet_id])) ? key($tab_fichier_parents_par_eleve[$eleve_sconet_id]) : FALSE ;
-				$parent_sconet_id_base    = (isset($tab_base_eleve_infos['parent'][$num+2])) ? $tab_base_eleve_infos['parent'][$num+2]['sconet_id'] : FALSE ;
-				$parent_affich_fichier = ($parent_id_fichier===FALSE)     ? 'X' : $tab_users_fichier['nom'][$parent_id_fichier].' '.$tab_users_fichier['prenom'][$parent_id_fichier] ;
-				$parent_affich_base    = ($parent_sconet_id_base===FALSE) ? 'X' : $tab_base_eleve_infos['parent'][$num+2]['nom'].' '.$tab_base_eleve_infos['parent'][$num+2]['prenom'] ;
-				$parent_sconet_id_fichier = ($parent_id_fichier!==FALSE)  ? $tab_users_fichier['sconet_id'][$parent_id_fichier] : FALSE ;
-				if($parent_sconet_id_fichier==$parent_sconet_id_base)
-				{
-					$td_contenu[] = 'Contact n°'.$num.' : '.html($parent_affich_base);
-				}
-				else
-				{
-					$td_contenu[] = 'Contact n°'.$num.' : <b>'.html($parent_affich_base).' &rarr; '.html($parent_affich_fichier).'</b>';
-					$nb_differences++;
-				}
-				if($parent_id_fichier!==FALSE)
-				{
-					unset($tab_fichier_parents_par_eleve[$eleve_sconet_id][$parent_id_fichier]);
-				}
-				if($parent_sconet_id_base)
-				{
-					unset($tab_base_eleve_infos['parent'][$num+2]);
 				}
 				$num++;
 			}
@@ -2419,13 +2394,12 @@ if( $step==82 )
 	{
 		// supprimer les liens de responsabilité des élèves concernés (il est plus simple de réinitialiser que de traiter les resp un par un puis de vérifier s'il n'en reste pas à supprimer...)
 		DB_STRUCTURE_supprimer_jointures_parents_for_eleves(implode(',',$tab_eleve_id));
-		// modifier les liens de responsabilité et ré-estimer resp_legal_envoi
+		// modifier les liens de responsabilité
 		foreach($tab_eleve_id as $eleve_id)
 		{
 			foreach($tab_memo_analyse[$eleve_id] as $parent_id => $resp_legal_num)
 			{
-				$resp_legal_envoi = ( ($resp_legal_num<3) || ( ($resp_legal_num==3) && !(in_array(1,$tab_memo_analyse[$eleve_id])) && !(in_array(2,$tab_memo_analyse[$eleve_id])) ) ) ? 1 : 0 ;
-				DB_STRUCTURE_ajouter_jointure_parent_eleve($parent_id,$eleve_id,$resp_legal_num,$resp_legal_envoi);
+				DB_STRUCTURE_ajouter_jointure_parent_eleve($parent_id,$eleve_id,$resp_legal_num);
 			}
 		}
 	}

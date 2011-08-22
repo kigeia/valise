@@ -1146,9 +1146,55 @@ function maj_base($version_actuelle)
 	}
 
 	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//	MAJ 2011-08-02 => xx
+	//	MAJ 2011-08-02 => 2011-08-18
 	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	if($version_actuelle=='2011-08-02')
+	{
+		if($version_actuelle==DB_version_base())
+		{
+			$version_actuelle = '2011-08-18';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base" LIMIT 1' );
+			// suppression de fichiers temporaires déplacés (sans rapport avec la base, mais à effectuer)
+			effacer_fichiers_temporaires('./__tmp/cookie',1);
+			effacer_fichiers_temporaires('./__tmp/rss',1);
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2011-08-18 => 2011-08-20
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2011-08-18')
+	{
+		if($version_actuelle==DB_version_base())
+		{
+			$version_actuelle = '2011-08-20';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base" LIMIT 1' );
+			// modification de sacoche_jointure_parent_eleve
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_jointure_parent_eleve DROP resp_legal_envoi ' );
+			// retrait des contacts
+			$DB_SQL = 'DELETE sacoche_jointure_parent_eleve ';
+			$DB_SQL.= 'FROM sacoche_jointure_parent_eleve ';
+			$DB_SQL.= 'WHERE resp_legal_num>2 ';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL );
+			$DB_SQL = 'DELETE sacoche_parent_adresse ';
+			$DB_SQL.= 'FROM sacoche_parent_adresse ';
+			$DB_SQL.= 'LEFT JOIN sacoche_jointure_parent_eleve USING (parent_id) ';
+			$DB_SQL.= 'WHERE eleve_id IS NULL ';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL );
+			$DB_SQL = 'DELETE sacoche_user ';
+			$DB_SQL.= 'FROM sacoche_user ';
+			$DB_SQL.= 'LEFT JOIN sacoche_jointure_parent_eleve ON sacoche_user.user_id=sacoche_jointure_parent_eleve.parent_id ';
+			$DB_SQL.= 'WHERE user_profil="parent" AND parent_id IS NULL ';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL );
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2011-08-20 => xx
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	if($version_actuelle=='2011-08-20')
 	{
 		if($version_actuelle==DB_version_base())
 			{
@@ -1160,7 +1206,7 @@ function maj_base($version_actuelle)
 			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_groupe ADD gepi_id INT(11) COMMENT "Id du groupe gepi"' );
 		}
 	}
-	
+
 	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Log de l'action
 	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

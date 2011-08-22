@@ -78,6 +78,7 @@ Néanmoins, plusieurs autres pistes peuvent toujours être explorées :
  * Enfin, les tests ont montrés qu'il fallait aussi adapter la valeur en fonction de la variable serveur memory_limit.
  * -> pour 16Mo ça coince à partir de 7000 lignes
  * -> pour  8Mo ça coince à partir de 2800 lignes
+ * -> pour 32Mo sur le serveur Sésamath après migration chez OVH ça coince à partir de 5000 lignes !!!
  *
  * @param void
  * @return int
@@ -86,7 +87,7 @@ Néanmoins, plusieurs autres pistes peuvent toujours être explorées :
 function determiner_nombre_lignes_maxi_par_paquet()
 {
 	$memory_limit = (int)ini_get('memory_limit'); // Par exemple 32M => 32 ; -1 si illimité.
-	return ($memory_limit==-1) ? 10000 : min(10000,$memory_limit*250) ; // Ainsi 8 => 2000 ; 16 => 4000 ; 32 => 8000 ; -1 => 10000
+	return ($memory_limit==-1) ? 5000 : min(5000,$memory_limit*125) ; // Ainsi 8 => 1000 ; 16 => 2000 ; 32 => 4000 ; -1 => 5000
 }
 
 /**
@@ -150,7 +151,7 @@ function sauvegarder_tables_base_etablissement($dossier_temp,$nb_lignes_maxi)
 				$fichier_contenu .= 'ALTER TABLE '.$tab_table_info['Nom'].' ENABLE KEYS;'."\r\n";
 			}
 			// Enregistrer le fichier
-			$fichier_sql_nom = 'dump_'.$tab_table_info['Nom'].'_'.$i.'.sql';
+			$fichier_sql_nom = 'dump_'.$tab_table_info['Nom'].'_'.sprintf("%03u",$i).'.sql';
 			Ecrire_Fichier($dossier_temp.$fichier_sql_nom,$fichier_contenu);
 		}
 	}
@@ -227,7 +228,8 @@ function verifier_taille_requetes($fichier_taille_maximale)
 
 function version_base_fichier_svg($dossier)
 {
-	$fichier_contenu = file_get_contents($dossier.'dump_sacoche_parametre_0.sql');
+	// Le fichier a changé de nom à compter du 18/08/2011
+	$fichier_contenu = (is_file($dossier.'dump_sacoche_parametre_000.sql')) ? file_get_contents($dossier.'dump_sacoche_parametre_000.sql') : file_get_contents($dossier.'dump_sacoche_parametre_0.sql') ;
 	$position_debut = mb_strpos($fichier_contenu,'"version_base"') + 16;
 	return mb_substr($fichier_contenu,$position_debut,10);
 }
@@ -235,18 +237,36 @@ function version_base_fichier_svg($dossier)
 /**
  * restaurer_tables_base_etablissement
  * Restaurer des fichiers de svg et mettre la base à jour si besoin.
+ * Pour une restauration individuelle, scindé en plusieurs étapes pour éviter un dépassement du max_execution_time sur de grosses bases.
+ * Par contre pour une restauration par un webmestre d'un ensemble de structures, c'était trop compliqué à découper, on fait tout d'un coup.
  *
  * @param string $dossier_temp
- * @return string                chaine vide ou " et base mise à jour"
+ * @param int    $etape   (0 si tout d'un coup)
+ * @return string
  */
 
-function restaurer_tables_base_etablissement($dossier_temp)
+function restaurer_tables_base_etablissement($dossier_temp,$etape)
 {
 	// Pour chaque fichier...
 	$tab_fichier = Lister_Contenu_Dossier($dossier_temp);
 	natsort($tab_fichier); // Si plusieurs fichiers correspondent à une table, il faut que la requête de création soit lancée avant les requêtes d'insertion
-	foreach($tab_fichier as $fichier_nom)
+	$tab_fichier = array_values($tab_fichier); // Pour réindexer dans l'ordre et à partir de 0
+	$nb_fichiers  = count($tab_fichier);
+	if($etape)
 	{
+		$nb_par_etape = 10;
+		$i_min  = ($etape-1)*$nb_par_etape;
+		$i_max  = $etape*$nb_par_etape;
+		$i_stop = min($i_max,$nb_fichiers);
+	}
+	else
+	{
+		$i_min  = 0;
+		$i_stop = $nb_fichiers;
+	}
+	for($i=$i_min ; $i<$i_stop ; $i++)
+	{
+		$fichier_nom = $tab_fichier[$i];
 		// ... lancer les requêtes
 		$requetes = file_get_contents($dossier_temp.$fichier_nom);
 		DB::query(SACOCHE_STRUCTURE_BD_NAME , $requetes );
@@ -256,15 +276,23 @@ function restaurer_tables_base_etablissement($dossier_temp)
 		*/
 		DB::close(SACOCHE_STRUCTURE_BD_NAME);
 	}
-	// Tester si la base nécessite une mise à jour, et si oui alors la lancer
-	$version_base_restauree = version_base_fichier_svg($dossier_temp);
-	if( $version_base_restauree < VERSION_BASE )
+	if($i_stop<$nb_fichiers)
 	{
-		require_once('./_inc/fonction_maj_base.php');
-		maj_base($version_base_restauree);
-		return' et base mise à jour';
+		// Ce n'est pas la dernière étape
+		return'Restauration de la base en cours ; étape réalisée';
 	}
-	return'';
+	else
+	{
+		// Toutes les étapes sont terminées ; tester si la base nécessite une mise à jour, et si oui alors la lancer
+		$version_base_restauree = version_base_fichier_svg($dossier_temp);
+		if( $version_base_restauree < VERSION_BASE )
+		{
+			require_once('./_inc/fonction_maj_base.php');
+			maj_base($version_base_restauree);
+			return'Restauration de la base terminée et base mise à jour';
+		}
+		return'Restauration de la base terminée';
+	}
 }
 
 ?>

@@ -25,30 +25,18 @@
  * 
  */
 
-if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
-$TITRE = "Sauvegarde / Restauration";
-$VERSION_JS_FILE += 2;
+	$tab_fichier_integrite = array(
+		'_img/logo_grand.gif',
+		'_inc/constantes.php',
+		'_inc/fonction_appel_serveur_communautaire.php',
+		'_inc/fonction_sessions.php',
+		'pages/__menu_professeur.html',
+		'pages/validation_socle_fichier.ajax.php',
+		'pages/validation_socle_item.ajax.php',
+		'pages/validation_socle_pilier.ajax.php',
+		'index.php',
+		'ajax.php',
+		'VERSION.txt'
+	);
+
 ?>
-
-<p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_dump">DOC : Sauvegarde et restauration de la base</a></span></p>
-
-<hr />
-
-<h2>Sauvegarder la base</h2>
-<form id="form1" action=""><fieldset>
-	<span class="tab"></span><button id="bouton_form1" type="button"><img alt="" src="./_img/bouton/dump_export.png" /> Lancer la sauvegarde.</button><label id="ajax_msg1">&nbsp;</label>
-</fieldset></form>
-
-<hr />
-
-<h2>Restaurer la base</h2>
-<div class="danger">Restaurer une sauvegarde antérieure écrasera irrémédiablement les données actuelles !</div>
-<form id="form2" action=""><fieldset>
-	<label class="tab" for="bouton_form2">Uploader le fichier :</label><button id="bouton_form2" type="button"><img alt="" src="./_img/bouton/fichier_import.png" /> Parcourir...</button><label id="ajax_msg2">&nbsp;</label>
-</fieldset></form>
-
-<hr />
-
-<ul class="puce" id="ajax_info">
-</ul>
-<p />

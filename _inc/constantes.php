@@ -37,7 +37,7 @@ define('VERSION_BASE','xx');
 
 // VERSION_CSS_SCREEN / VERSION_CSS_PRINT / VERSION_JS_BIBLIO / VERSION_JS_GLOBAL / VERSION_JS_FILE
 // Pour éviter les problèmes de mise en cache (hors serveur localhost), modifier ces valeurs lors d'une mise à jour
-define('VERSION_CSS_SCREEN',62); // A changer lors de la mise à jour de ./_css/style.css
+define('VERSION_CSS_SCREEN',63); // A changer lors de la mise à jour de ./_css/style.css
 define('VERSION_CSS_PRINT',2);   // A changer lors de la mise à jour de ./_css/style_print.css
 define('VERSION_JS_BIBLIO',9);   // A changer lors de la mise à jour de ./_js/jquery-librairies.js
 define('VERSION_JS_GLOBAL',44);  // A changer lors de la mise à jour de ./_js/script.js
@@ -73,7 +73,7 @@ if($fin)
 define('SERVEUR_ADRESSE',$chemin);
 
 // SERVEUR_TYPE : Serveur local de développement (LOCAL) ou serveur en ligne de production (PROD)
-$serveur = in_array($_SERVER['SERVER_NAME'],array('localhost','127.0.0.1')) ? 'LOCAL' : 'PROD';
+$serveur = in_array($_SERVER['HTTP_HOST'],array('localhost','127.0.0.1')) ? 'LOCAL' : 'PROD';
 define('SERVEUR_TYPE',$serveur);
 
 // SERVEUR_PROJET        : URL du projet SACoche

@@ -365,18 +365,22 @@ if( ($action=='importer') && $num && $max && ($num<$max) )
 	// Créer la base de données de la structure
 	// Créer un utilisateur pour la base de données de la structure et lui attribuer ses droits
 	$base_id = DB_WEBMESTRE_ajouter_structure($import_id,$geo_id,$uai,$localisation,$denomination,$contact_nom,$contact_prenom,$contact_courriel,$date);
-	// Créer un dossier pour accueillir les vignettes verticales avec l'identité des élèves
+	// Créer les dossiers de fichiers temporaires par établissement : vignettes verticales, flux RSS des demandes, cookies des choix de formulaires
 	Creer_Dossier('./__tmp/badge/'.$base_id);
 	Ecrire_Fichier('./__tmp/badge/'.$base_id.'/index.htm','Circulez, il n\'y a rien à voir par ici !');
+	Creer_Dossier('./__tmp/cookie/'.$base_id);
+	Ecrire_Fichier('./__tmp/cookie/'.$base_id.'/index.htm','Circulez, il n\'y a rien à voir par ici !');
+	Creer_Dossier('./__tmp/rss/'.$base_id);
+	Ecrire_Fichier('./__tmp/rss/'.$base_id.'/index.htm','Circulez, il n\'y a rien à voir par ici !');
 	// Charger les paramètres de connexion à cette base afin de pouvoir y effectuer des requêtes
 	charger_parametres_mysql_supplementaires($base_id);
 	// Restaurer des fichiers de svg et mettre la base à jour si besoin.
-	$texte_maj = restaurer_tables_base_etablissement($dossier_temp_sql);
+	$texte_etape = restaurer_tables_base_etablissement($dossier_temp_sql,0);
 	// Supprimer le dossier temporaire
 	Supprimer_Dossier($dossier_temp_sql);
 	// Retour du succès, appel suivant
 	$retour_cellules_oui = '<td class="nu"><input type="checkbox" name="f_ids" value="'.$base_id.'" /></td><td class="label">'.$base_id.'</td><td class="label">'.html($localisation.' | '.$denomination.' ['.$uai.']').'</td><td class="label">'.html($contact_nom.' '.$contact_prenom.' ('.$contact_courriel.')').'</td>';
-	exit(']¤['.'<tr>'.$retour_cellules_oui.'<td class="label"><label class="valide">Restauration de la base réalisée'.$texte_maj.' avec succès.</label></td>'.'</tr>');
+	exit(']¤['.'<tr>'.$retour_cellules_oui.'<td class="label"><label class="valide">'.$texte_etape.' avec succès.</label></td>'.'</tr>');
 }
 elseif( ($action=='importer') && $num && $max && ($num==$max) )
 {

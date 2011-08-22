@@ -155,6 +155,10 @@ function html($text)
 	// Ne pas modifier ce code à la légère : les résultats sont différents suivant que ce soit un affichage direct ou ajax, suivant la version de PHP (5.1 ou 5.3)...
 	return (perso_mb_detect_encoding_utf8($text)) ? htmlspecialchars($text,ENT_COMPAT,'UTF-8') : utf8_encode(htmlspecialchars($text,ENT_COMPAT)) ;
 }
+function html_decode($text)
+{
+	return htmlspecialchars_decode($text,ENT_COMPAT) ;
+}
 
 /*
 	Convertit l'utf-8 en windows-1252 pour compatibilité avec FPDF
@@ -204,16 +208,19 @@ function deleteBOM($file)
 
 function effacer_fichiers_temporaires($dossier,$nb_minutes)
 {
-	$date_limite = time() - $nb_minutes*60;
-	$tab_fichier = Lister_Contenu_Dossier($dossier);
-	foreach($tab_fichier as $fichier_nom)
+	if(is_dir($dossier))
 	{
-		$chemin_fichier = $dossier.'/'.$fichier_nom;
-		$extension = pathinfo($chemin_fichier,PATHINFO_EXTENSION);
-		$date_unix = filemtime($chemin_fichier);
-		if( (is_file($chemin_fichier)) && ($date_unix<$date_limite) && ($extension!='htm') )
+		$date_limite = time() - $nb_minutes*60;
+		$tab_fichier = Lister_Contenu_Dossier($dossier);
+		foreach($tab_fichier as $fichier_nom)
 		{
-			unlink($chemin_fichier);
+			$chemin_fichier = $dossier.'/'.$fichier_nom;
+			$extension = pathinfo($chemin_fichier,PATHINFO_EXTENSION);
+			$date_unix = filemtime($chemin_fichier);
+			if( (is_file($chemin_fichier)) && ($date_unix<$date_limite) && ($extension!='htm') )
+			{
+				unlink($chemin_fichier);
+			}
 		}
 	}
 }

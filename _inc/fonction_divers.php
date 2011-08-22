@@ -1197,232 +1197,6 @@ function recuperer_numero_derniere_version()
 }
 
 /**
- * Transmettre le XML d'un référentiel au serveur communautaire.
- * 
- * @param int       $sesamath_id
- * @param string    $sesamath_key
- * @param int       $matiere_id
- * @param int       $niveau_id
- * @param string    $arbreXML       si fourni vide, provoquera l'effacement du référentiel mis en partage
- * @return string   "ok" ou un message d'erreur
- */
-function envoyer_arborescence_XML($sesamath_id,$sesamath_key,$matiere_id,$niveau_id,$arbreXML)
-{
-	$tab_post = array();
-	$tab_post['fichier']        = 'referentiel_uploader';
-	$tab_post['sesamath_id']    = $sesamath_id;
-	$tab_post['sesamath_key']   = $sesamath_key;
-	$tab_post['matiere_id']     = $matiere_id;
-	$tab_post['niveau_id']      = $niveau_id;
-	$tab_post['arbreXML']       = $arbreXML;
-	$tab_post['version_prog']   = VERSION_PROG; // Le service web doit être compatible
-	$tab_post['version_base']   = VERSION_BASE; // La base doit être compatible (problème de socle modifié...)
-	$tab_post['adresse_retour'] = SERVEUR_ADRESSE;
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
- * Demander à ce que nous soit retourné le XML d'un référentiel depuis le serveur communautaire.
- * 
- * @param int       $sesamath_id
- * @param string    $sesamath_key
- * @param int       $referentiel_id
- * @return string   le XML ou un message d'erreur
- */
-function recuperer_arborescence_XML($sesamath_id,$sesamath_key,$referentiel_id)
-{
-	$tab_post = array();
-	$tab_post['fichier']        = 'referentiel_downloader';
-	$tab_post['sesamath_id']    = $sesamath_id;
-	$tab_post['sesamath_key']   = $sesamath_key;
-	$tab_post['referentiel_id'] = $referentiel_id;
-	$tab_post['version_prog']   = VERSION_PROG; // Le service web doit être compatible
-	$tab_post['version_base']   = VERSION_BASE; // La base doit être compatible (problème de socle modifié...)
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
- * Vérifier qu'une arborescence XML d'un référentiel est syntaxiquement valide.
- * 
- * @param string    $arbreXML
- * @return string   "ok" ou "Erreur..."
- */
-function verifier_arborescence_XML($arbreXML)
-{
-	// On ajoute déclaration et doctype au fichier (évite que l'utilisateur ait à se soucier de cette ligne et permet de le modifier en cas de réorganisation
-	// Attention, le chemin du DTD est relatif par rapport à l'emplacement du fichier XML (pas celui du script en cours) !
-	$fichier_adresse = './__tmp/import/referentiel_'.date('Y-m-d_H-i-s').'_'.mt_rand().'.xml';
-	$fichier_contenu = '<?xml version="1.0" encoding="UTF-8"?>'."\r\n".'<!DOCTYPE arbre SYSTEM "../../_dtd/referentiel.dtd">'."\r\n".$arbreXML;
-	$fichier_contenu = utf8($fichier_contenu); // Mettre en UTF-8 si besoin
-	// On enregistre temporairement dans un fichier pour analyse
-	Ecrire_Fichier($fichier_adresse,$fichier_contenu);
-	// On lance le test
-	require('class.domdocument.php');	// Ne pas mettre de chemin !
-	$test_XML_valide = analyser_XML($fichier_adresse);
-	// On efface le fichier temporaire
-	unlink($fichier_adresse);
-	return $test_XML_valide;
-}
-
-/**
- * Demander à ce que la structure soit identifiée et enregistrée dans la base du serveur communautaire.
- * 
- * @param int       $sesamath_id
- * @param string    $sesamath_key
- * @return string   'ok' ou un message d'erreur
- */
-function Sesamath_enregistrer_structure($sesamath_id,$sesamath_key)
-{
-	$tab_post = array();
-	$tab_post['fichier']        = 'structure_enregistrer';
-	$tab_post['sesamath_id']    = $sesamath_id;
-	$tab_post['sesamath_key']   = $sesamath_key;
-	$tab_post['version_prog']   = VERSION_PROG; // Le service web doit être compatible
-	$tab_post['adresse_retour'] = SERVEUR_ADRESSE;
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
- * Appel au serveur communautaire pour afficher le formulaire géographique n°1.
- * 
- * @param void
- * @return string   '<option>...</option>' ou un message d'erreur
- */
-function Sesamath_afficher_formulaire_geo1()
-{
-	$tab_post = array();
-	$tab_post['fichier']      = 'Sesamath_afficher_formulaire_geo';
-	$tab_post['etape']        = 1;
-	$tab_post['version_prog'] = VERSION_PROG; // Le service web doit être compatible
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
- * Appel au serveur communautaire pour afficher le formulaire géographique n°2.
- * 
- * @param int       $geo1
- * @return string   '<option>...</option>' ou un message d'erreur
- */
-function Sesamath_afficher_formulaire_geo2($geo1)
-{
-	$tab_post = array();
-	$tab_post['fichier']      = 'Sesamath_afficher_formulaire_geo';
-	$tab_post['etape']        = 2;
-	$tab_post['geo1']         = $geo1;
-	$tab_post['version_prog'] = VERSION_PROG; // Le service web doit être compatible
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
- * Appel au serveur communautaire pour afficher le formulaire géographique n°3.
- * 
- * @param int       $geo1
- * @param int       $geo2
- * @return string   '<option>...</option>' ou un message d'erreur
- */
-function Sesamath_afficher_formulaire_geo3($geo1,$geo2)
-{
-	$tab_post = array();
-	$tab_post['fichier']      = 'Sesamath_afficher_formulaire_geo';
-	$tab_post['etape']        = 3;
-	$tab_post['geo1']         = $geo1;
-	$tab_post['geo2']         = $geo2;
-	$tab_post['version_prog'] = VERSION_PROG; // Le service web doit être compatible
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
- * Appel au serveur communautaire pour lister les structures de la commune indiquée.
- * 
- * @param int       $geo3
- * @return string   '<option>...</option>' ou un message d'erreur
- */
-function Sesamath_lister_structures_by_commune($geo3)
-{
-	$tab_post = array();
-	$tab_post['fichier']      = 'Sesamath_lister_structures';
-	$tab_post['methode']      = 'commune';
-	$tab_post['geo3']         = $geo3;
-	$tab_post['version_prog'] = VERSION_PROG; // Le service web doit être compatible
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
- * Appel au serveur communautaire pour récupérer la structure du numéro UAI indiqué.
- * 
- * @param string    $uai
- * @return string   '<option>...</option>' ou un message d'erreur
- */
-function Sesamath_recuperer_structure_by_UAI($uai)
-{
-	$tab_post = array();
-	$tab_post['fichier']      = 'Sesamath_lister_structures';
-	$tab_post['methode']      = 'UAI';
-	$tab_post['uai']          = $uai;
-	$tab_post['version_prog'] = VERSION_PROG; // Le service web doit être compatible
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
- * Appel au serveur communautaire pour afficher le formulaire des structures ayant partagées au moins un référentiel.
- * 
- * @param int       $sesamath_id
- * @param string    $sesamath_key
- * @return string   '<option>...</option>' ou un message d'erreur
- */
-function afficher_formulaire_structures_communautaires($sesamath_id,$sesamath_key)
-{
-	$tab_post = array();
-	$tab_post['fichier']      = 'structures_afficher_formulaire';
-	$tab_post['sesamath_id']  = $sesamath_id;
-	$tab_post['sesamath_key'] = $sesamath_key;
-	$tab_post['version_prog'] = VERSION_PROG; // Le service web doit être compatible
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
- * Appel au serveur communautaire pour lister les référentiels partagés trouvés selon les critères retenus (matière / niveau / structure).
- * 
- * @param int       $sesamath_id
- * @param string    $sesamath_key
- * @param int       $matiere_id
- * @param int       $niveau_id
- * @param int       $structure_id
- * @return string   listing ou un message d'erreur
- */
-function afficher_liste_referentiels($sesamath_id,$sesamath_key,$matiere_id,$niveau_id,$structure_id)
-{
-	$tab_post = array();
-	$tab_post['fichier']      = 'referentiels_afficher_liste';
-	$tab_post['sesamath_id']  = $sesamath_id;
-	$tab_post['sesamath_key'] = $sesamath_key;
-	$tab_post['matiere_id']   = $matiere_id;
-	$tab_post['niveau_id']    = $niveau_id;
-	$tab_post['structure_id'] = $structure_id;
-	$tab_post['version_prog'] = VERSION_PROG; // Le service web doit être compatible
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
- * Appel au serveur communautaire voir le contenu d'un référentiel partagé.
- * 
- * @param int       $sesamath_id
- * @param string    $sesamath_key
- * @param int       $referentiel_id
- * @return string   arborescence ou un message d'erreur
- */
-function afficher_contenu_referentiel($sesamath_id,$sesamath_key,$referentiel_id)
-{
-	$tab_post = array();
-	$tab_post['fichier']        = 'referentiel_afficher_contenu';
-	$tab_post['sesamath_id']    = $sesamath_id;
-	$tab_post['sesamath_key']   = $sesamath_key;
-	$tab_post['referentiel_id'] = $referentiel_id;
-	$tab_post['version_prog']   = VERSION_PROG; // Le service web doit être compatible
-	return url_get_contents(SERVEUR_COMMUNAUTAIRE,$tab_post);
-}
-
-/**
  * Liste le contenu d'un dossier (fichiers et dossiers).
  * 
  * @param string   $dossier
@@ -1459,9 +1233,9 @@ function Creer_Dossier($dossier)
 		$affichage .= '<label for="rien" class="valide">Dossier &laquo;&nbsp;<b>'.$dossier.'</b>&nbsp;&raquo; déjà en place.</label><br />'."\r\n";
 		return TRUE;
 	}
-	// Le dossier a-t-il bien été créé ?
 	@umask(0000); // Met le chmod à 666 - 000 = 666 pour les fichiers prochains fichiers créés (et à 777 - 000 = 777 pour les dossiers).
 	$test = @mkdir($dossier);
+	// Le dossier a-t-il bien été créé ?
 	if(!$test)
 	{
 		$affichage .= '<label for="rien" class="erreur">Echec lors de la création du dossier &laquo;&nbsp;<b>'.$dossier.'</b>&nbsp;&raquo; : veuillez le créer manuellement.</label><br />'."\r\n";
@@ -1488,15 +1262,18 @@ function Creer_Dossier($dossier)
  */
 function Vider_Dossier($dossier)
 {
-	$tab_fichier = Lister_Contenu_Dossier($dossier);
-	foreach($tab_fichier as $fichier_nom)
+	if(is_dir($dossier))
 	{
-		unlink($dossier.'/'.$fichier_nom);
+		$tab_fichier = Lister_Contenu_Dossier($dossier);
+		foreach($tab_fichier as $fichier_nom)
+		{
+			unlink($dossier.'/'.$fichier_nom);
+		}
 	}
 }
 
 /**
- * Créer un dossier s'il n'existe pas, le vider de ses éventueles fichiers sinon.
+ * Créer un dossier s'il n'existe pas, le vider de ses éventuels fichiers sinon.
  * 
  * @param string   $dossier
  * @return void
@@ -1521,20 +1298,23 @@ function Creer_ou_Vider_Dossier($dossier)
  */
 function Supprimer_Dossier($dossier)
 {
-	$tab_contenu = Lister_Contenu_Dossier($dossier);
-	foreach($tab_contenu as $contenu)
+	if(is_dir($dossier))
 	{
-		$chemin_contenu = $dossier.'/'.$contenu;
-		if(is_dir($chemin_contenu))
+		$tab_contenu = Lister_Contenu_Dossier($dossier);
+		foreach($tab_contenu as $contenu)
 		{
-			Supprimer_Dossier($chemin_contenu);
+			$chemin_contenu = $dossier.'/'.$contenu;
+			if(is_dir($chemin_contenu))
+			{
+				Supprimer_Dossier($chemin_contenu);
+			}
+			else
+			{
+				unlink($chemin_contenu);
+			}
 		}
-		else
-		{
-			unlink($chemin_contenu);
-		}
+		rmdir($dossier);
 	}
-	rmdir($dossier);
 }
 
 /**
@@ -1589,10 +1369,17 @@ function Ecrire_Fichier($fichier_chemin,$fichier_contenu,$file_append=0)
  */
 function adresse_RSS($prof_id)
 {
+	// Si le dossier n'existe pas, on le créé (possible car au début tous les RSS des établissements étaient dans un même dossier commun).
+	$dossier_nom = './__tmp/rss/'.$_SESSION['BASE'];
+	if(!is_dir($dossier_nom))
+	{
+		Creer_Dossier($dossier_nom);
+		Ecrire_Fichier($dossier_nom.'/index.htm','Circulez, il n\'y a rien à voir par ici !');
+	}
 	// Le nom du RSS est tordu pour le rendre un minimum privé ; il peut être retrouvé, mais très difficilement, par un bidouilleur qui met le nez dans le code, mais il n'y a rien de confidentiel non plus.
-	$fichier_nom_debut = 'rss_'.$_SESSION['BASE'].'_'.$prof_id;
-	$fichier_nom_fin = md5($fichier_nom_debut.$_SERVER['DOCUMENT_ROOT']);
-	$fichier_chemin = './__tmp/rss/'.$fichier_nom_debut.'_'.$fichier_nom_fin.'.xml';
+	$fichier_nom_debut = 'rss_'.$prof_id;
+	$fichier_nom_fin   = md5($fichier_nom_debut.$_SERVER['DOCUMENT_ROOT']);
+	$fichier_chemin    = $dossier_nom.'/'.$fichier_nom_debut.'_'.$fichier_nom_fin.'.xml';
 	if(!file_exists($fichier_chemin))
 	{
 		$fichier_contenu ='<?xml version="1.0" encoding="utf-8"?>'."\r\n";

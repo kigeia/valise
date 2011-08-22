@@ -43,15 +43,15 @@ table,select,textarea,input,button,div{font:100% "arial","helvetica","nimbus san
 p{margin:1em auto}
 img {vertical-align:text-top}
 td img , #aide_en_ligne img  , .legende img {vertical-align:baseline}
-h1{display:block;font-size:120%;text-align:left;font-weight:bold;font-variant:small-caps;color:#33A;letter-spacing:0.15em;margin:1ex 2em;}
-h2{display:block;font-size:110%;text-align:left;font-weight:bold;font-variant:small-caps;color:#33A;letter-spacing:0.15em;margin:1ex auto 1ex 1em;}
+h1{display:block;font-size:120%;text-align:left;font-weight:bold;font-variant:small-caps;color:#252;letter-spacing:0.15em;margin:1ex 2em;}
+h2{display:block;font-size:110%;text-align:left;font-weight:bold;font-variant:small-caps;color:#252;letter-spacing:0.15em;margin:1ex auto 1ex 1em;}
 h1.logo{text-align:center}
 h1.logo a{margin:auto 1em}
 h1.logo img{vertical-align:middle}
 /* h3 réservé pour l'infobulle */
 h4{display:block;font-size:100%;text-align:left;font-weight:bold;font-variant:small-caps;color:#227;letter-spacing:0.05em;margin:1ex auto 1ex 1em;}
 a.anti_h2{background:transparent url(../_img/actualiser_small.png) no-repeat left;padding-left:15px;margin-left:1em;font-size:80%;font-weight:normal;font-variant:normal;letter-spacing:0;}
-a {color:#139;text-decoration:none}a:hover{color:#D41;text-decoration:underline}
+a {color:#252;text-decoration:none}a:hover{color:#D41;text-decoration:underline}
 hr {display:block;height:1px;margin:1em 0;border-top:1px dotted #66F;}
 *.astuce {background:transparent url(../_img/puce_astuce.png) no-repeat top left;padding-left:19px}
 *.danger {background:transparent url(../_img/puce_danger.gif) no-repeat top left;padding-left:19px;color:#C00}
@@ -75,7 +75,7 @@ del{text-decoration:line-through;color:#666}
 #cadre_milieu {width:776px;margin:20px auto auto auto;padding:10px;background:#E6E6FF;border:2px solid #99F} /* coins arrondis via js */
 
 /* zone identifiée */
-#cadre_haut {z-index:2;position:absolute;left:0;right:0;top:0;height:48px;background:#FFF url(../_img/background.gif) repeat 0 0;border-bottom:1px solid #77F;white-space:nowrap;min-width:980px;}
+#cadre_haut {z-index:2;position:absolute;left:0;right:0;top:0;height:48px;background:#FFF ;border-bottom:1px solid #77F;white-space:nowrap;min-width:980px;}
 #cadre_bas  {z-index:1;position:absolute;left:0;right:0;top:49px;background:#FFF url(../_img/fond09.png) repeat-x 0 0;padding:4px}
 
 #cadre_haut #info {position:absolute;top:3px;left:4px}
@@ -83,9 +83,9 @@ del{text-decoration:line-through;color:#666}
 #cadre_haut #menu {position:absolute;bottom:-2px;left:3px;right:0}
 
 #cadre_haut #info span.button{display:inline-block;padding:1px 3px;margin:1px 0;background:#EEF;border:1px solid #99F;color:#333}
-#cadre_haut #menu a    {display:block;border:1px solid #77F;color:#FFF;background:#77F;padding:1px 1px 1px 19px;margin:1px;height:16px}
-#cadre_haut #menu span {display:block;border:1px solid #77F;color:#EEF;background:#AAF;padding:1px 1px 1px 19px;margin:1px;height:16px} /* test inutilisé pour un menu inactif */
-#cadre_haut #menu a.menu {background:#77F url(../_img/menu/menu.png) no-repeat 1px 1px} /* les images sont ajoutés en javascript, sauf pour le 1er niveau, pour un affichage immédiat */
+#cadre_haut #menu a    {display:block;border:1px solid #77F;color:#FFF;background:#AA0;padding:1px 1px 1px 19px;margin:1px;height:16px}
+#cadre_haut #menu span {display:block;border:1px solid #AA0;color:#EEF;background:#AAF;padding:1px 1px 1px 19px;margin:1px;height:16px} /* test inutilisé pour un menu inactif */
+#cadre_haut #menu a.menu {background:#AA0 url(../_img/menu/menu.png) no-repeat 1px 1px} /* les images sont ajoutés en javascript, sauf pour le 1er niveau, pour un affichage immédiat */
 #cadre_haut #menu a:hover {background-color:#99F;color:#FFF;text-decoration:none}
 #cadre_haut #menu li {float:left;}
 #cadre_haut #menu li li {float:none}
@@ -165,7 +165,7 @@ form span.tab{line-height:2em;margin-left:12em}
 form label.mini{width:8em;}
 
 /* Boutons de validation */
-button{padding:0 1px;margin:1px 0;background:#DDF;color:#139;border:1px solid #66F;}
+button{padding:0 1px;margin:1px 0;background:#DDF;color:#252;border:1px solid #66F;}
 button{width:auto;overflow:visible;} /* patch pour IE : voir http://jehiah.cz/archive/button-width-in-ie */
 button:hover,button.hover{background:#EEF;color:#D41;cursor:pointer;} /* button.hover pour une compatibilité avec AjaxUpload (pour background, car pas mieux pour cursor) */
 button[disabled]{background:#FFF;color:#888;border:1px solid #BBF}
@@ -294,7 +294,7 @@ table.bilan th.info {width:9px;height:9px;background:#DDF url(../_img/info_mini.
 #tableau_validation tfoot td.L134{background:#FFF url(../_img/drapeau/134.gif) no-repeat center center;}
 #tableau_validation tfoot td.L109{background:#FFF url(../_img/drapeau/109.gif) no-repeat center center;}
 #tableau_validation tfoot td.L127{background:#FFF url(../_img/drapeau/127.gif) no-repeat center center;}
-#tableau_validation tfoot td.L139{background:#FFF url(../_img/drapeau/139.gif) no-repeat center center;}
+#tableau_validation tfoot td.L252{background:#FFF url(../_img/drapeau/252.gif) no-repeat center center;}
 #tableau_validation tfoot td.L123{background:#FFF url(../_img/drapeau/123.gif) no-repeat center center;}
 #tableau_validation tfoot td.L216{background:#FFF url(../_img/drapeau/216.gif) no-repeat center center;}
 
@@ -340,8 +340,8 @@ table#statistiques td {text-align:center}
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #calque{position:absolute;z-index:9999;left:0;top:0;border:1px dotted #66F;background:#EEE;font-size:12px;padding:0.25em;text-align:center}
-#calque h5 {display:block;font-size:120%;color:#33A;letter-spacing:0.1em;} /* Titre de calque */
-#calque h6 {margin:0.5em auto;color:#33A;font-size:110%;} /* Consigne */
+#calque h5 {display:block;font-size:120%;color:#252;letter-spacing:0.1em;} /* Titre de calque */
+#calque h6 {margin:0.5em auto;color:#252;font-size:110%;} /* Consigne */
 #calque th,#calque td {text-align:center}
 #calque td.hoy {background-color:#99FF99}
 

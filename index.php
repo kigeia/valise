@@ -245,7 +245,7 @@ $filename_js_normal = './pages/'.$PAGE.'.js';
 $SCRIPT = (is_file($filename_js_normal)) ? '<script type="text/javascript" charset="utf-8" src="'.compacter($filename_js_normal,$VERSION_JS_FILE,'pack').'"></script>' : '' ;
 
 // Titre du navigateur
-$TITRE_NAVIGATEUR = 'SACoche » Espace '.$_SESSION['USER_PROFIL'].' » ';
+$TITRE_NAVIGATEUR = 'Valise » Espace '.$_SESSION['USER_PROFIL'].' » ';
 $TITRE_NAVIGATEUR.= ($TITRE) ? $TITRE : 'Evaluer par comptétences et valider le socle commun' ;
 
 // Affichage de l'en-tête
@@ -273,7 +273,6 @@ entete();
 		// Espace identifié : cadre_haut (avec le menu) et cadre_bas (avec le contenu).
 		echo'<div id="cadre_haut">'."\r\n";
 		echo'	<div id="info">'."\r\n";
-		echo'		<span class="button"><img alt="site officiel" src="./_img/favicon.gif" /> <a class="lien_ext" href="'.SERVEUR_PROJET.'">Site officiel</a></span>'."\r\n";
 		if (isset($_SESSION['INTEGRATION_GEPI']) && $_SESSION['INTEGRATION_GEPI'] == 'yes') {
 			echo'		<span class="button"> <a class="lien_ext" href="'.$_SESSION['GEPI_URL'].'?rne='.$_SESSION['GEPI_RNE'].'">Gepi</a></span>'."\r\n";
 		}
@@ -288,7 +287,7 @@ entete();
 		}
 		echo '</button>'."\r\n";
 		echo'	</div>'."\r\n";
-		echo'	<img id="logo" alt="SACoche" src="./_img/logo_petit2.png" />'."\r\n";
+		echo "\r\n";
 		$fichier_menu = ($_SESSION['USER_PROFIL']!='webmestre') ? '__menu_'.$_SESSION['USER_PROFIL'] : '__menu_'.$_SESSION['USER_PROFIL'].'_'.HEBERGEUR_INSTALLATION ;
 		require_once('./pages/'.$fichier_menu.'.html'); // Le menu '<ul id="menu">...</ul>
 		echo'</div>'."\r\n";
@@ -308,8 +307,7 @@ entete();
 		echo'<div id="cadre_milieu">'."\r\n";
 		$hebergeur_img  = ( (defined('HEBERGEUR_LOGO')) && (is_file('./__tmp/logo/'.HEBERGEUR_LOGO)) ) ? '<img alt="Hébergeur" src="./__tmp/logo/'.HEBERGEUR_LOGO.'" />' : '' ;
 		$hebergeur_lien = ( (defined('HEBERGEUR_ADRESSE_SITE')) && HEBERGEUR_ADRESSE_SITE && ($hebergeur_img) ) ? '<a href="'.html(HEBERGEUR_ADRESSE_SITE).'">'.$hebergeur_img.'</a>' : $hebergeur_img ;
-		$SACoche_lien   = '<a href="'.SERVEUR_PROJET.'"><img alt="Suivi d\'Acquisition de Compétences" src="./_img/logo_grand.gif" /></a>' ;
-		echo ($PAGE=='public_accueil') ? '<h1 class="logo">'.$SACoche_lien.$hebergeur_lien.'</h1>' : '<h1>» '.$TITRE.'</h1>' ;
+		echo ($PAGE=='public_accueil') ? '<h1 class="logo">'.$hebergeur_lien.'</h1>' : '<h1>» '.$TITRE.'</h1>' ;
 		echo 	$CONTENU_PAGE;
 		// echo'<pre>';var_dump($_SESSION);echo'</pre>';
 		echo'</div>'."\r\n";

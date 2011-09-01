@@ -1,0 +1,19 @@
+# Ignore configuration files that may contain sensitive information.
+__private
+
+# Ignore paths that contain user-generated content.
+__tmp
+*.log
+
+# Ignore dev files
+.settings
+.project
+.buildpath
+*.orig
+commit-*
+nbproject
+*.sh
+*REMOTE*
+*.patch
+__private*
+

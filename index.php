@@ -43,9 +43,6 @@ require_once('./_inc/fonction_sessions.php');
 $PAGE    = (isset($_REQUEST['page']))    ? $_REQUEST['page']    : ( (isset($_GET['sso'])) ? 'compte_accueil' : 'public_accueil' ) ;
 $SECTION = (isset($_REQUEST['section'])) ? $_REQUEST['section'] : '' ;
 
-if (isset($_REQUEST['sso']))   { $PAGE = 'compte_accueil'; }
-else                          { $PAGE = 'public_accueil'; }
-
 // Fichier d'informations sur l'hébergement (requis avant la gestion de la session).
 $fichier_constantes = $CHEMIN_CONFIG.'constantes.php';
 if(is_file($fichier_constantes))

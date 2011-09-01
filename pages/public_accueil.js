@@ -36,8 +36,8 @@ $(document).ready
 		// Mis dans le js car incorrect en XHTML1 malgré l'intérêt de l'attribut (revenu en HTML5 et XHTML2)
 		function autocomplete()
 		{
-			$('#f_password').attr('autocomplete','off');
-			$('#f_login').attr('autocomplete','off');
+			//$('#f_password').attr('autocomplete','on');
+			//$('#f_login').attr('autocomplete','on');
 		}
 
 		function curseur()
@@ -118,7 +118,7 @@ $(document).ready
 				}
 			);
 		}
-		chargement();
+		//chargement();
 
 		// Choix dans le formulaire des structures => Afficher le formulaire de la structure
 		$('#f_choisir').live // live est utilisé pour prendre en compte les nouveaux éléments créés

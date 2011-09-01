@@ -327,11 +327,5 @@ entete();
 		var CONNEXION_USED='<?php echo (isset($_COOKIE[COOKIE_AUTHMODE])) ? $_COOKIE[COOKIE_AUTHMODE] : 'normal' ; ?>';
 	</script>
 	<?php echo $SCRIPT; ?>
-	<!-- Objet flash pour lire un fichier audio grace au génial lecteur de neolao http://flash-mp3-player.net/ -->
-	<h6><object class="playerpreview" id="myFlash" type="application/x-shockwave-flash" data="./_mp3/player_mp3_js.swf" height="1" width="1">
-		<param name="movie" value="./_mp3/player_mp3_js.swf" />
-		<param name="AllowScriptAccess" value="always" />
-		<param name="FlashVars" value="listener=myListener&amp;interval=500" />
-	</object></h6>
 </body>
 </html>

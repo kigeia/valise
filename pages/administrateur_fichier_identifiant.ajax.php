@@ -117,7 +117,7 @@ if( (($action=='init_login')||($action=='init_mdp')) && (($profil=='eleves')||($
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	require_once('./_lib/FPDF/PDF_Label.php');
 	$pdf = new PDF_Label(array('paper-size'=>'A4', 'metric'=>'mm', 'marginLeft'=>5, 'marginTop'=>5, 'NX'=>3, 'NY'=>8, 'SpaceX'=>7, 'SpaceY'=>5, 'width'=>60, 'height'=>30, 'font-size'=>11));
-	$pdf -> SetFont('Arial'); // Permet de mieux distinguer les "l 1" etc. que la police Times ou Courrier
+	$pdf -> SetFont('Helvetica'); // Permet de mieux distinguer les "l 1" etc. que la police Times ou Courrier
 	$pdf -> AddPage();
 	$pdf -> SetFillColor(245,245,245);
 	$pdf -> SetDrawColor(145,145,145);
@@ -350,7 +350,7 @@ if($action=='import_loginmdp')
 		$fnom = 'identifiants_'.$_SESSION['BASE'].'_'.time();
 		require_once('./_lib/FPDF/PDF_Label.php');
 		$pdf = new PDF_Label(array('paper-size'=>'A4', 'metric'=>'mm', 'marginLeft'=>5, 'marginTop'=>5, 'NX'=>3, 'NY'=>8, 'SpaceX'=>7, 'SpaceY'=>5, 'width'=>60, 'height'=>30, 'font-size'=>11));
-		$pdf -> SetFont('Arial'); // Permet de mieux distinguer les "l 1" etc. que la police Times ou Courrier
+		$pdf -> SetFont('Helvetica'); // Permet de mieux distinguer les "l 1" etc. que la police Times ou Courrier
 		$pdf -> AddPage();
 		$pdf -> SetFillColor(245,245,245);
 		$pdf -> SetDrawColor(145,145,145);
@@ -611,7 +611,8 @@ if($action=='import_ent')
 	$tab_users_base['prenom']    = array();
 	$tab_users_base['id_sconet'] = array();
 	$tab_users_base['info']      = array();
-	$DB_TAB = DB_STRUCTURE_lister_users(array('eleve','professeur','directeur'),$only_actifs=false,$with_classe=true);
+	$tab_profils = array('eleve','parent','professeur','directeur'); // cybercolleges42 (au moins) contient les parents dans son csv
+	$DB_TAB = DB_STRUCTURE_lister_users($tab_profils,$only_actifs=false,$with_classe=true);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_users_base['id_ent'][$DB_ROW['user_id']]    = $DB_ROW['user_id_ent'];

@@ -1601,7 +1601,7 @@ function importer_eleve_gepi($eleve_tableau)
 			$eleve_tableau['nom'],
 			$eleve_tableau['prenom'],
 			$eleve_tableau['login'],
-			'',
+			fabriquer_mdp(),
 			0,
 			$eleve_tableau['login'],
 			$eleve_tableau['login']);

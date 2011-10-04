@@ -26,7 +26,7 @@
  */
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
-$VERSION_JS_FILE += 13;
+$VERSION_JS_FILE += 14;
 
 // Élément de formulaire "f_geo" pour le choix d'une zone géographique
 $options_geo = '';
@@ -45,7 +45,7 @@ foreach($DB_TAB as $DB_ROW)
 	// ]]>
 </script>
 
-<form id="structures" action="">
+<form action="" method="post" id="structures">
 	<table class="form bilan_synthese vm_nug">
 		<thead>
 			<tr>

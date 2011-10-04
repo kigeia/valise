@@ -805,9 +805,9 @@ function actualiser_style_session()
  */
 function envoyer_webmestre_courriel($adresse,$objet,$contenu)
 {
-	$param = 'From: '.WEBMESTRE_PRENOM.' '.WEBMESTRE_NOM.' <'.WEBMESTRE_COURRIEL.'>'."\r\n";
-	$param.= 'Reply-To: '.WEBMESTRE_PRENOM.' '.WEBMESTRE_NOM.' <'.WEBMESTRE_COURRIEL.'>'."\r\n";
-	$param.= 'Content-type: text/plain; charset=utf-8'."\r\n";
+	$param = 'From: '.WEBMESTRE_PRENOM.' '.WEBMESTRE_NOM.' <'.WEBMESTRE_COURRIEL.'>'."\n";
+	$param.= 'Reply-To: '.WEBMESTRE_PRENOM.' '.WEBMESTRE_NOM.' <'.WEBMESTRE_COURRIEL.'>'."\n";
+	$param.= 'Content-type: text/plain; charset=utf-8'."\r\n"; // \r\n ici et \n avant : http://fr.php.net/manual/fr/function.mail.php#103590
 	// Pb avec les accents dans l'entête (sujet, expéditeur...) ; le charset n'a d'effet que sur le corps et les clients de messagerie interprètent différemment le reste (UTF-8 ou ISO-8859-1 etc.).
 	// $back=($retour)?'-fwebmestre@sesaprof.net':'';
 	// Fonction bridée : 5° paramètre supprimé << Warning: mail(): SAFE MODE Restriction in effect. The fifth parameter is disabled in SAFE MODE.
@@ -1608,11 +1608,12 @@ function importer_eleve_gepi($eleve_tableau)
 			$eleve_tableau['nom'],
 			$eleve_tableau['prenom'],
 			$eleve_tableau['login'],
-			'',
+			fabriquer_mdp(),
 			0,
 			$eleve_tableau['login'],
 			$eleve_tableau['login']);
 	}
+	print_r($user_id);print_r($eleve_tableau);die;
 	return $user_id;
 }
 

@@ -25,24 +25,10 @@
  * 
  */
 
+// Mettre à jour l'élément de formulaire "select_directeurs" et le renvoyer en HTML
+
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
-$TITRE = "Format des noms d'utilisateurs";
-$VERSION_JS_FILE += 1;
+if($_SESSION['SESAMATH_ID']==ID_DEMO) {}
 
-require_once('./_inc/tableau_profils.php'); // Charge $tab_profil_libelle[$profil][court|long][1|2]
-$tab_profils = array('directeur','professeur','eleve','parent');
-$affichage = '';
-foreach($tab_profils as $profil)
-{
-	$affichage .= '<p><label class="tab" for="f_login_'.$profil.'">'.$tab_profil_libelle[$profil]['court'][2].' :</label><input type="text" id="f_login_'.$profil.'" name="f_login_'.$profil.'" value="'.$_SESSION[strtoupper('MODELE_'.$profil)].'" size="20" maxlength="20" /></p>';
-}
+echo afficher_select(DB_STRUCTURE_OPT_directeurs_etabl() , $select_nom=false , $option_first='non' , $selection=true , $optgroup='non');
 ?>
-
-<div><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_format_logins">DOC : Format des noms d'utilisateurs</a></span></div>
-
-<hr />
-
-<form action="" method="post">
-	<?php echo $affichage; ?>
-	<p><span class="tab"></span><button id="bouton_valider" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Valider ces formats.</button><label id="ajax_msg">&nbsp;</label></p>
-</form>

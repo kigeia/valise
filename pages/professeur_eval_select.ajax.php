@@ -77,6 +77,8 @@ $tab_eleves = (isset($_POST['f_eleve_liste']))  ? explode('_',$_POST['f_eleve_li
 $tab_eleves = array_map('clean_entier',$tab_eleves);
 $tab_eleves = array_filter($tab_eleves,'positif');
 $nb_eleves  = count($tab_eleves);
+// Liste des notes transmises
+$tab_notes = (isset($_POST['f_notes'])) ? explode(',',$_POST['f_notes']) : array() ;
 
 //	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //	Afficher une liste d'évaluations
@@ -272,7 +274,7 @@ if( ($action=='saisir') && $devoir_id && $groupe_id && $date && $date_visible &&
 	// liste des items
 	$DB_TAB_COMP = DB_STRUCTURE_lister_items_devoir($devoir_id);
 	// liste des élèves
-	$DB_TAB_USER = DB_STRUCTURE_lister_eleves_actifs_regroupement($groupe_type,$groupe_id);
+	$DB_TAB_USER = DB_STRUCTURE_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
 	// Let's go
 	$item_nb = count($DB_TAB_COMP);
 	if(!$item_nb)
@@ -419,7 +421,7 @@ if( ($action=='voir') && $devoir_id && $groupe_id && $date && $descriptif ) // $
 	// liste des items
 	$DB_TAB_COMP = DB_STRUCTURE_lister_items_devoir($devoir_id);
 	// liste des élèves
-	$DB_TAB_USER = DB_STRUCTURE_lister_eleves_actifs_regroupement($groupe_type,$groupe_id);
+	$DB_TAB_USER = DB_STRUCTURE_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
 	// Let's go
 	$item_nb = count($DB_TAB_COMP);
 	if(!$item_nb)
@@ -594,7 +596,7 @@ if( ($action=='voir_repart') && $devoir_id && $groupe_id && $date && $descriptif
 	// liste des items
 	$DB_TAB_ITEM = DB_STRUCTURE_lister_items_devoir($devoir_id);
 	// liste des élèves
-	$DB_TAB_USER = DB_STRUCTURE_lister_eleves_actifs_regroupement($groupe_type,$groupe_id);
+	$DB_TAB_USER = DB_STRUCTURE_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
 	// Let's go
 	$item_nb = count($DB_TAB_ITEM);
 	if(!$item_nb)
@@ -714,7 +716,7 @@ if( ($action=='voir_repart') && $devoir_id && $groupe_id && $date && $descriptif
 			$sacoche_pdf->Cell($rect_largeur , $rect_hauteur , '' , 0 , 0 , 'C' , true , '');
 			// Écrire le %
 			$sacoche_pdf->SetXY($memo_X , $memo_Y);
-			$sacoche_pdf->SetFont('Arial' , '' , $sacoche_pdf->taille_police*(1+$coefficient));
+			$sacoche_pdf->SetFont('Helvetica' , '' , $sacoche_pdf->taille_police*(1+$coefficient));
 			$sacoche_pdf->Cell($sacoche_pdf->cases_largeur , $sacoche_pdf->cases_hauteur , pdf(round(100*$coefficient).'%') , 1 , 0 , 'C' , false , '');
 		}
 		$sacoche_pdf->SetXY($sacoche_pdf->marge_gauche , $sacoche_pdf->GetY()+$sacoche_pdf->cases_hauteur);
@@ -731,20 +733,13 @@ if( ($action=='voir_repart') && $devoir_id && $groupe_id && $date && $descriptif
 		$somme += max(4,max($tab_effectifs));
 	}
 	$sacoche_pdf->tableau_devoir_repartition_nominative_initialiser($somme);
-	// 1ère ligne : référence des codes
-	$sacoche_pdf->tableau_saisie_reference_devoir($descriptif);
-	$sacoche_pdf->SetXY($sacoche_pdf->marge_gauche+$sacoche_pdf->reference_largeur , $sacoche_pdf->marge_haut);
-	foreach($tab_init_quantitatif as $note=>$vide)
-	{
-		$sacoche_pdf->afficher_note_lomer($note,$border=1,$br=0);
-	}
-	// ligne suivantes : référence item, cases répartition nominative
-	$sacoche_pdf->SetXY($sacoche_pdf->marge_gauche , $sacoche_pdf->marge_haut+$sacoche_pdf->etiquette_hauteur);
 	foreach($tab_item_id as $item_id=>$tab_infos_item)
 	{
-		// il faut calculer la hauteur de la case
-		$sacoche_pdf->cases_hauteur = $sacoche_pdf->lignes_hauteur * max(4,max($tab_repartition_quantitatif[$item_id]));
+		// 1ère ligne : nouvelle page si besoin + référence du devoir et des codes si besoin
+		$sacoche_pdf->tableau_devoir_repartition_nominative_entete($descriptif,$tab_init_quantitatif,$tab_repartition_quantitatif[$item_id]);
+		// ligne de répartition pour 1 item : référence item
 		$sacoche_pdf->tableau_saisie_reference_item($tab_infos_item[0],$tab_infos_item[1]);
+		// ligne de répartition pour 1 item : cases répartition nominative
 		foreach($tab_repartition_nominatif[$item_id] as $code=>$tab_eleves)
 		{
 			// Ecrire les noms ; plus court avec MultiCell() mais pb des retours à la ligne pour les noms trop longs
@@ -757,7 +752,7 @@ if( ($action=='voir_repart') && $devoir_id && $groupe_id && $date && $descriptif
 				{
 					$taille_police -= 0.5 ;
 				}
-				$sacoche_pdf->SetFont('Arial' , '' , $taille_police);
+				$sacoche_pdf->SetFont('Helvetica' , '' , $taille_police);
 				$sacoche_pdf->Cell($sacoche_pdf->cases_largeur , $sacoche_pdf->lignes_hauteur , pdf($eleve_texte) , 0 , 2 , 'L' , false , '');
 			}
 			// Ajouter la bordure
@@ -787,22 +782,18 @@ if( ($action=='Enregistrer_ordre') && $devoir_id && count($tab_id) )
 //	Mettre à jour les items acquis par les élèves à une évaluation
 //	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-if( ($action=='Enregistrer_saisie') && $devoir_id && $date && $date_visible )
+if( ($action=='Enregistrer_saisie') && $devoir_id && $date && $date_visible && count($tab_notes) )
 {
 	// Tout est transmis : il faut comparer avec le contenu de la base pour ne mettre à jour que ce dont il y a besoin
-	// On récupère les données transmises dans $tab_post
+	// On récupère les notes transmises dans $tab_post
 	$tab_post = array();
-	foreach($_POST as $key => $note)
+	foreach($tab_notes as $key_note)
 	{
-		$tab_key = explode('x',$key);
-		if(count($tab_key)==2)
+		list( $key , $note ) = explode('_',$key_note);
+		list( $item_id , $eleve_id ) = explode('x',$key);
+		if( (int)$item_id && (int)$eleve_id )
 		{
-			$item_id = clean_entier($tab_key[0]);
-			$eleve_id = clean_entier($tab_key[1]);
-			if( $item_id && $eleve_id )
-			{
-				$tab_post[$item_id.'x'.$eleve_id] = $note;
-			}
+			$tab_post[$item_id.'x'.$eleve_id] = $note;
 		}
 	}
 	// On recupère le contenu de la base déjà enregistré pour le comparer ; on remplit au fur et à mesure $tab_nouveau_modifier / $tab_nouveau_supprimer
@@ -879,7 +870,7 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_id && $date && $car
 	// liste des items
 	$DB_TAB_COMP = DB_STRUCTURE_lister_items_devoir($devoir_id);
 	// liste des élèves
-	$DB_TAB_USER = DB_STRUCTURE_lister_eleves_actifs_regroupement($groupe_type,$groupe_id);
+	$DB_TAB_USER = DB_STRUCTURE_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
 	// Let's go
 	if(!count($DB_TAB_COMP))
 	{

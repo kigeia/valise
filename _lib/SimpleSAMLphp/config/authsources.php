@@ -54,13 +54,20 @@ $config = array(
 		),
 		//on va travailler sur les attributs pour avoir des attributs au format sacoche
 		'authproc' => array(
-		    50 => array(
-			'class' => 'core:AttributeMap',
-			'login_gepi' => array('USER_ID_ENT', 'USER_ID_GEPI'),
-			'statut' => 'USER_PROFIL',
-			'nom' => 'USER_NOM',
-			'prenom' => 'USER_PRENOM',
+			50 => array(
+				'class' => 'core:AttributeMap',
+				'login_gepi' => array('USER_ID_ENT', 'USER_ID_GEPI'),
+				'statut' => 'USER_PROFIL',
+				'nom' => 'USER_NOM',
+				'prenom' => 'USER_PRENOM',
+				'pers_id' => 'USER_SCONET_ID',
 		    ),
+			60 => array(
+			    'class' => 'core:AttributeAlter',
+			    'subject' => 'USER_PROFIL',
+			    'pattern' => '/responsable/',
+			    'replacement' => 'parent',
+			),
 		),
 	),
 

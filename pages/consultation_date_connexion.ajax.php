@@ -28,25 +28,27 @@
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 if($_SESSION['SESAMATH_ID']==ID_DEMO) {}
 
+$profil      = (isset($_POST['f_profil']))      ? clean_texte($_POST['f_profil'])      : ''; // professeur directeur eleve parent
 $groupe_type = (isset($_POST['f_groupe_type'])) ? clean_texte($_POST['f_groupe_type']) : ''; // d n c g b
 $groupe_id   = (isset($_POST['f_groupe_id']))   ? clean_entier($_POST['f_groupe_id'])  : 0;
-$tab_types   = array('d'=>'profs+dirs' , 'n'=>'niveau' , 'c'=>'classe' , 'g'=>'groupe' , 'b'=>'besoin');
+$tab_types   = array('d'=>'all' , 'n'=>'niveau' , 'c'=>'classe' , 'g'=>'groupe' , 'b'=>'besoin');
 
-if( (!$groupe_id) || (!isset($tab_types[$groupe_type])) )
+if( (!$profil) || (!$groupe_id) || (!isset($tab_types[$groupe_type])) )
 {
 	exit('Erreur avec les données transmises !');
 }
 
-$DB_TAB = ($groupe_type!='d') ? DB_STRUCTURE_lister_eleves_actifs_regroupement($tab_types[$groupe_type],$groupe_id) : DB_STRUCTURE_lister_users($profil=array('professeur','directeur'),$only_actifs=true,$with_classe=false) ;
+$champs = ($profil!='parent') ? 'CONCAT(user_nom," ",user_prenom) AS user_identite , user_connexion_date AS connexion_date' : 'CONCAT(parent.user_nom," ",parent.user_prenom," (",enfant.user_nom," ",enfant.user_prenom,")") AS user_identite , parent.user_connexion_date AS connexion_date' ;
+$DB_TAB = DB_STRUCTURE_lister_users_actifs_regroupement($profil,$tab_types[$groupe_type],$groupe_id,$champs) ;
 
 foreach($DB_TAB as $DB_ROW)
 {
 	// Formater la date (dont on ne garde que le jour)
-	$date_mysql  = substr($DB_ROW['user_connexion_date'],0,10);
+	$date_mysql  = substr($DB_ROW['connexion_date'],0,10);
 	$date_affich = ($date_mysql!='0000-00-00') ? convert_date_mysql_to_french($date_mysql) : '-' ;
 	// Afficher une ligne du tableau
 	echo'<tr>';
-	echo	'<td>'.html($DB_ROW['user_nom'].' '.$DB_ROW['user_prenom']).'</td>';
+	echo	'<td>'.html($DB_ROW['user_identite']).'</td>';
 	echo	'<td><i>'.html($date_mysql).'</i>'.html($date_affich).'</td>';
 	echo'</tr>';
 }

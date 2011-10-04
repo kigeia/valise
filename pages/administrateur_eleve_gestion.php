@@ -41,13 +41,13 @@ $select_f_groupes = afficher_select(DB_STRUCTURE_OPT_regroupements_etabl() , $se
 
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_eleves">DOC : Gestion des élèves</a></span></p>
 
-<form action="./index.php?page=<?php echo $PAGE ?>" method="POST" id="form0">
+<form action="./index.php?page=<?php echo $PAGE ?>" method="post" id="form0">
 	<div>Restreindre l'affichage : <?php echo $select_f_groupes ?> <button id="actualiser" type="submit"><img alt="" src="./_img/bouton/actualiser.png" /> Actualiser.</button></div>
 </form>
 
 <hr />
 
-<form action="" id="form1">
+<form action="" method="post" id="form1">
 	<table class="form t9">
 		<thead>
 			<tr>
@@ -72,7 +72,7 @@ $select_f_groupes = afficher_select(DB_STRUCTURE_OPT_regroupements_etabl() , $se
 			{
 				$groupe_type = ($groupe_id==1) ? 'sdf' : 'all' ;
 			}
-			$DB_TAB = DB_STRUCTURE_lister_eleves_actifs_regroupement($groupe_type,$groupe_id);
+			$DB_TAB = DB_STRUCTURE_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id,'user_id,user_id_ent,user_id_gepi,user_sconet_id,user_sconet_elenoet,user_reference,user_nom,user_prenom,user_login');
 			if(count($DB_TAB))
 			{
 				foreach($DB_TAB as $DB_ROW)

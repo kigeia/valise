@@ -212,8 +212,13 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 						if (count($DB_ROW_TEST)) {
 							$login .= '_gepi';
 						}
+						$sconet_id = '';
+						if (isset($attr['USER_SCONET_ID']) && isset($attr['USER_SCONET_ID'][0])) {
+							$sconet_id = $attr['USER_SCONET_ID'][0];
+						}
+						
 						$user_id = DB_STRUCTURE_ajouter_utilisateur(
-							'', //sconet_id
+							$sconet_id, //sconet_id
 							'', //sconet_num
 							'', //reference
 							$attr['USER_PROFIL'][0],
@@ -225,6 +230,7 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 							$attr['USER_ID_ENT'][0],
 							$attr['USER_ID_GEPI'][0]
 							);
+							
 					} else {
 						$user_id = (int) $DB_ROW['user_id'];
 					}
@@ -249,6 +255,16 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 							}
 						}
 					}	
+					
+					if (isset($attr['responsable_info'])) {
+						foreach($attr['responsable_info'] as $resp_info_json) {
+							$resp_info_array = json_decode($resp_info_json,true);
+							//print_r($resp_info_array);die;
+							$eleve_id = importer_eleve_gepi($resp_info_array['Eleve']);
+							DB_STRUCTURE_ajouter_jointure_parent_eleve($user_id,$eleve_id,$resp_info_array['RespLegal']);
+						}
+					}
+					
 					$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur('gepi',$attr['USER_ID_GEPI'][0]);
 					DB_STRUCTURE_modifier_date('connexion',$DB_ROW['user_id']);
 					$result = enregistrer_session_user($BASE,$DB_ROW);

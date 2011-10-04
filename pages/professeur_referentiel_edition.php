@@ -27,7 +27,7 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Modifier le contenu des référentiels";
-$VERSION_JS_FILE += 10;
+$VERSION_JS_FILE += 11;
 ?>
 
 <ul class="puce">
@@ -39,7 +39,7 @@ $VERSION_JS_FILE += 10;
 
 <hr />
 
-<form action="" onsubmit="return false;">
+<form action="" method="post" onsubmit="return false;">
 
 <?php
 // J'ai séparé en plusieurs requêtes au bout de plusieurs heures sans m'en sortir (entre les matières sans coordonnateurs, sans référentiel, les deux à la fois...).
@@ -100,7 +100,7 @@ else
 		{
 			$x = ($tab_matiere[$matiere_id]['niveau_nb'])>1 ? 'x' : '';
 			$affichage .= '<td class="v">Référentiel présent sur '.$tab_matiere[$matiere_id]['niveau_nb'].' niveau'.$x.'.</td>';
-			$affichage .= ($matiere_coord) ? '<td class="nu" id="'.$id.'"><q class="modifier" title="Paramétrer les référentiels de cette matière."></q></td>' : '<td class="nu"><q class="modifier_non" title="Action réservée aux coordonnateurs."></q></td>' ;
+			$affichage .= ($matiere_coord) ? '<td class="nu" id="'.$id.'"><q class="modifier" title="Modifier les référentiels de cette matière."></q></td>' : '<td class="nu"><q class="modifier_non" title="Action réservée aux coordonnateurs."></q></td>' ;
 
 		}
 		else

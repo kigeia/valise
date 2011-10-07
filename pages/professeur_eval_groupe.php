@@ -106,13 +106,9 @@ if(count($tab_id_classe_groupe))
 
 <hr />
 
-<<<<<<< HEAD
-<form action="" id="form0"><fieldset>
+<form action="" method="post" id="form0"><fieldset>
 	<input type="hidden" name="f_devoir_id" id="f_devoir_id" value=""/>
 	<?php if (!isset($_POST['gepi_cn_devoirs_row'])) { ?>
-=======
-<form action="" method="post" id="form0"><fieldset>
->>>>>>> trunk
 	<label class="tab" for="f_aff_classe">Classe / groupe :</label><select id="f_aff_classe" name="f_aff_classe"><?php echo $select_eleve ?></select>
 	<div id="zone_periodes" class="hide">
 		<label class="tab" for="f_aff_periode">Période :</label><?php echo $select_periode ?>
@@ -127,11 +123,7 @@ if(count($tab_id_classe_groupe))
 	<?php } ?>
 </fieldset></form>
 
-<<<<<<< HEAD
-<form action="" id="form1" name="form1">
-=======
-<form action="" method="post" id="form1">
->>>>>>> trunk
+<form action="" method="post" id="form1" name="form1">
 	<hr />
 	<p id="p_alerte" class="danger hide">Une évaluation dont la saisie a commencé ne devrait pas voir ses items modifiés.<br />En particulier, retirer des items d'une évaluation efface les scores correspondants qui sont saisis !</p>
 	<table class="form">

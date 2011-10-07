@@ -1613,7 +1613,6 @@ function importer_eleve_gepi($eleve_tableau)
 			$eleve_tableau['login'],
 			$eleve_tableau['login']);
 	}
-	print_r($user_id);print_r($eleve_tableau);die;
 	return $user_id;
 }
 

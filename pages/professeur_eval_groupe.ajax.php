@@ -1120,7 +1120,7 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_type && $groupe_id 
 				{
 					if( ($only_req==false) || ($tab_result[$comp_id][$user_id]) )
 					{
-						$ligne1_html .= '<td>5'.html($tab_val_comp[0]).'</td>';
+						$ligne1_html .= '<td>'.html($tab_val_comp[0]).'</td>';
 						$ligne2_html .= '<td class="hc">'.affich_note_html($tab_result[$comp_id][$user_id],$date,$info,false).'</td>';
 						$ligne1_csv .= $tab_val_comp[0]."\t";
 						$ligne2_csv .= $tab_result[$comp_id][$user_id]."\t";

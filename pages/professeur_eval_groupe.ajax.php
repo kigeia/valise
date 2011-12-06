@@ -1037,8 +1037,15 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_type && $groupe_id 
 	foreach($DB_TAB_COMP as $DB_ROW)
 	{
 		$item_ref = $DB_ROW['item_ref'];
+                if ($DB_ROW['entree_id']) {
+                        $DB_TAB_COMP = DB_STRUCTURE_recuperer_item_socle($DB_ROW['entree_id']);
+                        $entree = $DB_TAB_COMP[0];
+                        $entree_socle = ' [C'.$entree['pilier_ref'].'.'.$entree['section_ordre'].'.'.$entree['entree_ordre'].']';
+                } else {
+                        $entree_socle = '';
+                }
 		$texte_socle = ($DB_ROW['entree_id']) ? '[S] ' : '[–] ';
-		$tab_comp_id[$DB_ROW['item_id']] = array($item_ref,$texte_socle.$DB_ROW['item_nom']);
+		$tab_comp_id[$DB_ROW['item_id']] = array($item_ref.$entree_socle,$texte_socle.$DB_ROW['item_nom']);
 	}
 	// résultats vierges
 	foreach($tab_user_id as $user_id=>$val_user)
@@ -1113,7 +1120,7 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_type && $groupe_id 
 				{
 					if( ($only_req==false) || ($tab_result[$comp_id][$user_id]) )
 					{
-						$ligne1_html .= '<td>'.html($tab_val_comp[0]).'</td>';
+						$ligne1_html .= '<td>5'.html($tab_val_comp[0]).'</td>';
 						$ligne2_html .= '<td class="hc">'.affich_note_html($tab_result[$comp_id][$user_id],$date,$info,false).'</td>';
 						$ligne1_csv .= $tab_val_comp[0]."\t";
 						$ligne2_csv .= $tab_result[$comp_id][$user_id]."\t";

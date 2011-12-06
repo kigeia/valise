@@ -392,6 +392,22 @@ function DB_STRUCTURE_recuperer_arborescence_palier($liste_palier_id=false,$list
 }
 
 /**
+ * DB_STRUCTURE_recuperer_item_socle
+ *
+ * @param string|int $entree_id
+ * @return array
+ */
+function DB_STRUCTURE_recuperer_item_socle($entree_id=false)
+{
+	$DB_SQL = 'SELECT * FROM sacoche_socle_palier ';
+	$DB_SQL.= 'LEFT JOIN sacoche_socle_pilier USING (palier_id) ';
+	$DB_SQL.= 'LEFT JOIN sacoche_socle_section USING (pilier_id) ';
+	$DB_SQL.= 'LEFT JOIN sacoche_socle_entree USING (section_id) ';
+	$DB_SQL.= 'WHERE sacoche_socle_entree.entree_id=:entree_id ';
+	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , array(':entree_id'=>$entree_id));
+}
+
+/**
  * DB_STRUCTURE_recuperer_piliers
  * Retourner les piliers d'un palier donné
  *

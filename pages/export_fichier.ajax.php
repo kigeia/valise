@@ -275,7 +275,7 @@ if( ($type_export=='arbre_socle') && $palier_id && $palier_nom )
 		if( (!is_null($DB_ROW['entree_id'])) && ($DB_ROW['entree_id']!=$entree_id) )
 		{
 			$entree_id = $DB_ROW['entree_id'];
-			$tab_entree[$pilier_id][$section_id][$entree_id] = $DB_ROW['pilier_ref'].'.'.$DB_ROW['section_ordre'].'.'.$DB_ROW['entree_ordre'].' - '.$DB_ROW['entree_nom'];
+			$tab_entree[$pilier_id][$section_id][$entree_id] = $DB_ROW['pilier_ref'].'.'.$DB_ROW['section_ordre'].'.'.($DB_ROW['entree_ordre']+1).' - '.$DB_ROW['entree_nom'];
 		}
 	}
 	$export_csv .= $palier_nom."\r\n";
@@ -369,7 +369,7 @@ if( ($type_export=='jointure_socle_matiere') && $palier_id && $palier_nom )
 		if( (!is_null($DB_ROW['entree_id'])) && ($DB_ROW['entree_id']!=$socle_id) )
 		{
 			$socle_id = $DB_ROW['entree_id'];
-			$tab_socle[$pilier_id][$section_id][$socle_id] = $DB_ROW['pilier_ref'].'.'.$DB_ROW['section_ordre'].'.'.$DB_ROW['entree_ordre'].' - '.$DB_ROW['entree_nom'];
+			$tab_socle[$pilier_id][$section_id][$socle_id] = $DB_ROW['pilier_ref'].'.'.$DB_ROW['section_ordre'].'.'.($DB_ROW['entree_ordre']+1).' - '.$DB_ROW['entree_nom'];
 		}
 	}
 

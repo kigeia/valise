@@ -1020,7 +1020,7 @@ function afficher_arborescence_socle_from_SQL($DB_TAB,$dynamique,$reference,$aff
 				$label_texte_avant = '<label for="socle_'.$entree_id.'">';
 				$label_texte_apres = '</label>';
 			}
-			$entree_texte = ($reference) ? $DB_ROW['pilier_ref'].'.'.$DB_ROW['section_ordre'].'.'.$DB_ROW['entree_ordre'].' - '.$DB_ROW['entree_nom'] : $DB_ROW['entree_nom'] ;
+			$entree_texte = ($reference) ? $DB_ROW['pilier_ref'].'.'.$DB_ROW['section_ordre'].'.'.($DB_ROW['entree_ordre']+1).' - '.$DB_ROW['entree_nom'] : $DB_ROW['entree_nom'] ;
 			$tab_entree[$palier_id][$pilier_id][$section_id][$entree_id] = $input_texte.$label_texte_avant.html($entree_texte).$label_texte_apres;
 		}
 	}

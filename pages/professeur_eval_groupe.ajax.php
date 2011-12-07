@@ -1040,7 +1040,7 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_type && $groupe_id 
                 if ($DB_ROW['entree_id']) {
                         $DB_TAB_COMP = DB_STRUCTURE_recuperer_item_socle($DB_ROW['entree_id']);
                         $entree = $DB_TAB_COMP[0];
-                        $entree_socle = ' [C'.$entree['pilier_ref'].'.'.$entree['section_ordre'].'.'.$entree['entree_ordre'].']';
+                        $entree_socle = ' [C'.$entree['pilier_ref'].'.'.$entree['section_ordre'].'.'.($entree['entree_ordre']+1).']';
                 } else {
                         $entree_socle = '';
                 }

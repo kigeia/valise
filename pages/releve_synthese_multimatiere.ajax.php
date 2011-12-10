@@ -46,15 +46,16 @@ $only_socle  = (isset($_POST['f_restriction_socle']))  ? 1                      
 $only_niveau = (isset($_POST['f_restriction_niveau'])) ? $niveau_id                           : 0;
 $couleur     = (isset($_POST['f_couleur']))            ? clean_texte($_POST['f_couleur'])     : '';
 $legende     = (isset($_POST['f_legende']))            ? clean_texte($_POST['f_legende'])     : '';
-$tab_eleve   = (isset($_POST['eleves'])) ? array_map('clean_entier',explode(',',$_POST['eleves'])) : array() ;
+// Normalement c'est un tableau qui est transmis, mais au cas où...
+$tab_eleve = (isset($_POST['f_eleve'])) ? ( (is_array($_POST['f_eleve'])) ? $_POST['f_eleve'] : explode(',',$_POST['f_eleve']) ) : array() ;
+$tab_eleve = array_filter( array_map( 'clean_entier' , $tab_eleve ) , 'positif' );
 
-$tab_eleve     = array_filter($tab_eleve,'positif');
-$liste_eleve   = implode(',',$tab_eleve);
+$liste_eleve = implode(',',$tab_eleve);
 
 if( $groupe_id && $groupe_nom && count($tab_eleve) && ( $periode_id || ($date_debut && $date_fin) ) && $retroactif && $couleur && $legende )
 {
 
-	save_cookie_select('releve_synthese');
+	Formulaire::save_choix('synthese_multimatiere');
 
 	// Permet d'avoir des informations accessibles en cas d'erreur type « PHP Fatal error : Allowed memory size of ... bytes exhausted ».
 	// ajouter_log_PHP( $log_objet='Demande de bilan' , $log_contenu=serialize($_POST) , $log_fichier=__FILE__ , $log_ligne=__LINE__ , $only_sesamath=true );
@@ -67,7 +68,7 @@ if( $groupe_id && $groupe_nom && count($tab_eleve) && ( $periode_id || ($date_de
 	}
 	else
 	{
-		$DB_ROW = DB_STRUCTURE_recuperer_dates_periode($groupe_id,$periode_id);
+		$DB_ROW = DB_STRUCTURE_COMMUN::DB_recuperer_dates_periode($groupe_id,$periode_id);
 		if(!count($DB_ROW))
 		{
 			exit('La classe et la période ne sont pas reliées !');
@@ -95,7 +96,7 @@ if( $groupe_id && $groupe_nom && count($tab_eleve) && ( $periode_id || ($date_de
 	// Récupération de la liste des matières concernées
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 
-	list($tab_item,$tab_synthese,$tab_matiere) = DB_STRUCTURE_recuperer_arborescence_synthese($liste_eleve,$matiere_id=false,$only_socle,$only_niveau,$mode_synthese='predefini',$date_mysql_debut,$date_mysql_fin);
+	list($tab_item,$tab_synthese,$tab_matiere) = DB_STRUCTURE_BILAN::DB_recuperer_arborescence_synthese($liste_eleve,$matiere_id=false,$only_socle,$only_niveau,$mode_synthese='predefini',$date_mysql_debut,$date_mysql_fin);
 	// $tab_matiere déjà renseigné à la requête précédente.
 
 	$item_nb = count($tab_item);
@@ -109,7 +110,7 @@ if( $groupe_id && $groupe_nom && count($tab_eleve) && ( $periode_id || ($date_de
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	// Récupération de la liste des élèves
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-	$tab_eleve = DB_STRUCTURE_lister_eleves_cibles($liste_eleve,$with_gepi=FALSE,$with_langue=FALSE);
+	$tab_eleve = DB_STRUCTURE_BILAN::DB_lister_eleves_cibles($liste_eleve,$with_gepi=FALSE,$with_langue=FALSE);
 	if(!is_array($tab_eleve))
 	{
 		exit('Aucun élève trouvé correspondant aux identifiants transmis !');
@@ -121,14 +122,14 @@ if( $groupe_id && $groupe_nom && count($tab_eleve) && ( $periode_id || ($date_de
 	// Attention, il faut éliminer certains items qui peuvent potentiellement apparaitre dans des relevés d'élèves alors qu'ils n'ont pas été interrogés sur la période considérée (mais un camarade oui).
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	$tab_score_a_garder = array();
-	$DB_TAB = DB_STRUCTURE_lister_date_last_eleves_items($liste_eleve,$liste_item);
+	$DB_TAB = DB_STRUCTURE_BILAN::DB_lister_date_last_eleves_items($liste_eleve,$liste_item);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_score_a_garder[$DB_ROW['eleve_id']][$DB_ROW['item_id']] = ($DB_ROW['date_last']<$date_mysql_debut) ? false : true ;
 	}
 
 	$date_mysql_debut = ($retroactif=='non') ? $date_mysql_debut : false;
-	$DB_TAB = DB_STRUCTURE_lister_result_eleves_matieres($liste_eleve , $liste_item , $date_mysql_debut , $date_mysql_fin , $_SESSION['USER_PROFIL']);
+	$DB_TAB = DB_STRUCTURE_BILAN::DB_lister_result_eleves_matieres($liste_eleve , $liste_item , $date_mysql_debut , $date_mysql_fin , $_SESSION['USER_PROFIL']);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		if($tab_score_a_garder[$DB_ROW['eleve_id']][$DB_ROW['item_id']])
@@ -148,19 +149,20 @@ if( $groupe_id && $groupe_nom && count($tab_eleve) && ( $periode_id || ($date_de
 	// On retourne les résultats
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 
-	if($_SESSION['USER_PROFIL']=='eleve')
+	if($affichage_direct)
 	{
+		echo'<hr />';
 		echo'<ul class="puce">';
-		echo'<li><label class="alerte"><a class="lien_ext" href="'.$dossier.$fichier_lien.'.pdf">Archiver / Imprimer (format <em>pdf</em>).</a></label></li>';
-		echo'</ul><p />';
+		echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'.pdf"><span class="file file_pdf">Archiver / Imprimer (format <em>pdf</em>).</span></a></li>';
+		echo'</ul>';
 		echo $releve_HTML;
 	}
 	else
 	{
 		echo'<ul class="puce">';
-		echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'.pdf">Archiver / Imprimer (format <em>pdf</em>).</a></li>';
-		echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'">Explorer / Détailler (format <em>html</em>).</a></li>';
-		echo'</ul><p />';
+		echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'.pdf"><span class="file file_pdf">Archiver / Imprimer (format <em>pdf</em>).</span></a></li>';
+		echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'"><span class="file file_htm">Explorer / Détailler (format <em>html</em>).</span></a></li>';
+		echo'</ul>';
 	}
 }
 

@@ -27,11 +27,10 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Demandes d'évaluations";
-$VERSION_JS_FILE += 12;
 
 // Lister le nb de demandes d'évaluations autorisées suivant les matières
 $infobulle = '';
-$DB_TAB = DB_STRUCTURE_OPT_matieres_professeur($_SESSION['MATIERES'],$_SESSION['USER_ID']);
+$DB_TAB = DB_STRUCTURE_COMMUN::DB_OPT_matieres_professeur($_SESSION['MATIERES'],$_SESSION['USER_ID']);
 if(!is_array($DB_TAB))
 {
 	$infobulle .= $DB_TAB;
@@ -55,17 +54,17 @@ else
 
 <?php
 // Fabrication des éléments select du formulaire
-$select_matiere = afficher_select(DB_STRUCTURE_OPT_matieres_professeur($_SESSION['MATIERES'],$_SESSION['USER_ID']) , $select_nom='f_matiere' , $option_first='non' , $selection=false , $optgroup='non');
-$select_groupe  = afficher_select(DB_STRUCTURE_OPT_groupes_professeur($_SESSION['USER_ID'])                        , $select_nom='f_groupe'  , $option_first='oui' , $selection=false , $optgroup='oui');
+$select_matiere = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_matieres_professeur($_SESSION['MATIERES'],$_SESSION['USER_ID']) , $select_nom='f_matiere' , $option_first='non' , $selection=false , $optgroup='non');
+$select_groupe  = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_groupes_professeur($_SESSION['USER_ID'])                        , $select_nom='f_groupe'  , $option_first='oui' , $selection=false , $optgroup='oui');
 ?>
 
-<form action="" method="post" id="form0"><fieldset>
+<form action="#" method="post" id="form0"><fieldset>
 	<label class="tab" for="f_matiere">Matière :</label><?php echo $select_matiere ?><input type="hidden" id="f_matiere_nom" name="f_matiere_nom" value="" /><br />
 	<label class="tab" for="f_groupe">Classe / groupe :</label><?php echo $select_groupe ?><input type="hidden" id="f_groupe_id" name="f_groupe_id" value="" /><input type="hidden" id="f_groupe_type" name="f_groupe_type" value="" /><input type="hidden" id="f_groupe_nom" name="f_groupe_nom" value="" /><br />
-	<span class="tab"></span><input type="hidden" name="f_action" value="Afficher_demandes" /><button id="actualiser" type="submit"><img alt="" src="./_img/bouton/actualiser.png" /> Actualiser l'affichage.</button><label id="ajax_msg0">&nbsp;</label>
+	<span class="tab"></span><input type="hidden" name="f_action" value="Afficher_demandes" /><button id="actualiser" type="submit" class="actualiser">Actualiser l'affichage.</button><label id="ajax_msg0">&nbsp;</label>
 </fieldset></form>
 
-<form action="" method="post" id="form1" class="hide">
+<form action="#" method="post" id="form1" class="hide">
 	<hr />
 	<table class="bilan_synthese" style="float:right;margin-left:1em;margin-right:1ex">
 		<thead><tr><th>élève(s) sans demande</th></tr></thead>
@@ -74,7 +73,7 @@ $select_groupe  = afficher_select(DB_STRUCTURE_OPT_groupes_professeur($_SESSION[
 	<table id="table_demandes" class="form">
 		<thead>
 			<tr>
-				<th class="nu"><input id="all_check" type="image" src="./_img/all_check.gif" title="Tout cocher." /> <input id="all_uncheck" type="image" src="./_img/all_uncheck.gif" title="Tout décocher." /></th>
+				<th class="nu"><input id="all_check" type="image" alt="Tout cocher." src="./_img/all_check.gif" title="Tout cocher." /> <input id="all_uncheck" type="image" alt="Tout décocher." src="./_img/all_uncheck.gif" title="Tout décocher." /></th>
 				<th>Matière</th>
 				<th>Item</th>
 				<th>Popularité</th>
@@ -106,11 +105,11 @@ $select_groupe  = afficher_select(DB_STRUCTURE_OPT_groupes_professeur($_SESSION[
 			<label class="tab" for="f_devoir">Évaluation :</label><select id="f_devoir" name="f_devoir"><option></option></select><label id="ajax_maj1">&nbsp;</label>
 		</fieldset>
 		<fieldset id="step_suite" class="hide">
-			<label class="tab" for="f_creer">Suite :</label><select id="f_suite" name="f_suite"><option value="changer">Changer ensuite le statut pour "évaluation en préparation".</option><option value="retirer">Retirer ensuite de la liste des demandes.</option></select>
+			<label class="tab" for="f_suite">Suite :</label><select id="f_suite" name="f_suite"><option value="changer">Changer ensuite le statut pour "évaluation en préparation".</option><option value="retirer">Retirer ensuite de la liste des demandes.</option></select>
 		</fieldset>
 		<p id="step_valider" class="hide">
 			<input type="hidden" id="f_groupe_id2" name="f_groupe_id" value="" /><input type="hidden" id="f_groupe_type2" name="f_groupe_type" value="" />
-			<span class="tab"></span><button id="bouton_valider" type="submit"><img alt="" src="./_img/bouton/valider.png" /> Valider.</button><label id="ajax_msg1">&nbsp;</label>
+			<span class="tab"></span><button id="bouton_valider" type="submit" class="valider">Valider.</button><label id="ajax_msg1">&nbsp;</label>
 		</p>
 	</div>
 </form>

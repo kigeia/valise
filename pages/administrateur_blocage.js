@@ -123,7 +123,7 @@ $(document).ready
 			if(readytogo)
 			{
 				$("#bouton_valider").prop('disabled',true);
-				$('#ajax_msg').removeAttr("class").addClass("loader").html("Traitement de la demande en cours... Veuillez patienter.");
+				$('#ajax_msg').removeAttr("class").addClass("loader").html("Traitement de la demande en cours...");
 			}
 			return readytogo;
 		}
@@ -132,7 +132,7 @@ $(document).ready
 		function retour_form_erreur(msg,string)
 		{
 			$("#bouton_valider").prop('disabled',false);
-			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez valider de nouveau.");
+			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 		}
 
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)
@@ -143,7 +143,7 @@ $(document).ready
 			if(responseHTML.substring(0,13)=='<label class=')
 			{
 				
-				$('#ajax_msg').removeAttr("class").addClass("valide").html("Demande prise en compte.").fadeOut(2000,function(){$(this).removeAttr("class").html("").show();});
+				$('#ajax_msg').removeAttr("class").html("");
 				$('#ajax_acces_actuel').html(responseHTML);
 			}
 			else

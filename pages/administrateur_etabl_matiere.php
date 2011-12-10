@@ -35,7 +35,7 @@ $TITRE = "Matières";
 
 <h2>Matières partagées</h2>
 
-<form action="" method="post" id="partage">
+<form action="#" method="post" id="partage">
 	<table class="form">
 		<thead>
 			<tr><th class="nu"></th><th>Référence</th><th>Nom complet</th></tr>
@@ -45,7 +45,7 @@ $TITRE = "Matières";
 			// Cases à cocher
 			$tab_check = explode(',',$_SESSION['MATIERES']);
 			// Lister les matières partagées
-			$DB_TAB = DB_STRUCTURE_lister_matieres_partagees_SACoche();
+			$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_matieres_partagees_SACoche();
 			foreach($DB_TAB as $DB_ROW)
 			{
 				// Afficher une ligne du tableau
@@ -64,7 +64,7 @@ $TITRE = "Matières";
 		</tbody>
 	</table>
 	<p>
-		<span class="tab"></span><button id="bouton_valider" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Valider ce choix de matières.</button><label id="ajax_msg_partage">&nbsp;</label>
+		<span class="tab"></span><button id="bouton_valider" type="button" class="parametre">Valider ce choix de matières.</button><label id="ajax_msg_partage">&nbsp;</label>
 	</p>
 </form>
 
@@ -72,7 +72,7 @@ $TITRE = "Matières";
 
 <h2>Matières spécifiques</h2>
 
-<form action="" method="post" id="perso">
+<form action="#" method="post" id="perso">
 	<table class="form">
 		<thead>
 			<tr>
@@ -84,7 +84,7 @@ $TITRE = "Matières";
 		<tbody>
 			<?php
 			// Lister les matières spécifiques
-			$DB_TAB = DB_STRUCTURE_lister_matieres_specifiques();
+			$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_matieres_specifiques();
 			foreach($DB_TAB as $DB_ROW)
 			{
 				// Afficher une ligne du tableau

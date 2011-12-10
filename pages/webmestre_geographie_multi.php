@@ -32,7 +32,7 @@ if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');
 
 <hr />
 
-<form action="" method="post">
+<form action="#" method="post">
 	<table class="form">
 		<thead>
 			<tr>
@@ -45,7 +45,7 @@ if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');
 		<tbody>
 			<?php
 			// Lister les zones
-			$DB_TAB = DB_WEBMESTRE_lister_zones();
+			$DB_TAB = DB_WEBMESTRE_WEBMESTRE::DB_lister_zones();
 			foreach($DB_TAB as $DB_ROW)
 			{
 				// Afficher une ligne du tableau

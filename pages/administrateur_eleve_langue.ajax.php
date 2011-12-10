@@ -28,7 +28,11 @@
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 if(($_SESSION['SESAMATH_ID']==ID_DEMO)&&($_GET['action']!='initialiser')){exit('Action désactivée pour la démo...');}
 
-$action = (isset($_GET['action'])) ? $_GET['action'] : '';
+$action = (isset($_GET['action']))         ? $_GET['action']                       : '';
+$langue = (isset($_POST['select_langue'])) ? clean_entier($_POST['select_langue']) : 0 ;
+// Normalement c'est un tableau qui est transmis, mais au cas où...
+$tab_select_eleves  = (isset($_POST['select_eleves']))  ? ( (is_array($_POST['select_eleves']))  ? $_POST['select_eleves']  : explode(',',$_POST['select_eleves'])  ) : array() ;
+$tab_select_eleves  = array_filter( array_map( 'clean_entier' , $tab_select_eleves  ) , 'positif' );
 
 require_once('./_inc/tableau_langues.php');
 
@@ -39,21 +43,18 @@ require_once('./_inc/tableau_langues.php');
 if($action=='associer')
 {
 	// liste des élèves
-	$tab_select_eleves  = (isset($_POST['select_eleves']))  ? array_map('clean_entier',explode(',',$_POST['select_eleves']))  : array() ;
-	$tab_select_eleves  = array_filter($tab_select_eleves,'positif');
-	$listing_user_id    = implode(',',$tab_select_eleves);
+	$listing_user_id = implode(',',$tab_select_eleves);
 	if(!$listing_user_id)
 	{
 		exit('Erreur : élève(s) non récupéré(s) !');
 	}
 	// langue
-	$langue = (isset($_POST['select_langue'])) ? clean_entier($_POST['select_langue']) : 0 ;
 	if( (!$langue) || (!isset($tab_langues[$langue])) )
 	{
 		exit('Erreur : langue non transmise ou incorrecte !');
 	}
 	// go
-	DB_STRUCTURE_modifier_user_langue($listing_user_id,$langue);
+	DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_user_langue($listing_user_id,$langue);
 }
 
 //
@@ -66,14 +67,14 @@ $tab_niveau_groupe[0][0] = '<i>sans classe</i>';
 $tab_user[0]             = '';
 
 // Récupérer la liste des classes
-$DB_TAB = DB_STRUCTURE_lister_classes_avec_niveaux($niveau_ordre='DESC');
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_classes_avec_niveaux($niveau_ordre='DESC');
 foreach($DB_TAB as $DB_ROW)
 {
 	$tab_niveau_groupe[$DB_ROW['niveau_id']][$DB_ROW['groupe_id']] = html($DB_ROW['groupe_nom']);
 	$tab_user[$DB_ROW['groupe_id']] = '';
 }
 // Récupérer la liste des élèves / classes
-$DB_TAB = DB_STRUCTURE_lister_users('eleve',$only_actifs=true,$with_classe=false);
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_users('eleve',$only_actifs=true,$with_classe=false);
 foreach($DB_TAB as $DB_ROW)
 {
 	$tab_user[$DB_ROW['eleve_classe_id']] .= '<img src="./_img/drapeau/'.$DB_ROW['eleve_langue'].'.gif" alt="" title="'.$tab_langues[$DB_ROW['eleve_langue']]['texte'].'" /> '.html($DB_ROW['user_nom'].' '.$DB_ROW['user_prenom']).'<br />';
@@ -103,6 +104,6 @@ foreach($tab_niveau_groupe as $niveau_id => $tab_groupe)
 	echo'<thead><tr>'.$TH[$niveau_id].'</tr></thead>';
 	echo'<tbody><tr>'.$TB[$niveau_id].'</tr></tbody>';
 	echo'<tfoot><tr>'.$TF[$niveau_id].'</tr></tfoot>';
-	echo'</table><p />';
+	echo'</table><p>&nbsp;</p>';
 }
 ?>

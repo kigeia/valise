@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Mode d'identification et intégration gepi";
-$VERSION_JS_FILE += 4;
 
 require_once('./_inc/tableau_sso.php');
 
@@ -92,7 +91,7 @@ $url_sso = SERVEUR_ADRESSE.'/?sso'.$get_base;
 	var tab_param = new Array();<?php echo $tab_param_js ?>
 </script>
 
-<form action="" method="post"><fieldset>
+<form action="#" method="post"><fieldset>
 	<div id="cas_options" class="hide">
 		<label class="tab" for="cas_serveur_host">Domaine <img alt="" src="./_img/bulle_aide.png" title="Souvent de la forme 'cas.domaine.fr'." /> :</label><input id="cas_serveur_host" name="cas_serveur_host" size="30" type="text" value="<?php echo html($_SESSION['CAS_SERVEUR_HOST']) ?>" /><br />
 		<label class="tab" for="cas_serveur_port">Port <img alt="" src="./_img/bulle_aide.png" title="En général 443.<br />Déjà vu à 8443." /> :</label><input id="cas_serveur_port" name="cas_serveur_port" size="5" type="text" value="<?php echo html($_SESSION['CAS_SERVEUR_PORT']) ?>" /><br />

@@ -26,11 +26,10 @@
  */
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
-$VERSION_JS_FILE += 14;
 
 // Élément de formulaire "f_geo" pour le choix d'une zone géographique
 $options_geo = '';
-$DB_TAB = DB_WEBMESTRE_lister_zones();
+$DB_TAB = DB_WEBMESTRE_WEBMESTRE::DB_lister_zones();
 foreach($DB_TAB as $DB_ROW)
 {
 	$options_geo .= '<option value="'.$DB_ROW['geo_id'].'">'.html($DB_ROW['geo_nom']).'</option>';
@@ -45,12 +44,12 @@ foreach($DB_TAB as $DB_ROW)
 	// ]]>
 </script>
 
-<form action="" method="post" id="structures">
+<form action="#" method="post" id="structures">
 	<table class="form bilan_synthese vm_nug">
 		<thead>
 			<tr>
 				<th class="nu"></th>
-				<th class="nu"><input id="all_check" type="image" src="./_img/all_check.gif" title="Tout cocher." /><br /><input id="all_uncheck" type="image" src="./_img/all_uncheck.gif" title="Tout décocher." /></th>
+				<th class="nu"><input id="all_check" type="image" alt="Tout cocher." src="./_img/all_check.gif" title="Tout cocher." /><br /><input id="all_uncheck" type="image" alt="Tout décocher." src="./_img/all_uncheck.gif" title="Tout décocher." /></th>
 				<th>Id</th>
 				<th>Zone géo</th>
 				<th>Localisation<br />Dénomination</th>
@@ -63,11 +62,11 @@ foreach($DB_TAB as $DB_ROW)
 		<tbody>
 			<?php
 			// Lister les structures
-			$DB_TAB = DB_WEBMESTRE_lister_structures();
+			$DB_TAB = DB_WEBMESTRE_WEBMESTRE::DB_lister_structures();
 			foreach($DB_TAB as $DB_ROW)
 			{
 				// Afficher une ligne du tableau
-				$img = (!is_file($CHEMIN_CONFIG.'blocage_webmestre_'.$DB_ROW['sacoche_base'].'.txt')) ? '<img class="bloquer" src="./_img/blocage_non.png" title="Bloquer cet établissement." />' : '<img class="debloquer" src="./_img/blocage_oui.png" title="Débloquer cet établissement." />' ;
+				$img = (!is_file(CHEMIN_CONFIG.'blocage_webmestre_'.$DB_ROW['sacoche_base'].'.txt')) ? '<img class="bloquer" src="./_img/etat/acces_oui.png" title="Bloquer cet établissement." />' : '<img class="debloquer" src="./_img/etat/acces_non.png" title="Débloquer cet établissement." />' ;
 				echo'<tr id="id_'.$DB_ROW['sacoche_base'].'">';
 				echo	'<td class="nu"><a href="#id_0">'.$img.'</a></td>';
 				echo	'<td class="nu"><input type="checkbox" name="f_ids" value="'.$DB_ROW['sacoche_base'].'" /></td>';
@@ -87,13 +86,12 @@ foreach($DB_TAB as $DB_ROW)
 			?>
 		</tbody>
 	</table>
-	<div id="zone_actions">
+	<div id="zone_actions" class="p">
 		Pour les structures cochées : <input id="listing_ids" name="listing_ids" type="hidden" value="" />
-		<button id="bouton_newsletter" type="button"><img alt="" src="./_img/bouton/mail_ecrire.png" /> Écrire un courriel.</button>
-		<button id="bouton_stats" type="button"><img alt="" src="./_img/bouton/stats.png" /> Calculer les statistiques.</button>
-		<button id="bouton_transfert" type="button"><img alt="" src="./_img/bouton/fichier_export.png" /> Exporter données &amp; bases.</button>
-		<button id="bouton_supprimer" type="button"><img alt="" src="./_img/bouton/supprimer.png" /> Supprimer.</button>
+		<button id="bouton_newsletter" type="button" class="mail_ecrire">Écrire un courriel.</button>
+		<button id="bouton_stats" type="button" class="stats">Calculer les statistiques.</button>
+		<button id="bouton_transfert" type="button" class="fichier_export">Exporter données &amp; bases.</button>
+		<button id="bouton_supprimer" type="button" class="supprimer">Supprimer.</button>
 		<label id="ajax_supprimer">&nbsp;</label>
 	</div>
 </form>
-<p />

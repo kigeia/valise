@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Nombre de saisies";
-$VERSION_JS_FILE += 1;
 ?>
 
 <table id="bilan">
@@ -40,7 +39,7 @@ $VERSION_JS_FILE += 1;
 	</thead>
 	<tbody>
 		<?php
-		$DB_TAB = DB_STRUCTURE_compter_saisies_prof_classe();
+		$DB_TAB = DB_STRUCTURE_DIRECTEUR::DB_compter_saisies_prof_classe();
 		if(count($DB_TAB))
 		{
 			foreach($DB_TAB as $DB_ROW)

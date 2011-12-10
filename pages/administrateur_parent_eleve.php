@@ -27,13 +27,12 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Parents &amp; élèves";
-$VERSION_JS_FILE += 1;
 ?>
 
 <?php
 // Fabrication des éléments select du formulaire
-$select_f_groupes = afficher_select(DB_STRUCTURE_OPT_regroupements_etabl()         , $select_nom=false , $option_first='oui' , $selection=false , $optgroup='oui');
-$select_f_parents = afficher_select(DB_STRUCTURE_OPT_parents_etabl($user_statut=1) , $select_nom=false , $option_first='oui' , $selection=false , $optgroup='non');
+$select_f_groupes = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_regroupements_etabl()         , $select_nom=false , $option_first='oui' , $selection=false , $optgroup='oui');
+$select_f_parents = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_parents_etabl($user_statut=1) , $select_nom=false , $option_first='oui' , $selection=false , $optgroup='non');
 
 ?>
 
@@ -41,7 +40,7 @@ $select_f_parents = afficher_select(DB_STRUCTURE_OPT_parents_etabl($user_statut=
 
 <hr />
 
-<form action="" method="post">
+<form action="#" method="post">
 	<fieldset id="fieldset_eleves">
 		<label class="tab" for="f_groupe">Élève :</label><select id="f_groupe" name="f_groupe"><?php echo $select_f_groupes ?></select> <select id="select_eleve" name="select_eleve"><option value=""></option></select> <label id="ajax_msg">&nbsp;</label>
 	</fieldset>
@@ -50,7 +49,7 @@ $select_f_parents = afficher_select(DB_STRUCTURE_OPT_parents_etabl($user_statut=
 
 	<fieldset id="fieldset_parents">
 	</fieldset>
-	<p id="p_valider" class="hide"><span class="tab"></span><button id="Enregistrer" type="button"><img alt="" src="./_img/bouton/valider.png" /> Enregistrer les modifications</button><label id="ajax_msg2">&nbsp;</label></p>
+	<p id="p_valider" class="hide"><span class="tab"></span><button id="Enregistrer" type="button" class="valider">Enregistrer les modifications</button><label id="ajax_msg2">&nbsp;</label></p>
 
 </form>
 

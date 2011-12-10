@@ -124,9 +124,9 @@ $(document).ready
 			new_tr += '<td class="nu"></td>';
 			new_tr += '<td>'+base_id+'<input id="f_base_id" name="f_base_id" type="hidden" value="'+base_id+'" /></td>';
 			new_tr += '<td><select id="f_geo" name="f_geo">'+options_geo.replace('>'+geo+'<',' selected>'+geo+'<')+'</select></td>';
-			new_tr += '<td><input id="f_localisation" name="f_localisation" size="'+Math.max(localisation.length,30)+'" type="text" value="'+localisation+'" />'+'<br />'+'<input id="f_denomination" name="f_denomination" size="'+Math.max(denomination.length,30)+'" type="text" value="'+denomination+'" /></td>';
+			new_tr += '<td><input id="f_localisation" name="f_localisation" size="'+Math.max(localisation.length,30)+'" type="text" value="'+escapeQuote(localisation)+'" />'+'<br />'+'<input id="f_denomination" name="f_denomination" size="'+Math.max(denomination.length,30)+'" type="text" value="'+escapeQuote(denomination)+'" /></td>';
 			new_tr += '<td><input id="f_uai" name="f_uai" size="8" type="text" value="'+uai+'" /></td>';
-			new_tr += '<td><input id="f_contact_nom" name="f_contact_nom" size="'+Math.max(contact_nom.length,15)+'" type="text" value="'+contact_nom+'" />'+'<br />'+'<input id="f_contact_prenom" name="f_contact_prenom" size="'+Math.max(contact_prenom.length,15)+'" type="text" value="'+contact_prenom+'" /></td>';
+			new_tr += '<td><input id="f_contact_nom" name="f_contact_nom" size="'+Math.max(contact_nom.length,15)+'" type="text" value="'+escapeQuote(contact_nom)+'" />'+'<br />'+'<input id="f_contact_prenom" name="f_contact_prenom" size="'+Math.max(contact_prenom.length,15)+'" type="text" value="'+escapeQuote(contact_prenom)+'" /></td>';
 			new_tr += '<td><input id="f_contact_courriel" name="f_contact_courriel" size="'+Math.max(contact_courriel.length,30)+'" type="text" value="'+contact_courriel+'" /></td>';
 			new_tr += '<td class="nu"><input id="f_action" name="f_action" type="hidden" value="'+mode+'" /><q class="valider" title="Valider les modifications de cet établissement."></q><q class="annuler" title="Annuler les modifications de cet établissement."></q> <label id="ajax_msg">&nbsp;</label></td>';
 			new_tr += '</tr>';
@@ -160,7 +160,7 @@ $(document).ready
 			mode = $(this).attr('class');
 			afficher_masquer_images_action('hide');
 			base_id = $(this).parent().parent().attr('id').substring(3);
-			new_span  = '<span id="init_form"><label id="ajax_msg" class="loader">Chargement en cours... Veuillez patienter.</label></span>';
+			new_span  = '<span id="init_form"><label id="ajax_msg" class="loader">Chargement en cours...</label></span>';
 			$(this).after(new_span);
 			$.ajax
 			(
@@ -229,6 +229,7 @@ $(document).ready
 			{
 				$('q.annuler').click();
 			}
+			return false;
 		}
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
@@ -317,7 +318,7 @@ $(document).ready
 		{
 			$("button").prop('disabled',true);
 			afficher_masquer_images_action('hide');
-			$('#ajax_supprimer').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+			$('#ajax_supprimer').removeAttr("class").addClass("loader").html("Demande envoyée...");
 			$.ajax
 			(
 				{
@@ -327,7 +328,7 @@ $(document).ready
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#ajax_supprimer').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez recommencer.");
+						$('#ajax_supprimer').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 						$("button").prop('disabled',false);
 						afficher_masquer_images_action('show');
 					},
@@ -498,6 +499,7 @@ $(document).ready
 			clearForm : false,
 			resetForm : false,
 			target : "#ajax_msg",
+			beforeSerialize : action_form_avant_serialize,
 			beforeSubmit : test_form_avant_envoi,
 			error : retour_form_erreur,
 			success : retour_form_valide
@@ -520,6 +522,19 @@ $(document).ready
 			}
 		); 
 
+		// Fonction précédent le trantement du formulaire (avec jquery.form.js)
+		function action_form_avant_serialize(jqForm, options)
+		{
+			// Décocher les checkbox sans rapport avec ce formulaire
+			$('input[name=f_ids]:checked').each
+			(
+				function()
+				{
+					$(this).prop('checked',false);
+				}
+			);
+		}
+
 		// Fonction précédent l'envoi du formulaire (avec jquery.form.js)
 		function test_form_avant_envoi(formData, jqForm, options)
 		{
@@ -536,7 +551,7 @@ $(document).ready
 			{
 				please_wait = true;
 				$('#ajax_msg').parent().children('q').hide();
-				$('#ajax_msg').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+				$('#ajax_msg').removeAttr("class").addClass("loader").html("Demande envoyée...");
 			}
 			return readytogo;
 		}
@@ -546,7 +561,7 @@ $(document).ready
 		{
 			please_wait = false;
 			$('#ajax_msg').parent().children('q').show();
-			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez recommencer.");
+			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 		}
 
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)

@@ -46,6 +46,7 @@ $tab_connexion_info['cas']['argos64']          = array( 'serveur_host'=>'ent-cas
 $tab_connexion_info['cas']['celia']            = array( 'serveur_host'=>'www.ent-celia.fr'        , 'serveur_port'=>443  , 'serveur_root'=>'connexion' , 'csv_entete'=>1 , 'csv_nom'=>5 , 'csv_prenom'=>6 , 'csv_id_ent'=>3 , 'csv_id_sconet'=>4    , 'txt'=>'ENT Celi@ (collèges de Seine-Saint-Denis).' );
 $tab_connexion_info['cas']['cybercolleges42']  = array( 'serveur_host'=>'cas.cybercolleges42.fr'  , 'serveur_port'=>443  , 'serveur_root'=>''          , 'csv_entete'=>1 , 'csv_nom'=>5 , 'csv_prenom'=>4 , 'csv_id_ent'=>1 , 'csv_id_sconet'=>NULL , 'txt'=>'ENT Cybercollège 42 (département de la Loire).' );
 $tab_connexion_info['cas']['e-lyco']           = array( 'serveur_host'=>'cas.e-lyco.fr'           , 'serveur_port'=>443  , 'serveur_root'=>''          , 'csv_entete'=>1 , 'csv_nom'=>5 , 'csv_prenom'=>4 , 'csv_id_ent'=>1 , 'csv_id_sconet'=>NULL , 'txt'=>'ENT e-lyco (académie de Nantes).' );
+// $tab_connexion_info['cas']['elie']             = array( 'serveur_host'=>'ent.limousin.fr'         , 'serveur_port'=>443  , 'serveur_root'=>'connexion' , 'csv_entete'=>1 , 'csv_nom'=>5 , 'csv_prenom'=>6 , 'csv_id_ent'=>3 , 'csv_id_sconet'=>4    , 'txt'=>'ENT Elie (lycées du Limousin et collèges de la Creuse).' );
 $tab_connexion_info['cas']['entmip']           = array( 'serveur_host'=>'cas.entmip.fr'           , 'serveur_port'=>443  , 'serveur_root'=>''          , 'csv_entete'=>1 , 'csv_nom'=>4 , 'csv_prenom'=>3 , 'csv_id_ent'=>1 , 'csv_id_sconet'=>NULL , 'txt'=>'ENT Midi-Pyrénées K-d\'Ecole (académie de Toulouse).' );
 $tab_connexion_info['cas']['lilie']            = array( 'serveur_host'=>'ent.iledefrance.fr'      , 'serveur_port'=>443  , 'serveur_root'=>'connexion' , 'csv_entete'=>1 , 'csv_nom'=>5 , 'csv_prenom'=>6 , 'csv_id_ent'=>3 , 'csv_id_sconet'=>4    , 'txt'=>'ENT Lilie (lycées d\'Ile de France).' );
 // $tab_connexion_info['cas']['ent-reunion']      = array( 'serveur_host'=>'seshat.ac-reunion.fr'    , 'serveur_port'=>8443 , 'serveur_root'=>'login'     , 'csv_entete'=>0 , 'csv_nom'=>0 , 'csv_prenom'=>0 , 'csv_id_ent'=>0 , 'csv_id_sconet'=>NULL , 'txt'=>'ENT Réunion (académie de La Réunion).' );
@@ -57,8 +58,8 @@ $tab_connexion_info['cas']['laclasse']         = array( 'serveur_host'=>'sso.lac
 $tab_connexion_info['cas']['cartabledesavoie'] = array( 'serveur_host'=>'cartabledesavoie.com'    , 'serveur_port'=>443  , 'serveur_root'=>'cas'       , 'csv_entete'=>0 , 'csv_nom'=>0 , 'csv_prenom'=>0 , 'csv_id_ent'=>0 , 'txt'=>'ENT Cartable de Savoie.' );
 $tab_connexion_info['cas']['cartableenligne']  = array( 'serveur_host'=>'A-CHANGER.ac-creteil.fr' , 'serveur_port'=>8443 , 'serveur_root'=>''          , 'csv_entete'=>0 , 'csv_nom'=>0 , 'csv_prenom'=>0 , 'csv_id_ent'=>0 , 'txt'=>'ENT Cartable en ligne de Créteil (EnvOLE Scribe).' );
 */
-
-$tab_connexion_info['gepi']['saml']            = array( 'saml_url'=>'http://' , 'saml_rne'=>$_SESSION['UAI'] , 'saml_certif'=>'AA:FD:FF:98:48:18:A8:56:73:32:73:8F:33:53:04:8C:36:9B:E6:B2' , 'txt'=>'S\'authentifier depuis GEPI (protocole SAML).' );
+$saml_rne = isset($_SESSION['UAI']) ? $_SESSION['UAI'] : '' ; // au moins à cause d'un appel de ce fichier depuis la doc
+$tab_connexion_info['gepi']['saml']            = array( 'saml_url'=>'http://' , 'saml_rne'=>$saml_rne , 'saml_certif'=>'AA:FD:FF:98:48:18:A8:56:73:32:73:8F:33:53:04:8C:36:9B:E6:B2' , 'txt'=>'S\'authentifier depuis GEPI (protocole SAML).' );
 
 $tab_connexion_info['ssaml']['configured_source']            = array( 'auth_source'=>'0', 'txt'=>'S\'authentifier en utilisant une source simplesaml préalablement configurée (fichier authsources.php).' );
 

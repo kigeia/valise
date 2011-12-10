@@ -38,11 +38,11 @@ $(document).ready
 		{
 			if($("#f_eleve").val())
 			{
-				$('#Afficher_validation').show();
+				$('#Afficher_validation').prop('disabled',false);
 			}
 			else
 			{
-				$('#Afficher_validation').hide();
+				$('#Afficher_validation').prop('disabled',true);
 			}
 		};
 
@@ -56,7 +56,7 @@ $(document).ready
 			palier_id = $("#f_palier").val();
 			if(palier_id)
 			{
-				$('#ajax_maj_pilier').removeAttr("class").addClass("loader").html("Actualisation en cours... Veuillez patienter.");
+				$('#ajax_maj_pilier').removeAttr("class").addClass("loader").html("Actualisation en cours...");
 				$.ajax
 				(
 					{
@@ -66,7 +66,7 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_maj_pilier').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez essayer de nouveau.");
+							$('#ajax_maj_pilier').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 						},
 						success : function(responseHTML)
 						{
@@ -106,7 +106,7 @@ $(document).ready
 			{
 				groupe_type = $("#f_groupe option:selected").parent().attr('label');
 				if(typeof(groupe_type)=='undefined') {groupe_type = 'Classes';} // Cas d'un P.P.
-				$('#ajax_maj_eleve').removeAttr("class").addClass("loader").html("Actualisation en cours... Veuillez patienter.");
+				$('#ajax_maj_eleve').removeAttr("class").addClass("loader").html("Actualisation en cours...");
 				$.ajax
 				(
 					{
@@ -116,7 +116,7 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_maj_eleve').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez essayer de nouveau.");
+							$('#ajax_maj_eleve').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 						},
 						success : function(responseHTML)
 						{
@@ -160,15 +160,15 @@ $(document).ready
 			{
 				rules :
 				{
-					f_pilier : { required:true },
-					f_groupe : { required:true },
-					f_eleve  : { required:true }
+					'f_pilier[]' : { required:true },
+					f_groupe     : { required:true },
+					'f_eleve[]'  : { required:true }
 				},
 				messages :
 				{
-					f_pilier : { required:"compétence(s) manquante(s)" },
-					f_groupe : { required:"classe / groupe manquant" },
-					f_eleve  : { required:"élève(s) manquant(s)" }
+					'f_pilier[]' : { required:"compétence(s) manquante(s)" },
+					f_groupe     : { required:"classe / groupe manquant" },
+					'f_eleve[]'  : { required:"élève(s) manquant(s)" }
 				},
 				errorElement : "label",
 				errorClass : "erreur",
@@ -195,12 +195,6 @@ $(document).ready
 		(
 			function()
 			{
-				// grouper les select multiples => normalement pas besoin si name de la forme nom[], mais ça plante curieusement sur le serveur competences.sesamath.net
-				// alors j'ai copié le tableau dans un champ hidden...
-				var tab_eleve = new Array(); $("#f_eleve option:selected").each(function(){tab_eleve.push($(this).val());});
-				$('#eleves').val(tab_eleve);
-				var tab_pilier = new Array(); $("#f_pilier option:selected").each(function(){tab_pilier.push($(this).val());});
-				$('#piliers').val(tab_pilier);
 				$(this).ajaxSubmit(ajaxOptions0);
 				return false;
 			}
@@ -214,7 +208,7 @@ $(document).ready
 			if(readytogo)
 			{
 				$("button").prop('disabled',true);
-				$('#ajax_msg_choix').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+				$('#ajax_msg_choix').removeAttr("class").addClass("loader").html("Demande envoyée...");
 			}
 			return readytogo;
 		}
@@ -223,7 +217,7 @@ $(document).ready
 		function retour_form_erreur0(msg,string)
 		{
 			$("button").prop('disabled',false);
-			$('#ajax_msg_choix').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez recommencer.");
+			$('#ajax_msg_choix').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 		}
 
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)
@@ -237,11 +231,11 @@ $(document).ready
 			}
 			else
 			{
-				$('#ajax_msg_choix').removeAttr("class").addClass("valide").html("Affichage réalisé !").fadeOut(3000,function(){$(this).removeAttr("class").html("").show();});
 				responseHTML = responseHTML.replace( '@PALIER@' , $("#f_palier option:selected").text() );
 				$('#tableau_validation').html(responseHTML);
 				infobulle();
 				$('#zone_validation').show('fast');
+				$('#ajax_msg_choix').removeAttr("class").html('');
 				$('#zone_choix').hide('fast');
 				$('#zone_information').show('fast');
 				$("body").oneTime("1s", function() {window.scrollTo(0,1000);} );
@@ -266,7 +260,7 @@ $(document).ready
 				var new_classe = classe.charAt(0) + tab_class_next[classe.charAt(1)] ;
 				$(this).removeAttr("class").addClass(new_classe);
 				$('#ajax_msg_validation').removeAttr("class").addClass("alerte").html('Penser à valider les modifications !');
-				$('#fermer_zone_validation').html('<img alt="" src="./_img/bouton/annuler.png" /> Annuler / Retour');
+				$('#fermer_zone_validation').removeAttr("class").addClass("annuler").html('Annuler / Retour');
 				return false;
 			}
 		);
@@ -282,7 +276,7 @@ $(document).ready
 					return false;
 				}
 				$('#ajax_msg_validation').removeAttr("class").addClass("alerte").html('Penser à valider les modifications !');
-				$('#fermer_zone_validation').html('<img alt="" src="./_img/bouton/annuler.png" /> Annuler / Retour');
+				$('#fermer_zone_validation').removeAttr("class").addClass("annuler").html('Annuler / Retour');
 				var classe_debut = classe.substring(0,4);
 				var classe_fin   = classe.charAt(4);
 				var new_classe_th = classe_debut + tab_class_next[classe_fin] ;
@@ -363,7 +357,7 @@ $(document).ready
 			$('#pilier').html( $('#C'+pilier_id).next('th').children('div').text() );
 			$('#stats').html('');
 			$('#items').html('');
-			$('#ajax_msg_information').removeAttr("class").addClass("loader").html("Demande d'informations envoyée... Veuillez patienter.");
+			$('#ajax_msg_information').removeAttr("class").addClass("loader").html("Demande d'informations envoyée...");
 			$.ajax
 			(
 				{
@@ -373,7 +367,7 @@ $(document).ready
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#ajax_msg_information').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+						$('#ajax_msg_information').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 						return false;
 					},
 					success : function(responseHTML)
@@ -426,7 +420,7 @@ $(document).ready
 			function()
 			{
 				$("button").prop('disabled',true);
-				$('#ajax_msg_validation').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+				$('#ajax_msg_validation').removeAttr("class").addClass("loader").html("Demande envoyée...");
 				// Récupérer les infos
 				var tab_valid = new Array();
 				$("#tableau_validation tbody td").each
@@ -447,7 +441,7 @@ $(document).ready
 						error : function(msg,string)
 						{
 							$("button").prop('disabled',false);
-							$('#ajax_msg_validation').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg_validation').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 							return false;
 						},
 						success : function(responseHTML)
@@ -462,7 +456,7 @@ $(document).ready
 							{
 								$('td.v1').attr('lang','lock');
 								$('#ajax_msg_validation').removeAttr("class").addClass("valide").html("Validations enregistrées !");
-								$('#fermer_zone_validation').html('<img alt="" src="./_img/bouton/retourner.png" /> Retour');
+								$('#fermer_zone_validation').removeAttr("class").addClass("retourner").html('Retour');
 							}
 						}
 					}

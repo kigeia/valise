@@ -27,12 +27,11 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Maintenance &amp; mise à jour";
-$VERSION_JS_FILE += 1;
 ?>
 
 <?php
 // Initialisation de l'état de l'accès
-$fichier_blocage_webmestre = $CHEMIN_CONFIG.'blocage_webmestre_0.txt';
+$fichier_blocage_webmestre = CHEMIN_CONFIG.'blocage_webmestre_0.txt';
 if(is_file($fichier_blocage_webmestre))
 {
 	$label = '<label class="erreur">Application fermée : '.html(file_get_contents($fichier_blocage_webmestre)).'</label>';
@@ -58,7 +57,10 @@ else
 unlink($fichier_test_chemin_tmp);
 ?>
 
-<hr />
+<p>
+	<span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_webmestre__maj">DOC : Mise à jour de l'application</a></span><br />
+	<span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=environnement_generalites__verrouillage">DOC : Verrouillage de l'application</a></span>
+</p>
 
 <h2>Version de SACoche</h2>
 
@@ -67,40 +69,32 @@ unlink($fichier_test_chemin_tmp);
 	<li>Dernière version disponible : <span id="ajax_version_disponible" class="astuce"><?php echo recuperer_numero_derniere_version() ?></span></li>
 </ul>
 
-<h2>Mise à jour des fichiers</h2>
+<hr />
 
-<p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_webmestre__maj">DOC : Mise à jour de l'application</a></span></p>
-<p><?php echo $test_droits ?></p>
-<form action="" method="post" id="form_maj"><fieldset>
-	<span class="tab"></span><button id="bouton_maj" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Lancer la mise à jour automatique.</button><label id="ajax_maj">&nbsp;</label>
+<h2>Mise à jour automatique des fichiers</h2>
+
+<form action="#" method="post" id="form_maj"><fieldset>
+	<label class="tab">Test d'écriture :</label><?php echo $test_droits ?><br />
+	<span class="tab"></span><button id="bouton_maj" type="button" class="parametre">Lancer la mise à jour automatique.</button><label id="ajax_maj">&nbsp;</label>
 </fieldset></form>
-<ul id="puces_maj" class="puce hide">
-	<li></li>
-</ul>
 
 <hr />
 
-<h2>État de l'accès actuel</h2>
-
-<p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=environnement_generalites__verrouillage">DOC : Verrouillage de l'application</a></span></p>
-<p id="ajax_acces_actuel"><?php echo $label ?></p>
-
 <h2>Verrouillage de l'application</h2>
 
-<form action="" method="post" id="form"><fieldset>
-	<label for="f_bloquer"><input type="radio" id="f_bloquer" name="f_action" value="bloquer" /> Bloquer l'application</label><br />
-	<span id="span_motif" class="hide">
-		<label class="tab" for="f_motif">Motif :</label>
-			<select id="f_proposition" name="f_proposition">
-				<option value="rien">autre motif</option>
-				<option value="mise-a-jour" selected>mise à jour</option>
-				<option value="maintenance">maintenance</option>
-				<option value="demenagement">déménagement</option>
-			</select>
-			<input id="f_motif" name="f_motif" size="50" maxlength="100" type="text" value="Mise à jour des fichiers en cours." />
-	</span>&nbsp;<p />
-	<label for="f_debloquer"><input type="radio" id="f_debloquer" name="f_action" value="debloquer" /> Débloquer l'application</label><p />
-	<span class="tab"></span><button id="bouton_valider" type="submit"><img alt="" src="./_img/bouton/parametre.png" /> Valider cet état.</button><label id="ajax_msg">&nbsp;</label>
+<form action="#" method="post" id="form"><fieldset>
+	<label class="tab">État actuel :</label><span id="ajax_acces_actuel"><?php echo $label ?></span><br />
+	<label class="tab">Action :</label><label for="f_bloquer"><input type="radio" id="f_bloquer" name="f_action" value="bloquer" /> Bloquer l'application</label>&nbsp;&nbsp;&nbsp;<label for="f_debloquer"><input type="radio" id="f_debloquer" name="f_action" value="debloquer" /> Débloquer l'application</label><br />
+	<div id="span_motif" class="hide"><label class="tab" for="f_motif">Motif :</label><select id="f_proposition" name="f_proposition"><option value="rien">autre motif</option><option value="mise-a-jour" selected>mise à jour</option><option value="maintenance">maintenance</option><option value="demenagement">déménagement</option></select> <input id="f_motif" name="f_motif" size="50" maxlength="100" type="text" value="Mise à jour des fichiers en cours." /></div>
+	<span class="tab"></span><button id="bouton_valider" type="submit" class="parametre">Valider cet état.</button><label id="ajax_msg">&nbsp;</label>
+</fieldset></form>
+
+<hr />
+
+<h2>Vérification des fichiers en place</h2>
+
+<form action="#" method="post" id="form_verif"><fieldset>
+	<span class="tab"></span><button id="bouton_verif" type="button" class="parametre">Lancer la vérification.</button><label id="ajax_verif">&nbsp;</label>
 </fieldset></form>
 
 <hr />

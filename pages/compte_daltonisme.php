@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Daltonisme";
-$VERSION_JS_FILE += 0;
 
 $checked_normal = $_SESSION['USER_DALTONISME'] ? '' : ' checked' ;
 $checked_dalton = $_SESSION['USER_DALTONISME'] ? ' checked' : '' ;
@@ -67,7 +66,7 @@ foreach($tab_valid as $etat => $tab_style)
 
 <hr />
 
-<form action="" method="post" id="form_notes">
+<form action="#" method="post" id="form_notes">
 	<table class="simulation">
 		<thead>
 			<tr>
@@ -97,6 +96,5 @@ foreach($tab_valid as $etat => $tab_style)
 			</tr>
 		</tbody>
 	</table>
-	<p />
-	<fieldset><span class="tab"></span><button id="bouton_valider" type="submit"><img alt="" src="./_img/bouton/parametre.png" /> Enregistrer ce choix.</button><label id="ajax_msg">&nbsp;</label></fieldset>
+	<fieldset><p><span class="tab"></span><button id="bouton_valider" type="submit" class="parametre">Enregistrer ce choix.</button><label id="ajax_msg">&nbsp;</label></p></fieldset>
 </form>

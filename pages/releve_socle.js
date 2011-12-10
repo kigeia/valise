@@ -92,7 +92,7 @@ $(document).ready
 			palier_id = $("#f_palier").val();
 			if(palier_id)
 			{
-				$('#ajax_maj_pilier').removeAttr("class").addClass("loader").html("Actualisation en cours... Veuillez patienter.");
+				$('#ajax_maj_pilier').removeAttr("class").addClass("loader").html("Actualisation en cours...");
 				$.ajax
 				(
 					{
@@ -102,7 +102,7 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_maj_pilier').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez essayer de nouveau.");
+							$('#ajax_maj_pilier').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 						},
 						success : function(responseHTML)
 						{
@@ -145,7 +145,7 @@ $(document).ready
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#ajax_maj').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez essayer de nouveau.");
+						$('#ajax_maj').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 					},
 					success : function(responseHTML)
 					{
@@ -169,10 +169,10 @@ $(document).ready
 			{
 				$("#f_eleve").html('<option value=""></option>').hide();
 				var groupe_val = $("#f_groupe").val();
-				if(groupe_val!='0')
+				if(groupe_val)
 				{
 					type = $("#f_groupe option:selected").parent().attr('label');
-					$('#ajax_maj').removeAttr("class").addClass("loader").html("Actualisation en cours... Veuillez patienter.");
+					$('#ajax_maj').removeAttr("class").addClass("loader").html("Actualisation en cours...");
 					maj_eleve(groupe_val,type);
 				}
 				else
@@ -191,27 +191,27 @@ $(document).ready
 			{
 				rules :
 				{
-					f_palier  : { required:true },
-					f_pilier  : { required:true },
-					f_groupe  : { required:true },
-					f_eleve   : { required:true },
-					f_mode    : { required:true },
-					f_matiere : { required:function(){return $('#f_mode_manuel').is(':checked');} },
-					f_coef    : { required:false },
-					f_socle   : { required:false },
-					f_lien    : { required:false }
+					f_palier      : { required:true },
+					'f_pilier[]'  : { required:true },
+					f_groupe      : { required:true },
+					'f_eleve[]'   : { required:true },
+					f_mode        : { required:true },
+					'f_matiere[]' : { required:function(){return $('#f_mode_manuel').is(':checked');} },
+					f_coef        : { required:false },
+					f_socle       : { required:false },
+					f_lien        : { required:false }
 				},
 				messages :
 				{
-					f_palier  : { required:"palier manquant" },
-					f_pilier  : { required:"compétence(s) manquante(s)" },
-					f_groupe  : { required:"groupe manquant" },
-					f_eleve   : { required:"élève(s) manquant(s)" },
-					f_mode    : { required:"choix manquant" },
-					f_matiere : { required:"matiere(s) manquant(e)" },
-					f_coef    : { },
-					f_socle   : { },
-					f_lien    : { }
+					f_palier      : { required:"palier manquant" },
+					'f_pilier[]'  : { required:"compétence(s) manquante(s)" },
+					f_groupe      : { required:"groupe manquant" },
+					'f_eleve[]'   : { required:"élève(s) manquant(s)" },
+					f_mode        : { required:"choix manquant" },
+					'f_matiere[]' : { required:"matiere(s) manquant(e)" },
+					f_coef        : { },
+					f_socle       : { },
+					f_lien        : { }
 				},
 				errorElement : "label",
 				errorClass : "erreur",
@@ -245,17 +245,6 @@ $(document).ready
 		(
 			function()
 			{
-				// grouper les select multiples => normalement pas besoin si name de la forme nom[], mais ça plante curieusement sur le serveur competences.sesamath.net
-				// alors j'ai copié le tableau dans un champ hidden...
-				var f_eleve = new Array(); $("#f_eleve option:selected").each(function(){f_eleve.push($(this).val());});
-				$('#eleves').val(f_eleve);
-				var tab_pilier = new Array(); $("#f_pilier option:selected").each(function(){tab_pilier.push($(this).val());});
-				$('#piliers').val(tab_pilier);
-				if($('#f_mode_manuel').is(':checked'))
-				{
-					var tab_matiere = new Array(); $("#f_matiere option:selected").each(function(){tab_matiere.push($(this).val());});
-					$('#matieres').val(tab_matiere);
-				}
 				// récupération du nom du palier
 				$('#f_palier_nom').val( $("#f_palier option:selected").text() );
 				$(this).ajaxSubmit(ajaxOptions);
@@ -271,7 +260,7 @@ $(document).ready
 			if(readytogo)
 			{
 				$('button').prop('disabled',true);
-				$('#ajax_msg').removeAttr("class").addClass("loader").html("Génération du relevé en cours... Veuillez patienter.");
+				$('#ajax_msg').removeAttr("class").addClass("loader").html("Génération du relevé en cours...");
 			}
 			return readytogo;
 		}
@@ -280,7 +269,7 @@ $(document).ready
 		function retour_form_erreur(msg,string)
 		{
 			$('button').prop('disabled',false);
-			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez valider de nouveau.");
+			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 		}
 
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)
@@ -288,15 +277,25 @@ $(document).ready
 		{
 			initialiser_compteur();
 			$('button').prop('disabled',false);
-			if(responseHTML.substring(0,17)!='<ul class="puce">')
+			if(responseHTML.substring(0,6)=='<hr />')
 			{
-				$('#ajax_msg').removeAttr("class").addClass("alerte").html(responseHTML);
+				$('#ajax_msg').removeAttr("class").addClass("valide").html("Terminé : voir ci-dessous.");
+				$('#bilan').html(responseHTML);
+				format_liens('#bilan');
+				infobulle();
+			}
+			else if(responseHTML.substring(0,17)=='<ul class="puce">')
+			{
+				$('#ajax_msg').removeAttr("class").html('');
+				// Mis dans le div bilan et pas balancé directement dans le fancybox sinon le format_lien() nécessite un peu plus de largeur que le fancybox ne recalcule pas (et $.fancybox.update(); ne change rien).
+				// Malgré tout, pour Chrome par exemple, la largeur est mal clculée et provoque des retours à la ligne, d'où le minWidth ajouté.
+				$('#bilan').html(responseHTML);
+				format_liens('#bilan');
+				$.fancybox( { 'href':'#bilan' , onClosed:function(){$('#bilan').html("");} , 'centerOnScroll':true , 'minWidth':400 } );
 			}
 			else
 			{
-				$('#ajax_msg').removeAttr("class").addClass("valide").html("Demande réalisée !");
-				$('#bilan').html(responseHTML);
-				format_liens('#bilan');
+				$('#ajax_msg').removeAttr("class").addClass("alerte").html(responseHTML);
 			}
 		} 
 

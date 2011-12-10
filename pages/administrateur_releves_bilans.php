@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Réglages relevés &amp; bilans";
-$VERSION_JS_FILE += 1;
 ?>
 
 <div><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_releves_bilans">DOC : Réglages relevés &amp; bilans</a></span></div>
@@ -36,11 +35,11 @@ $VERSION_JS_FILE += 1;
 
 <h2>Ordre d'affichage des matières</h2>
 
-<form action="" method="post" id="form_ordonner"><fieldset>
+<form action="#" method="post" id="form_ordonner"><fieldset>
 
 <?php
 // liste des matières
-$DB_TAB = DB_STRUCTURE_lister_matieres_etablissement($_SESSION['MATIERES'],$with_transversal=true,$order_by_name=false);
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_matieres_etablissement( $_SESSION['MATIERES'] , TRUE /*with_transversal*/ , FALSE /*order_by_name*/ );
 if(!count($DB_TAB))
 {
 	echo'<p class="danger">Aucune matière enregistrée ou associée à l\'établissement !</p>'; // impossible vu qu'il y a au moins la matière transversale...
@@ -52,8 +51,8 @@ else
 	{
 		$tab_div[] = '<em id="m_'.$DB_ROW['matiere_id'].'">'.html($DB_ROW['matiere_nom']).'</em>';
 	}
-	echo implode('<div class="ti"><input type="image" src="./_img/action_ordonner.png" /></div>',$tab_div);
-	echo'<p><span class="tab"></span><button id="Enregistrer_ordre" type="button"><img alt="" src="./_img/bouton/valider.png" /> Enregistrer cet ordre</button><label id="ajax_msg_ordre">&nbsp;</label></p>';
+	echo implode('<div class="ti"><input type="image" alt="Ordonner" src="./_img/action_ordonner.png" /></div>',$tab_div);
+	echo'<p><span class="tab"></span><button id="Enregistrer_ordre" type="button" class="valider">Enregistrer cet ordre</button><label id="ajax_msg_ordre">&nbsp;</label></p>';
 }
 ?>
 
@@ -63,11 +62,11 @@ else
 
 <h2>Type de synthèse adapté suivant chaque référentiel</h2>
 
-<form action="" method="post" id="form_synthese"><fieldset>
+<form action="#" method="post" id="form_synthese"><fieldset>
 
 <?php
 
-$DB_TAB = DB_STRUCTURE_lister_referentiels();
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_referentiels();
 
 if(!count($DB_TAB))
 {
@@ -78,7 +77,7 @@ else
 	$tab_choix = array( 'domaine'=>'synthèse par domaine' , 'theme'=>'synthèse par thème' , 'sans'=>'pas de synthèse' );
 	// Récupérer la liste des domaines de chaque référentiel
 	$tab_domaines = array();
-	$DB_TAB_DOMAINES = DB_STRUCTURE_recuperer_referentiels_domaines();
+	$DB_TAB_DOMAINES = DB_STRUCTURE_ADMINISTRATEUR::DB_recuperer_referentiels_domaines();
 	foreach($DB_TAB_DOMAINES as $DB_ROW)
 	{
 		$ids = $DB_ROW['matiere_id'].'_'.$DB_ROW['niveau_id'];
@@ -86,7 +85,7 @@ else
 	}
 	// Récupérer la liste des thèmes de chaque référentiel
 	$tab_themes = array();
-	$DB_TAB_THEMES = DB_STRUCTURE_recuperer_referentiels_themes();
+	$DB_TAB_THEMES = DB_STRUCTURE_ADMINISTRATEUR::DB_recuperer_referentiels_themes();
 	foreach($DB_TAB_THEMES as $DB_ROW)
 	{
 		$ids = $DB_ROW['matiere_id'].'_'.$DB_ROW['niveau_id'];
@@ -104,7 +103,7 @@ else
 			$checked = ($DB_ROW['referentiel_mode_synthese']==$option_valeur) ? ' checked' : '' ;
 			echo'<label for="f_'.$ids.'_'.$option_valeur.'"><input type="radio" id="f_'.$ids.'_'.$option_valeur.'" name="f_'.$ids.'" value="'.$option_valeur.'"'.$checked.' /> '.$option_texte.'</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 		}
-		echo ($DB_ROW['referentiel_mode_synthese']=='inconnu') ? '<button id="bouton_'.$ids.'" type="button" class="hide"><img alt="" src="./_img/bouton/valider.png" /> Valider.</button><label id="label_'.$ids.'" class="erreur">Choix manquant !</label>' : '<button id="bouton_'.$ids.'" type="button"><img alt="" src="./_img/bouton/valider.png" /> Valider.</button><label id="label_'.$ids.'" class="valide">ok</label>' ;
+		echo ($DB_ROW['referentiel_mode_synthese']=='inconnu') ? '<button id="bouton_'.$ids.'" type="button" class="valider" disabled>Valider.</button><label id="label_'.$ids.'" class="erreur">Choix manquant !</label>' : '<button id="bouton_'.$ids.'" type="button" class="valider">Valider.</button><label id="label_'.$ids.'" class="valide">ok</label>' ;
 		echo'</li></ul>';
 		// Div avec ses domaines
 		$class = ($DB_ROW['referentiel_mode_synthese']=='domaine') ? '' : ' class="hide"' ;

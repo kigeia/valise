@@ -30,20 +30,34 @@ if($_SESSION['SESAMATH_ID']==ID_DEMO) {}
 
 $palier_id     = (isset($_POST['f_palier']))     ? clean_entier($_POST['f_palier'])    : 0;
 $palier_nom    = (isset($_POST['f_palier_nom'])) ? clean_texte($_POST['f_palier_nom']) : '';
-$pilier_id     = (isset($_POST['f_pilier']))     ? clean_entier($_POST['f_pilier'])    : -1;
-$aff_socle_PA  = (isset($_POST['f_socle_PA']))   ? 1                                   : 0;	// en cas de manipulation type Firebug, peut être forcé pour élève/parent avec (mb_substr_count($_SESSION['DROIT_SOCLE_POURCENTAGE_ACQUIS'],$_SESSION['USER_PROFIL']))
-$aff_socle_EV  = (isset($_POST['f_socle_EV']))   ? 1                                   : 0;	// en cas de manipulation type Firebug, peut être forcé pour élève/parent avec (mb_substr_count($_SESSION['DROIT_SOCLE_ETAT_VALIDATION'],$_SESSION['USER_PROFIL']))
-$groupe_id     = (isset($_POST['f_groupe']))     ? clean_entier($_POST['f_groupe'])    : 0;	// en cas de manipulation type Firebug, peut être forcé pour l'élève à $_SESSION['ELEVE_CLASSE_ID']
+$aff_socle_PA  = (isset($_POST['f_socle_PA']))   ? 1                                   : 0;
+$aff_socle_EV  = (isset($_POST['f_socle_EV']))   ? 1                                   : 0;
+$groupe_id     = (isset($_POST['f_groupe']))     ? clean_entier($_POST['f_groupe'])    : 0;
 $mode          = (isset($_POST['f_mode']))       ? clean_texte($_POST['f_mode'])       : '';
 $aff_coef      = (isset($_POST['f_coef']))       ? 1                                   : 0;
 $aff_socle     = (isset($_POST['f_socle']))      ? 1                                   : 0;
 $aff_lien      = (isset($_POST['f_lien']))       ? 1                                   : 0;
-$tab_pilier_id = (isset($_POST['piliers']))      ? array_map('clean_entier',explode(',',$_POST['piliers']))  : array() ;
-$tab_eleve_id  = (isset($_POST['eleves']))       ? array_map('clean_entier',explode(',',$_POST['eleves']))   : array() ;	// en cas de manipulation type Firebug, peut être forcé pour l'élève avec $_SESSION['USER_ID']
-$tab_matiere   = (isset($_POST['matieres']))     ? array_map('clean_entier',explode(',',$_POST['matieres'])) : array() ;
+// Normalement ce sont des tableaux qui sont transmis, mais au cas où...
+$tab_pilier_id  = (isset($_POST['f_pilier']))  ? ( (is_array($_POST['f_pilier']))  ? $_POST['f_pilier']  : explode(',',$_POST['f_pilier'])  ) : array() ;
+$tab_eleve_id   = (isset($_POST['f_eleve']))   ? ( (is_array($_POST['f_eleve']))   ? $_POST['f_eleve']   : explode(',',$_POST['f_eleve'])   ) : array() ;
+$tab_matiere_id = (isset($_POST['f_matiere'])) ? ( (is_array($_POST['f_matiere'])) ? $_POST['f_matiere'] : explode(',',$_POST['f_matiere']) ) : array() ;
+$tab_pilier_id  = array_filter( array_map( 'clean_entier' , $tab_pilier_id  ) , 'positif' );
+$tab_eleve_id   = array_filter( array_map( 'clean_entier' , $tab_eleve_id   ) , 'positif' );
+$tab_matiere_id = array_filter( array_map( 'clean_entier' , $tab_matiere_id ) , 'positif' );
+
+// En cas de manipulation du formulaire (avec Firebug par exemple) ; on pourrait aussi vérifier pour un parent que c'est bien un de ses enfants...
+if(in_array($_SESSION['USER_PROFIL'],array('parent','eleve')))
+{
+	$aff_socle_PA = (mb_substr_count($_SESSION['DROIT_SOCLE_POURCENTAGE_ACQUIS'],$_SESSION['USER_PROFIL'])) ? 1 : 0 ;
+	$aff_socle_EV = (mb_substr_count($_SESSION['DROIT_SOCLE_ETAT_VALIDATION']   ,$_SESSION['USER_PROFIL'])) ? 1 : 0 ;
+}
+if($_SESSION['USER_PROFIL']=='eleve')
+{
+	$groupe_id    = $_SESSION['ELEVE_CLASSE_ID'];
+	$tab_eleve_id = array($_SESSION['USER_ID']);
+}
 
 $memo_demande  = (count($tab_pilier_id)>1) ? 'palier' : 'pilier' ;
-$tab_eleve_id  = array_filter($tab_eleve_id,'positif');
 $liste_eleve   = implode(',',$tab_eleve_id);
 
 $test_affichage_Pourcentage = ($groupe_id && count($tab_eleve_id) && $aff_socle_PA) ? true : false;
@@ -54,7 +68,7 @@ if( (!$palier_id) || (!$palier_nom) || (!count($tab_pilier_id)) || (!in_array($m
 	exit('Erreur avec les données transmises !');
 }
 
-save_cookie_select('palier');
+Formulaire::save_choix('releve_socle');
 
 // Permet d'avoir des informations accessibles en cas d'erreur type « PHP Fatal error : Allowed memory size of ... bytes exhausted ».
 // ajouter_log_PHP( $log_objet='Demande de bilan' , $log_contenu=serialize($_POST) , $log_fichier=__FILE__ , $log_ligne=__LINE__ , $only_sesamath=true );
@@ -75,9 +89,9 @@ $tab_eleve_langue = array(); // id de l'élève => id de la langue
 $tab_item_pilier  = array(); // id de l'item => id du pilier
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-// Récupération de la liste des items du socle pour le palier ou le pilier sélectionné
+// Récupération de la liste des items du socle pour le ou les piliers sélectionné(s)
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-$DB_TAB = ($memo_demande=='pilier') ? DB_STRUCTURE_recuperer_arborescence_pilier($pilier_id) : DB_STRUCTURE_recuperer_arborescence_palier($palier_id,implode(',',$tab_pilier_id)) ;
+$DB_TAB = ($memo_demande=='pilier') ? DB_STRUCTURE_SOCLE::DB_recuperer_arborescence_pilier($tab_pilier_id[0]) : DB_STRUCTURE_SOCLE::DB_recuperer_arborescence_piliers(implode(',',$tab_pilier_id)) ;
 if(!count($DB_TAB))
 {
 	exit('Aucun item référencé pour cette partie du socle commun !');
@@ -122,7 +136,7 @@ if($_SESSION['USER_PROFIL']=='eleve')
 }
 elseif($groupe_id && count($tab_eleve_id))
 {
-	$tab_eleve = DB_STRUCTURE_lister_eleves_cibles($liste_eleve,$with_gepi=FALSE,$with_langue=TRUE);
+	$tab_eleve = DB_STRUCTURE_BILAN::DB_lister_eleves_cibles($liste_eleve,$with_gepi=FALSE,$with_langue=TRUE);
 	if($mode=='auto')
 	{
 		foreach($tab_eleve as $key => $tab)
@@ -141,10 +155,10 @@ else
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 if($groupe_id && count($tab_eleve_id))
 {
-	$DB_TAB = DB_STRUCTURE_lister_result_eleves_palier_sans_infos_items($liste_eleve , $listing_entree_id , $_SESSION['USER_PROFIL']);
+	$DB_TAB = DB_STRUCTURE_BILAN::DB_lister_result_eleves_palier_sans_infos_items($liste_eleve , $listing_entree_id , $_SESSION['USER_PROFIL']);
 	foreach($DB_TAB as $DB_ROW)
 	{
-		$test_comptabilise = ($mode=='auto') ? ( !in_array($tab_item_pilier[$DB_ROW['socle_id']],$tab_langue_piliers) || in_array($DB_ROW['matiere_id'],$tab_langues[$tab_eleve_langue[$DB_ROW['eleve_id']]]['tab_matiere_id']) ) : in_array($DB_ROW['matiere_id'],$tab_matiere) ;
+		$test_comptabilise = ($mode=='auto') ? ( !in_array($tab_item_pilier[$DB_ROW['socle_id']],$tab_langue_piliers) || in_array($DB_ROW['matiere_id'],$tab_langues[$tab_eleve_langue[$DB_ROW['eleve_id']]]['tab_matiere_id']) ) : in_array($DB_ROW['matiere_id'],$tab_matiere_id) ;
 		if($test_comptabilise)
 		{
 			$tab_eval[$DB_ROW['eleve_id']][$DB_ROW['socle_id']][$DB_ROW['item_id']][]['note'] = $DB_ROW['note'];
@@ -154,7 +168,7 @@ if($groupe_id && count($tab_eleve_id))
 	if(count($tab_item))
 	{
 		$listing_item_id = implode(',',array_keys($tab_item));
-		$DB_TAB = DB_STRUCTURE_lister_infos_items($listing_item_id,$detail=TRUE);
+		$DB_TAB = DB_STRUCTURE_SOCLE::DB_lister_infos_items($listing_item_id,$detail=TRUE);
 		foreach($DB_TAB as $DB_ROW)
 		{
 			$tab_item[$DB_ROW['item_id']] = array('item_ref'=>$DB_ROW['item_ref'],'item_nom'=>$DB_ROW['item_nom'],'item_coef'=>$DB_ROW['item_coef'],'item_cart'=>$DB_ROW['item_cart'],'item_socle'=>$DB_ROW['socle_id'],'item_lien'=>$DB_ROW['item_lien'],'matiere_id'=>$DB_ROW['matiere_id'],'calcul_methode'=>$DB_ROW['calcul_methode'],'calcul_limite'=>$DB_ROW['calcul_limite']);
@@ -179,7 +193,7 @@ if($test_affichage_Validation)
 		}
 	}
 	//Maintenant on complète avec les valeurs de la base
-	$DB_TAB = DB_STRUCTURE_lister_jointure_user_entree($liste_eleve,$listing_entree_id,$domaine_id=0,$pilier_id=0,$palier_id=0); // en fait on connait aussi le palier mais la requête est plus simple (pas de jointure) avec les entrées
+	$DB_TAB = DB_STRUCTURE_SOCLE::DB_lister_jointure_user_entree($liste_eleve,$listing_entree_id,$domaine_id=0,$pilier_id=0,$palier_id=0); // en fait on connait aussi le palier mais la requête est plus simple (pas de jointure) avec les entrées
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_user_entree[$DB_ROW['user_id']][$DB_ROW['entree_id']] = array('etat'=>$DB_ROW['validation_entree_etat'],'date'=>convert_date_mysql_to_french($DB_ROW['validation_entree_date']),'info'=>$DB_ROW['validation_entree_info']);
@@ -194,7 +208,7 @@ if($test_affichage_Validation)
 	}
 	//Maintenant on complète avec les valeurs de la base
 	$listing_pilier_id = implode(',',array_keys($tab_pilier));
-	$DB_TAB = DB_STRUCTURE_lister_jointure_user_pilier($liste_eleve,$listing_pilier_id,$palier_id=0); // en fait on connait aussi le palier mais la requête est plus simple (pas de jointure) avec les piliers
+	$DB_TAB = DB_STRUCTURE_SOCLE::DB_lister_jointure_user_pilier($liste_eleve,$listing_pilier_id,$palier_id=0); // en fait on connait aussi le palier mais la requête est plus simple (pas de jointure) avec les piliers
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_user_pilier[$DB_ROW['user_id']][$DB_ROW['pilier_id']] = array('etat'=>$DB_ROW['validation_pilier_etat'],'date'=>convert_date_mysql_to_french($DB_ROW['validation_pilier_date']),'info'=>$DB_ROW['validation_pilier_info']);
@@ -331,17 +345,19 @@ if($test_affichage_Pourcentage)
 // Elaboration du bilan relatif au socle, en HTML et PDF => Production et mise en page
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 
+$affichage_direct = ( ( in_array($_SESSION['USER_PROFIL'],array('eleve','parent')) ) && (SACoche!='webservices') ) ? TRUE : FALSE ;
+
 $titre1 = ($mode=='manuel') ? 'Détail de maîtrise du socle commun [matières resteintes]' : 'Détail de maîtrise du socle commun' ;
 $titre2 = ($memo_demande=='palier') ? $palier_nom : $palier_nom.' – '.mb_substr($pilier_nom,0,mb_strpos($pilier_nom,'–')) ;
 $break = ($memo_demande=='palier') ? 0 : $tab_pilier[$pilier_id]['pilier_nb_lignes'] ;
-$releve_html  = '<style type="text/css">'.$_SESSION['CSS'].'</style>';
-$releve_html .= '<h1>'.html($titre1).'</h1>';
-$releve_html .= '<h2>'.html($titre2).'</h2>';
+$releve_html  = $affichage_direct ? '' : '<style type="text/css">'.$_SESSION['CSS'].'</style>';
+$releve_html .= $affichage_direct ? '' : '<h1>'.html($titre1).'</h1>';
+$releve_html .= $affichage_direct ? '' : '<h2>'.html($titre2).'</h2>';
+$releve_html .= '<div class="astuce">Cliquer sur les icones &laquo;<img src="./_img/toggle_plus.gif" alt="+" />&raquo; pour accéder au détail.</div>';
 // Appel de la classe et définition de qqs variables supplémentaires pour la mise en page PDF
-require('./_lib/FPDF/fpdf.php');
-require('./_inc/class.PDF.php');
 $releve_pdf = new PDF($orientation='portrait',$marge_min=7.5,$couleur='oui');
 $releve_pdf->releve_socle_initialiser($test_affichage_Pourcentage,$test_affichage_Validation);
+$separation = (count($tab_eleve)>1) ? '<hr />' : '' ;
 
 // Pour chaque élève...
 foreach($tab_eleve as $tab)
@@ -349,7 +365,7 @@ foreach($tab_eleve as $tab)
 	extract($tab);	// $eleve_id $eleve_nom $eleve_prenom $eleve_langue
 	// On met le document au nom de l'élève, ou on établit un document générique
 	$releve_pdf->releve_socle_entete($titre1,$titre2,$break,$eleve_id,$eleve_nom,$eleve_prenom);
-	$releve_html .= ($eleve_id) ? '<hr /><h2>'.html($eleve_nom).' '.html($eleve_prenom).'</h2>' : '<hr /><h2>Attestation générique</h2>' ;
+	$releve_html .= ($eleve_id) ? $separation.'<h2>'.html($eleve_nom).' '.html($eleve_prenom).'</h2>' : '<hr /><h2>Attestation générique</h2>' ;
 	$releve_html .= '<table class="bilan">';
 	// Pour chaque pilier...
 	if(count($tab_pilier))
@@ -382,7 +398,7 @@ foreach($tab_eleve as $tab)
 							$tab_item_validation  = $test_affichage_Validation ? $tab_user_entree[$eleve_id][$socle_id] : array() ;
 							$releve_pdf->releve_socle_item($socle_nom,$test_affichage_Pourcentage,$tab_item_pourcentage,$test_affichage_Validation,$tab_item_validation);
 							$socle_nom  = html($socle_nom);
-							$socle_nom  = (mb_strlen($socle_nom)<160) ? $socle_nom : mb_substr($socle_nom,0,150).' [...] <img src="./_img/puce_astuce.png" alt="" title="'.$socle_nom.'" />';
+							$socle_nom  = (mb_strlen($socle_nom)<160) ? $socle_nom : mb_substr($socle_nom,0,150).' [...] <img src="./_img/bulle_aide.png" alt="" title="'.$socle_nom.'" />';
 							if( $tab_infos_socle_eleve[$socle_id][$eleve_id] )
 							{
 								$lien_toggle = '<a href="#" lang="'.$socle_id.'_'.$eleve_id.'"><img src="./_img/toggle_plus.gif" alt="" title="Voir / masquer le détail des items associés." class="toggle" /></a> ';
@@ -403,7 +419,7 @@ foreach($tab_eleve as $tab)
 			$releve_html .= '<tr><td colspan="4" class="nu"></td></tr>'."\r\n";
 		}
 	}
-	$releve_html .= '</table><p />';
+	$releve_html .= '</table>';
 }
 
 // Chemins d'enregistrement
@@ -413,19 +429,20 @@ $fichier_lien = 'releve_socle_etabl'.$_SESSION['BASE'].'_user'.$_SESSION['USER_I
 Ecrire_Fichier($dossier.$fichier_lien.'.html',$releve_html);
 $releve_pdf->Output($dossier.$fichier_lien.'.pdf','F');
 // Affichage du résultat
-if($_SESSION['USER_PROFIL']=='eleve')
+if($affichage_direct)
 {
+	echo'<hr />';
 	echo'<ul class="puce">';
-	echo'<li><label class="alerte"><a class="lien_ext" href="'.$dossier.$fichier_lien.'.pdf">Archiver / Imprimer (format <em>pdf</em>).</a></label></li>';
-	echo'</ul><p />';
+	echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'.pdf"><span class="file file_pdf">Archiver / Imprimer (format <em>pdf</em>).</span></a></li>';
+	echo'</ul>';
 	echo $releve_html;
 }
 else
 {
 	echo'<ul class="puce">';
-	echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'.pdf">Archiver / Imprimer (format <em>pdf</em>).</a></li>';
-	echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'">Explorer / Détailler (format <em>html</em>).</a></li>';
-	echo'</ul><p />';
+	echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'.pdf"><span class="file file_pdf">Archiver / Imprimer (format <em>pdf</em>).</span></a></li>';
+	echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'"><span class="file file_htm">Explorer / Détailler (format <em>html</em>).</span></a></li>';
+	echo'</ul>';
 }
 
 ?>

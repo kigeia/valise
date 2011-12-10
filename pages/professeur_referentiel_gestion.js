@@ -99,7 +99,7 @@ $(document).ready
 			function()
 			{
 				$(this).parent().find('div').remove();
-				$(this).parent().append('<div><button name="enregistrer" type="button" value="'+$(this).val()+'"><img alt="" src="./_img/bouton/valider.png" /> Enregistrer.</button></div>');
+				$(this).parent().append('<div><button name="enregistrer" type="button" value="'+$(this).val()+'" class="valider">Enregistrer.</button></div>');
 			}
 		);
 
@@ -155,7 +155,7 @@ $(document).ready
 			{
 				var ids = $(this).parent().attr('id');
 				afficher_masquer_images_action('hide');
-				var new_label = '<label for="'+ids+'" class="loader">Demande envoyée... Veuillez patienter.</label>';
+				var new_label = '<label for="'+ids+'" class="loader">Demande envoyée...</label>';
 				$(this).after(new_label);
 				$.ajax
 				(
@@ -166,25 +166,24 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('label[for='+ids+']').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.').fadeOut(2000,function(){$('label[for='+ids+']').remove();afficher_masquer_images_action('show');});
-							return false;
+							$.fancybox( '<label class="alerte">'+'Echec de la connexion !'+'</label>' , {'centerOnScroll':true} );
+							$('label[for='+ids+']').remove();
+							afficher_masquer_images_action('show');
 						},
 						success : function(responseHTML)
 						{
 							initialiser_compteur();
 							if(responseHTML.substring(0,18)!='<ul class="ul_m1">')
 							{
-								$('label[for='+ids+']').removeAttr("class").addClass("alerte").html(responseHTML).fadeOut(2000,function(){$('label[for='+ids+']').remove();afficher_masquer_images_action('show');});
+								$.fancybox( '<label class="alerte">'+responseHTML+'</label>' , {'centerOnScroll':true} );
 							}
 							else
 							{
-								$('#voir_referentiel').addClass('calque_referentiel').html(responseHTML.replace('<ul class="ul_m2">','<q class="imprimer" title="Imprimer le référentiel." /><q class="retourner" title="Revenir page précédente." />'+'<ul class="ul_m2">')+'<p />');
-								$('#form_instance table td').css('border-color','#FFF'); // Problème d'une bordure visible sous le div...
-								document.location.href = '#voir_referentiel';
+								$.fancybox( responseHTML.replace('<ul class="ul_m2">','<q class="imprimer" title="Imprimer le référentiel." />'+'<ul class="ul_m2">') , {'centerOnScroll':true} );
 								infobulle();
-								$('label[for='+ids+']').remove();
-								afficher_masquer_images_action('show');
 							}
+							$('label[for='+ids+']').remove();
+							afficher_masquer_images_action('show');
 						}
 					}
 				);
@@ -217,7 +216,7 @@ $(document).ready
 			{
 				var ids = $(this).parent().attr('id');
 				afficher_masquer_images_action('hide');
-				var new_label = '<label for="'+ids+'" class="loader">Demande envoyée... Veuillez patienter.</label>';
+				var new_label = '<label for="'+ids+'" class="loader">Demande envoyée...</label>';
 				$(this).after(new_label);
 				$.ajax
 				(
@@ -228,22 +227,25 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('label[for='+ids+']').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.').fadeOut(2000,function(){$('label[for='+ids+']').remove();afficher_masquer_images_action('show');});
-							return false;
+							$.fancybox( '<label class="alerte">'+'Echec de la connexion !'+'</label>' , {'centerOnScroll':true} );
+							$('label[for='+ids+']').remove();
+							afficher_masquer_images_action('show');
 						},
 						success : function(responseHTML)
 						{
 							initialiser_compteur();
 							if(responseHTML.substring(0,10)!='<img title')
 							{
-								$('label[for='+ids+']').removeAttr("class").addClass("alerte").html(responseHTML).fadeOut(4000,function(){$('label[for='+ids+']').remove();afficher_masquer_images_action('show');});
+								$.fancybox( '<label class="alerte">'+responseHTML+'</label>' , {'centerOnScroll':true} );
 							}
 							else
 							{
+								$.fancybox( '<label class="valide">Référentiel transmis au serveur de partage avec succès !</label>' , {'centerOnScroll':true} );
 								$('#'+ids).prev().prev().html('Référentiel présent. '+responseHTML);
 								infobulle();
-								$('label[for='+ids+']').removeAttr("class").addClass("valide").html("Référentiel transmis au serveur de partage avec succès !").fadeOut(2000,function(){$('label[for='+ids+']').remove();afficher_masquer_images_action('show');});
 							}
+							$('label[for='+ids+']').remove();
+							afficher_masquer_images_action('show');
 						}
 					}
 				);
@@ -295,7 +297,7 @@ $(document).ready
 			{
 				var ids = $(this).parent().parent().attr('id');
 				var partage = $('#f_partage').val();
-				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée... Veuillez patienter.');
+				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée...');
 				$.ajax
 				(
 					{
@@ -305,7 +307,7 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 							return false;
 						},
 						success : function(responseHTML)
@@ -347,7 +349,7 @@ $(document).ready
 				var ids = $(this).parent().parent().attr('id');
 				var methode = $('#f_methode').val();
 				var limite  = $('#f_limite').val();
-				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée... Veuillez patienter.');
+				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée...');
 				$.ajax
 				(
 					{
@@ -357,7 +359,7 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 							return false;
 						},
 						success : function(responseHTML)
@@ -390,7 +392,7 @@ $(document).ready
 			{
 				var ids = $(this).parent().parent().attr('id');
 				var partage = $(this).parent().parent().prev().prev().attr('lang');
-				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée... Veuillez patienter.');
+				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée...');
 				$.ajax
 				(
 					{
@@ -400,7 +402,7 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 							return false;
 						},
 						success : function(responseHTML)
@@ -464,8 +466,8 @@ $(document).ready
 
 		var charger_formulaire_structures = function()
 		{
-			$('#rechercher').hide("fast");
-			$('#ajax_msg').removeAttr("class").addClass("loader").html('Chargement du formulaire... Veuillez patienter.');
+			$('#rechercher').prop('disabled',true);
+			$('#ajax_msg').removeAttr("class").addClass("loader").html('Chargement du formulaire...');
 			$.ajax
 			(
 				{
@@ -489,7 +491,7 @@ $(document).ready
 						{
 							$('#ajax_msg').removeAttr("class").html('&nbsp;');
 							$('#f_structure').html(responseHTML);
-							$('#rechercher').removeAttr("class").show("fast"); // Pour IE7 le show() ne suffit pas
+							$('#rechercher').prop('disabled',false);
 						}
 					}
 				}
@@ -598,7 +600,7 @@ $(document).ready
 					return false;
 				}
 				$('#rechercher').prop('disabled',true);
-				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée... Veuillez patienter.');
+				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée...');
 				$.ajax
 				(
 					{
@@ -609,7 +611,7 @@ $(document).ready
 						error : function(msg,string)
 						{
 							$('#rechercher').prop('disabled',false);
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 							return false;
 						},
 						success : function(responseHTML)
@@ -665,7 +667,7 @@ $(document).ready
 				var description    = $(this).parent().text(); // Pb : il prend le contenu du <sup> avec
 				var longueur_sup   = $(this).prev().text().length;
 				var description    = description.substring(0,description.length-longueur_sup);
-				var new_label = '<label id="temp" class="loader">Demande envoyée... Veuillez patienter.</label>';
+				var new_label = '<label id="temp" class="loader">Demande envoyée...</label>';
 				$(this).next().after(new_label);
 				$.ajax
 				(
@@ -676,52 +678,25 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('label[id=temp]').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.').fadeOut(2000,function(){$('label[id=temp]').remove();});
-							return false;
+							$.fancybox( '<label class="alerte">'+'Echec de la connexion !'+'</label>' , {'centerOnScroll':true} );
+							$('label[id=temp]').remove();
 						},
 						success : function(responseHTML)
 						{
 							initialiser_compteur();
 							if(responseHTML.substring(0,18)!='<ul class="ul_n1">')
 							{
-								$('label[id=temp]').removeAttr("class").addClass("alerte").html(responseHTML).fadeOut(2000,function(){$('label[id=temp]').remove();});
+								$.fancybox( '<label class="alerte">'+responseHTML+'</label>' , {'centerOnScroll':true} );
 							}
 							else
 							{
-								$('#voir_referentiel').addClass('calque_referentiel').html('<ul class="ul_m1"><li class="li_m1"><b>'+description+'</b><q class="imprimer" title="Imprimer le référentiel."></q><q class="retourner" title="Revenir page précédente." />'+responseHTML+'</li></ul>');
-								$('#form_instance table td').css('border-color','#FFF'); // Problème d'une bordure visible sous le div...
-								document.location.href = '#voir_referentiel';
+								$.fancybox( '<ul class="ul_m1"><li class="li_m1"><b>'+description+'</b><q class="imprimer" title="Imprimer le référentiel."></q>'+responseHTML+'</li></ul>' , {'centerOnScroll':true} );
 								infobulle();
-								$('label[id=temp]').remove();
 							}
+							$('label[id=temp]').remove();
 						}
 					}
 				);
-			}
-		);
-
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-//	Clic sur une image pour Imprimer un referentiel
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-
-		$('#voir_referentiel q.imprimer').live // live est utilisé pour prendre en compte les nouveaux éléments créés
-		('click',
-			function()
-			{
-				window.print();
-			}
-		);
-
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-//	Clic sur une image pour Fermer le calque avec le détail d'un referentiel
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-
-		$('#voir_referentiel q.retourner').live // live est utilisé pour prendre en compte les nouveaux éléments créés
-		('click',
-			function()
-			{
-				$('#form_instance table td').css('border-color','#66F'); // Problème d'une bordure visible sous le div...
-				$('#voir_referentiel').removeAttr("class").html('');
 			}
 		);
 
@@ -751,7 +726,7 @@ $(document).ready
 				var ids = $('#succes').parent().parent().attr('id');
 				var referentiel_id = $(this).val().substring(3);
 				$('button').prop('disabled',true);
-				$('#ajax_msg_choisir').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+				$('#ajax_msg_choisir').removeAttr("class").addClass("loader").html("Demande envoyée...");
 				$.ajax
 				(
 					{
@@ -762,7 +737,7 @@ $(document).ready
 						error : function(msg,string)
 						{
 							$('button').prop('disabled',false);
-							$('#ajax_msg_choisir').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg_choisir').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 							return false;
 						},
 						success : function(responseHTML)
@@ -781,15 +756,15 @@ $(document).ready
 								$('#'+ids).prev().removeAttr("class").addClass("v").attr('lang',methode_calcul_langue).html(methode_calcul_texte);
 								if(test_matiere_perso)
 								{
-									$('#'+ids).prev().prev().removeAttr("class").addClass("v").attr('lang','hs').html('Référentiel présent. <img title="Référentiel dont le partage est sans objet (matière spécifique)." src="./_img/partage0.gif" />');
+									$('#'+ids).prev().prev().removeAttr("class").addClass("v").attr('lang','hs').html('Référentiel présent. <img title="Référentiel dont le partage est sans objet (matière spécifique)." src="./_img/etat/partage_non.gif" />');
 								}
 								else if(referentiel_id!='0')
 								{
-									$('#'+ids).prev().prev().removeAttr("class").addClass("v").attr('lang','bof').html('Référentiel présent. <img title="Référentiel dont le partage est sans intérêt (pas novateur)." src="./_img/partage0.gif" />');
+									$('#'+ids).prev().prev().removeAttr("class").addClass("v").attr('lang','bof').html('Référentiel présent. <img title="Référentiel dont le partage est sans intérêt (pas novateur)." src="./_img/etat/partage_non.gif" />');
 								}
 								else
 								{
-									$('#'+ids).prev().prev().removeAttr("class").addClass("v").attr('lang','non').html('Référentiel présent. <img title="Référentiel non partagé avec la communauté." src="./_img/partage0.gif" />');
+									$('#'+ids).prev().prev().removeAttr("class").addClass("v").attr('lang','non').html('Référentiel présent. <img title="Référentiel non partagé avec la communauté." src="./_img/etat/partage_non.gif" />');
 								}
 								infobulle();
 								$('#choisir_annuler').click();

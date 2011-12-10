@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Notation : codes, couleurs, légendes";
-$VERSION_JS_FILE += 2;
 
 // Évaluation : symboles colorés
 
@@ -36,7 +35,7 @@ require_once('./_inc/tableau_notes_txt.php');
 $dossier = './_img/note/';
 $tab_notes_txt_js = 'var tab_notes_txt = new Array();';
 
-$simulation_lignes = array('','','','','','');
+$simulation_lignes = array('','','','','');
 foreach($tab_notes_txt as $note_nom => $tab_note_texte)
 {
 	if(is_dir($dossier.$note_nom))
@@ -74,9 +73,9 @@ $acquis_box = '';
 foreach($tab_acquis as $acquis => $class)
 {
 	$acquis_box .= '<div class="colorpicker '.$class.'">';
-	$acquis_box .= '<p><input type="text" class="hc" size="2" maxlength="3" id="acquis_texte_'.$note.'" name="acquis_texte_'.$acquis.'" value="'.html($_SESSION['ACQUIS_TEXTE'][$acquis]).'" /><br /><input type="text" class="hc" size="25" maxlength="40" id="acquis_legende_'.$acquis.'" name="acquis_legende_'.$acquis.'" value="'.html($_SESSION['ACQUIS_LEGENDE'][$acquis]).'" /></p>';
-	$acquis_box .= '<div><button type="button" name="color_'.$acquis.'" value="'.$_SESSION['BACKGROUND_'.$acquis].'"><img alt="" src="./_img/bouton/colorer.png" /> Couleur de l\'établissement.</button></div>';
-	$acquis_box .= '<div><button type="button" name="color_'.$acquis.'" value="'.$tab_defaut[$acquis].'"><img alt="" src="./_img/bouton/colorer.png" /> Couleur par défaut.</button></div>';
+	$acquis_box .= '<p><input type="text" class="hc" size="2" maxlength="3" id="acquis_texte_'.$acquis.'" name="acquis_texte_'.$acquis.'" value="'.html($_SESSION['ACQUIS_TEXTE'][$acquis]).'" /><br /><input type="text" class="hc" size="25" maxlength="40" id="acquis_legende_'.$acquis.'" name="acquis_legende_'.$acquis.'" value="'.html($_SESSION['ACQUIS_LEGENDE'][$acquis]).'" /></p>';
+	$acquis_box .= '<div><button type="button" name="color_'.$acquis.'" value="'.$_SESSION['BACKGROUND_'.$acquis].'" class="colorer">Couleur de l\'établissement.</button></div>';
+	$acquis_box .= '<div><button type="button" name="color_'.$acquis.'" value="'.$tab_defaut[$acquis].'" class="colorer">Couleur par défaut.</button></div>';
 	$acquis_box .= '<p><input type="text" class="stretch" size="8" id="acquis_color_'.$acquis.'" name="acquis_color_'.$acquis.'" value="'.$_SESSION['BACKGROUND_'.$acquis].'" style="background-color:'.$_SESSION['BACKGROUND_'.$acquis].'" /><br /></p>';
 	$acquis_box .= '</div>';
 }
@@ -91,28 +90,23 @@ foreach($tab_acquis as $acquis => $class)
 
 <hr />
 
-<form action="" method="post" id="form_notes">
+<form action="#" method="post" id="form_notes">
 	<h2>Notes aux évaluations : symboles colorés, équivalents textes, légende</h2>
-	<table class="simulation"><tbody><tr><?php echo implode('</tr><tr>',$simulation_lignes) ?></tr></tbody></table>
+	<table class="simulation p"><tbody><tr><?php echo implode('</tr><tr>',$simulation_lignes) ?></tr></tbody></table>
 	<label id="ajax_msg_note_symbole"></label>
-	<p />
-	<div id="note_equiv_div">
-		<?php echo $note_equiv_div ?>
-	</div>
-	<p />
-	<fieldset><span class="tab"></span><input type="hidden" id="objet" name="objet" value="notes" /><button id="bouton_valider_notes" type="submit"><img alt="" src="./_img/bouton/parametre.png" /> Enregistrer ces choix.</button><label id="ajax_msg_notes">&nbsp;</label></fieldset>
+	<?php echo $note_equiv_div ?>
+	<p><span class="tab"></span><input type="hidden" name="objet" value="notes" /><button id="bouton_valider_notes" type="submit" class="parametre">Enregistrer ces choix.</button><label id="ajax_msg_notes">&nbsp;</label></p>
 </form>
 
 	<hr />
 
-<form action="" method="post" id="form_acquis">
+<form action="#" method="post" id="form_acquis">
 	<h2>Degrés d'acquisitions calculés : couleurs de fond, équivalents textes, légende</h2>
 	<!-- Pas mis dans un tableau, sinon colorpicker bugue avec IE -->
 	<?php echo $acquis_box; ?>
 	<div id="colorpicker" class="hide"></div>
 	<div style="clear:both"></div>
-	<p />
-	<fieldset><span class="tab"></span><input type="hidden" id="objet" name="objet" value="acquis" /><button id="bouton_valider_acquis" type="submit"><img alt="" src="./_img/bouton/parametre.png" /> Enregistrer ces choix.</button><label id="ajax_msg_acquis">&nbsp;</label></fieldset>
+	<p><span class="tab"></span><input type="hidden" name="objet" value="acquis" /><button id="bouton_valider_acquis" type="submit" class="parametre">Enregistrer ces choix.</button><label id="ajax_msg_acquis">&nbsp;</label></p>
 </form>
 
 	<hr />

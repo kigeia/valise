@@ -54,7 +54,7 @@ $(document).ready
 		(
 			function()
 			{
-				$("#options_releve").toggle("slow");
+				$("#options_individuel").toggle("slow");
 			}
 		);
 
@@ -189,7 +189,7 @@ $(document).ready
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#ajax_maj').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez essayer de nouveau.");
+						$('#ajax_maj').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 					},
 					success : function(responseHTML)
 					{
@@ -217,7 +217,7 @@ $(document).ready
 				if(groupe_val)
 				{
 					groupe_type = $("#f_groupe option:selected").parent().attr('label');
-					$('#ajax_maj').removeAttr("class").addClass("loader").html("Actualisation en cours... Veuillez patienter.");
+					$('#ajax_maj').removeAttr("class").addClass("loader").html("Actualisation en cours...");
 					maj_eleve(groupe_val,groupe_type);
 				}
 				else
@@ -234,9 +234,7 @@ $(document).ready
 		var choisir_compet = function()
 		{
 			// Ne pas changer ici la valeur de "mode" (qui est à "ajouter" ou "modifier" ou "dupliquer").
-			$('#form_select , #bilan').hide('fast');
 			$('#zone_compet ul').css("display","none");
-			$('#zone_compet').css("display","block");
 			$('#zone_compet ul.ul_m1').css("display","block");
 			liste = $('#f_compet_liste').val();
 			// Décocher tout
@@ -264,6 +262,7 @@ $(document).ready
 					}
 				}
 			}
+			$.fancybox( { 'href':'#zone_compet' , onStart:function(){$('#zone_compet').css("display","block");} , onClosed:function(){$('#zone_compet').css("display","none");} , 'modal':true , 'centerOnScroll':true } );
 		};
 
 		$('q.choisir_compet').click( choisir_compet );
@@ -275,8 +274,7 @@ $(document).ready
 		(
 			function()
 			{
-				$('#zone_compet').css("display","none");
-				$('#form_select , #bilan').show('fast');
+				$.fancybox.close();
 				return(false);
 			}
 		);
@@ -353,7 +351,7 @@ $(document).ready
 					f_legende      : { required:true },
  					f_cases_nb     : { required:true },
 					f_cases_larg   : { required:true },
-					f_type         : { required:true },
+					'f_type[]'     : { required:true },
 					f_coef         : { required:false },
 					f_socle        : { required:false },
 					f_lien         : { required:false },
@@ -365,7 +363,7 @@ $(document).ready
 					f_date_fin     : { required:function(){return $("#f_periode").val()==0;} , dateITA:true },
 					f_compet_liste : { required:true },
 					f_groupe       : { required:true },
-					f_eleve        : { required:true }
+					'f_eleve[]'    : { required:true }
 				},
 				messages :
 				{
@@ -376,7 +374,7 @@ $(document).ready
 					f_legende      : { required:"légende manquante" },
 					f_cases_nb     : { required:"nombre manquant" },
 					f_cases_larg   : { required:"largeur manquante" },
-					f_type         : { required:"type(s) manquant(s)" },
+					'f_type[]'     : { required:"type(s) manquant(s)" },
 					f_coef         : { },
 					f_socle        : { },
 					f_lien         : { },
@@ -388,7 +386,7 @@ $(document).ready
 					f_date_fin     : { required:"date manquante" , dateITA:"format JJ/MM/AAAA non respecté" },
 					f_compet_liste : { required:"item(s) manquant(s)" },
 					f_groupe       : { required:"groupe manquant" },
-					f_eleve        : { required:"élève(s) manquant(s)" }
+					'f_eleve[]'    : { required:"élève(s) manquant(s)" }
 				},
 				errorElement : "label",
 				errorClass : "erreur",
@@ -423,14 +421,6 @@ $(document).ready
 		(
 			function()
 			{
-				// grouper les select multiples => normalement pas besoin si name de la forme nom[], mais ça plante curieusement sur le serveur competences.sesamath.net
-				// alors j'ai copié le tableau dans un champ hidden...
-				var f_eleve = new Array(); $("#f_eleve option:selected").each(function(){f_eleve.push($(this).val());});
-				$('#eleves').val(f_eleve);
-				// grouper les checkbox multiples => normalement pas besoin si name de la forme nom[], mais ça pose pb à jquery.validate.js d'avoir un id avec []
-				// alors j'ai copié le tableau dans un champ hidden...
-				var f_type = new Array(); $("input[name=f_type]:checked").each(function(){f_type.push($(this).val());});
-				$('#types').val(f_type);
 				// récupération du nom de la matière et du nom du groupe
 				$('#f_matiere_nom').val( $("#f_matiere option:selected").text() );
 				$('#f_groupe_nom').val( $("#f_groupe option:selected").text() );
@@ -447,7 +437,7 @@ $(document).ready
 			if(readytogo)
 			{
 				$('button').prop('disabled',true);
-				$('#ajax_msg').removeAttr("class").addClass("loader").html("Génération du relevé en cours... Veuillez patienter.");
+				$('#ajax_msg').removeAttr("class").addClass("loader").html("Génération du relevé en cours...");
 				$('#bilan').html('');
 			}
 			return readytogo;
@@ -457,7 +447,7 @@ $(document).ready
 		function retour_form_erreur(msg,string)
 		{
 			$('button').prop('disabled',false);
-			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez valider de nouveau.");
+			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 		}
 
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)
@@ -465,15 +455,25 @@ $(document).ready
 		{
 			initialiser_compteur();
 			$('button').prop('disabled',false);
-			if(responseHTML.substring(0,17)!='<ul class="puce">')
+			if(responseHTML.substring(0,6)=='<hr />')
 			{
-				$('#ajax_msg').removeAttr("class").addClass("alerte").html(responseHTML);
+				$('#ajax_msg').removeAttr("class").addClass("valide").html("Terminé : voir ci-dessous.");
+				$('#bilan').html(responseHTML);
+				format_liens('#bilan');
+				infobulle();
+			}
+			else if(responseHTML.substring(0,4)=='<h2>')
+			{
+				$('#ajax_msg').removeAttr("class").html('');
+				// Mis dans le div bilan et pas balancé directement dans le fancybox sinon le format_lien() nécessite un peu plus de largeur que le fancybox ne recalcule pas (et $.fancybox.update(); ne change rien).
+				// Malgré tout, pour Chrome par exemple, la largeur est mal clculée et provoque des retours à la ligne, d'où le minWidth ajouté.
+				$('#bilan').html(responseHTML);
+				format_liens('#bilan');
+				$.fancybox( { 'href':'#bilan' , onClosed:function(){$('#bilan').html("");} , 'centerOnScroll':true , 'minWidth':400 } );
 			}
 			else
 			{
-				$('#ajax_msg').removeAttr("class").addClass("valide").html("Demande réalisée !");
-				$('#bilan').html(responseHTML);
-				format_liens('#bilan');
+				$('#ajax_msg').removeAttr("class").addClass("alerte").html(responseHTML);
 			}
 		} 
 

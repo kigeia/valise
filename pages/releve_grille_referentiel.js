@@ -103,7 +103,7 @@ $(document).ready
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#ajax_maj').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez essayer de nouveau.");
+						$('#ajax_maj').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 					},
 					success : function(responseHTML)
 					{
@@ -127,16 +127,54 @@ $(document).ready
 			{
 				$("#f_eleve").html('<option value=""></option>').hide();
 				var groupe_val = $("#f_groupe").val();
-				if(groupe_val!='0')
+				if(groupe_val)
 				{
 					type = $("#f_groupe option:selected").parent().attr('label');
-					$('#ajax_maj').removeAttr("class").addClass("loader").html("Actualisation en cours... Veuillez patienter.");
+					$('#ajax_maj').removeAttr("class").addClass("loader").html("Actualisation en cours...");
 					maj_eleve(groupe_val,type);
 				}
 				else
 				{
 					$('#ajax_maj').removeAttr("class").html("&nbsp;");
 				}
+			}
+		);
+
+		//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+		//	Charger toutes les matières ou seulement les matières affectées (pour un prof)
+		//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+
+		var modifier_action = 'ajouter';
+		$("#modifier_matiere").click
+		(
+			function()
+			{
+				$('button').prop('disabled',true);
+				var matiere_id = $("#f_matiere option:selected").val();
+				$.ajax
+				(
+					{
+						type : 'POST',
+						url : 'ajax.php?page=_maj_select_matieres_prof',
+						data : 'f_matiere='+matiere_id+'&f_action='+modifier_action,
+						dataType : "html",
+						error : function(msg,string)
+						{
+							$('button').prop('disabled',false);
+						},
+						success : function(responseHTML)
+						{
+							initialiser_compteur();
+							if(responseHTML.substring(0,7)=='<option')	// Attention aux caractères accentués : l'utf-8 pose des pbs pour ce test
+							{
+								modifier_action = (modifier_action=='ajouter') ? 'retirer' : 'ajouter' ;
+								$('#modifier_matiere').removeAttr("class").addClass("form_"+modifier_action);
+								$('#f_matiere').html(responseHTML);
+							}
+							$('button').prop('disabled',false);
+						}
+					}
+				);
 			}
 		);
 
@@ -156,7 +194,7 @@ $(document).ready
 					f_matiere      : { required:true },
 					f_niveau       : { required:true },
 					f_groupe       : { required:true },
-					f_eleve        : { required:false },
+					'f_eleve[]'    : { required:false },
 					f_restriction  : { required:false },
 					f_coef         : { required:false },
 					f_socle        : { required:false },
@@ -175,7 +213,7 @@ $(document).ready
 					f_matiere      : { required:"matière manquante" },
 					f_niveau       : { required:"niveau manquant" },
 					f_groupe       : { required:"classe/groupe manquant" },
-					f_eleve        : { },
+					'f_eleve[]'    : { },
 					f_restriction  : { },
 					f_coef         : { },
 					f_socle        : { },
@@ -191,7 +229,11 @@ $(document).ready
 				},
 				errorElement : "label",
 				errorClass : "erreur",
-				errorPlacement : function(error,element) { element.after(error); }
+				errorPlacement : function(error,element)
+				{
+					if(element.attr("id")=='f_matiere') { element.next().after(error); }
+					else {element.after(error);}
+				}
 				// success: function(label) {label.text("ok").removeAttr("class").addClass("valide");} Pas pour des champs soumis à vérification PHP
 			}
 		);
@@ -215,10 +257,6 @@ $(document).ready
 		(
 			function()
 			{
-				// grouper les select multiples => normalement pas besoin si name de la forme nom[], mais ça plante curieusement sur le serveur competences.sesamath.net
-				// alors j'ai copié le tableau dans un champ hidden...
-				var f_eleve = new Array(); $("#f_eleve option:selected").each(function(){f_eleve.push($(this).val());});
-				$('#eleves').val(f_eleve);
 				// récupération du nom de la matière et du nom du niveau
 				$('#f_matiere_nom').val( $("#f_matiere option:selected").text() );
 				$('#f_niveau_nom').val( $("#f_niveau option:selected").text() );
@@ -236,7 +274,7 @@ $(document).ready
 			{
 				$('button').prop('disabled',true);
 				$('#bilan').html("&nbsp;");
-				$('#ajax_msg').removeAttr("class").addClass("loader").html("Génération du relevé en cours... Veuillez patienter.");
+				$('#ajax_msg').removeAttr("class").addClass("loader").html("Génération du relevé en cours...");
 			}
 			return readytogo;
 		}
@@ -245,7 +283,7 @@ $(document).ready
 		function retour_form_erreur(msg,string)
 		{
 			$('button').prop('disabled',false);
-			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez valider de nouveau.");
+			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 		}
 
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)
@@ -253,16 +291,25 @@ $(document).ready
 		{
 			initialiser_compteur();
 			$('button').prop('disabled',false);
-			if(responseHTML.substring(0,17)!='<ul class="puce">')
+			if(responseHTML.substring(0,6)=='<hr />')
 			{
-				$('#ajax_msg').removeAttr("class").addClass("alerte").html(responseHTML);
-			}
-			else
-			{
-				$('#ajax_msg').removeAttr("class").addClass("valide").html("Demande réalisée !");
+				$('#ajax_msg').removeAttr("class").addClass("valide").html("Terminé : voir ci-dessous.");
 				$('#bilan').html(responseHTML);
 				format_liens('#bilan');
 				infobulle();
+			}
+			else if(responseHTML.substring(0,17)=='<ul class="puce">')
+			{
+				$('#ajax_msg').removeAttr("class").html('');
+				// Mis dans le div bilan et pas balancé directement dans le fancybox sinon le format_lien() nécessite un peu plus de largeur que le fancybox ne recalcule pas (et $.fancybox.update(); ne change rien).
+				// Malgré tout, pour Chrome par exemple, la largeur est mal clculée et provoque des retours à la ligne, d'où le minWidth ajouté.
+				$('#bilan').html(responseHTML);
+				format_liens('#bilan');
+				$.fancybox( { 'href':'#bilan' , onClosed:function(){$('#bilan').html("");} , 'centerOnScroll':true , 'minWidth':400 } );
+			}
+			else
+			{
+				$('#ajax_msg').removeAttr("class").addClass("alerte").html(responseHTML);
 			}
 		} 
 

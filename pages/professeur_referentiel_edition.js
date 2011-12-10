@@ -39,14 +39,6 @@ function entity_convert(string)
 	}
 	return string;
 }
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-//	Equivalent javascript de htmlspecialchars() en php pour éviter le pb des < > " saisis dans un input et reportés dans la page
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-function htmlspecialchars(string)
-{
-	string = string.replace(/&/g,"&amp;").replace(/'/g,"&#039;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-	return string;
-}
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Pour mémoriser les liens des ressources avant que le tooltip ne bouffe les title.
@@ -87,17 +79,17 @@ $(document).ready
 		images[3] += '<q class="n3_del" lang="del" title="Supprimer cet item (et renuméroter)."></q>';
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-//	Charger le div zone_compet en ajax
+//	Charger le form zone_compet en ajax
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 		$('q.modifier').click
 		(
 			function()
 			{
 				id = $(this).parent().attr('id');
-				matiere = $(this).parent().parent().attr('lang');
+				matiere_nom = $(this).parent().prev().prev().text();
 				matiere_id = id.substring(3);
 				afficher_masquer_images_action('hide');
-				new_label = '<label for="'+id+'" class="loader">Demande envoyée... Veuillez patienter.</label>';
+				new_label = '<label for="'+id+'" class="loader">Demande envoyée...</label>';
 				$(this).after(new_label);
 				$.ajax
 				(
@@ -108,37 +100,51 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('label[for='+id+']').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.').fadeOut(2000,function(){$('label[for='+id+']').remove();afficher_masquer_images_action('show');});
+							$.fancybox( '<label class="alerte">'+'Echec de la connexion !'+'</label>' , {'centerOnScroll':true} );
+							$('label[for='+id+']').remove();
+							afficher_masquer_images_action('show');
 						},
 						success : function(responseHTML)
 						{
 							initialiser_compteur();
-							if(responseHTML.substring(0,16)=='<ul class="ul_m1')	// Attention aux caractères accentués : l'utf-8 pose des pbs pour ce test
+							if(responseHTML.substring(0,16)!='<ul class="ul_m1')	// Attention aux caractères accentués : l'utf-8 pose des pbs pour ce test
 							{
-								$('label[for='+id+']').removeAttr("class").addClass("valide").html("Contenu affiché ci-dessous !").fadeOut(2000,function(){$('label[for='+id+']').remove();afficher_masquer_images_action('show');});
-								$('#zone_compet').html('<h2>'+matiere+'</h2>'+responseHTML);
-//								$('#zone_compet ul').css("display","none");
-								$('#zone_compet').css("display","block");
-//								$('#zone_compet ul.ul_m1').css("display","block");
-								// Récupérer le contenu des title des ressources avant que le tooltip ne l'enlève
+								$.fancybox( '<label class="alerte">'+responseHTML+'</label>' , {'centerOnScroll':true} );
+							}
+							else
+							{
+								$('#zone_choix_referentiel').hide();
+								$('#zone_compet').html('<span class="tab"></span><button id="fermer_zone_compet" type="button" class="retourner">Retour à la liste des matières</button>'+'<h2>'+matiere_nom+'</h2>'+responseHTML);
+								// Récupérer le contenu des title des ressources avant que le tooltip ne les enlève
 								$('#zone_compet li.li_n3').each
 								(
 									function()
 									{
-										id = $(this).attr('id').substring(3);
+										id2 = $(this).attr('id').substring(3);
 										titre = $(this).children('b').children('img:eq(3)').attr('title');
-										tab_ressources[id] = (titre=='Absence de ressource.') ? '' : titre ;
+										tab_ressources[id2] = (titre=='Absence de ressource.') ? '' : titre ;
 									}
 								);
-								infobulle();
 							}
-							else
-							{
-								$('label[for='+id+']').removeAttr("class").addClass("alerte").html(responseHTML).fadeOut(2000,function(){$('label[for='+id+']').remove();afficher_masquer_images_action('show');});
-							}
+							$('label[for='+id+']').remove();
+							afficher_masquer_images_action('show');
 						}
 					}
 				);
+			}
+		);
+
+//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+//	Clic sur le bouton pour fermer la zone compet
+//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		$('#fermer_zone_compet').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+		('click',
+			function()
+			{
+				$('#zone_compet').html("&nbsp;");
+				afficher_masquer_images_action('show'); // au cas où on serait en train d'éditer qq chose
+				$('#zone_choix_referentiel').show('fast');
+				return(false);
 			}
 		);
 
@@ -167,7 +173,7 @@ $(document).ready
 					case 'n3' :	// item
 						new_li += '<i>Nom</i> <input id="f_nom" name="f_nom" size="125" maxlength="256" type="text" value="" /> <img alt="" src="./_img/bulle_aide.png" title="Indiquer un nom d\'item." /><br />';
 						new_li += '<i>Socle</i> <input id="f_intitule" name="f_intitule" size="125" maxlength="256" type="text" value="Hors-socle." readonly /><input id="f_socle" name="f_socle" type="hidden" value="0" /><q class="choisir_compet" title="Sélectionner un item du socle commun."></q> <img alt="" src="./_img/bulle_aide.png" title="Appartenance éventuelle au socle commun." /><br />';
-						new_li += '<i>Coef.</i> <input id="f_coef" name="f_coef" type="text" value="1" size="1" maxlength="2" /> <img alt="" src="./_img/bulle_aide.png" title="Coefficient facultatif (entier entre 0 et 20)." /> - <input id="f_cart1" name="f_cart" type="radio" value="1" checked /><label for="f_cart1"><img src="./_img/cart1.png" title="Demande possible." /></label> <input id="f_cart0" name="f_cart" type="radio" value="0" /><label for="f_cart0"><img src="./_img/cart0.png" title="Demande interdite." /></label> - <i>Lien</i> <input id="f_lien" name="f_lien" type="text" value="" size="100" /> <img alt="" src="./_img/bulle_aide.png" title="Lien (facultatif) vers une ressource internet (entraînement, remédiation&hellip;).." />';
+						new_li += '<i>Coef.</i> <input id="f_coef" name="f_coef" type="text" value="1" size="1" maxlength="2" /> <img alt="" src="./_img/bulle_aide.png" title="Coefficient facultatif (entier entre 0 et 20)." /> - <input id="f_cart1" name="f_cart" type="radio" value="1" checked /><label for="f_cart1"><img src="./_img/etat/cart_oui.png" title="Demande possible." /></label> <input id="f_cart0" name="f_cart" type="radio" value="0" /><label for="f_cart0"><img src="./_img/etat/cart_non.png" title="Demande interdite." /></label> - <i>Lien</i> <input id="f_lien" name="f_lien" type="text" value="" size="100" /> <img alt="" src="./_img/bulle_aide.png" title="Lien (facultatif) vers une ressource internet (entraînement, remédiation&hellip;).." />';
 						texte = 'cet item';
 						break;
 					default :
@@ -217,33 +223,35 @@ $(document).ready
 						span = $(this).parent().children('span').text();
 						ref = span.charAt(0);
 						nom = span.substring(4);
-						new_div += '<i>Ref.</i> <input id="f_ref" name="f_ref" size="1" maxlength="1" type="text" value="'+ref+'" /> <i>Nom</i> <input id="f_nom" name="f_nom" size="'+Math.min(10+nom.length,118)+'" maxlength="128" type="text" value="'+nom+'" /> <img alt="" src="./_img/bulle_aide.png" title="Indiquer une lettre référence et un nom de domaine." />';
+						new_div += '<i>Ref.</i> <input id="f_ref" name="f_ref" size="1" maxlength="1" type="text" value="'+ref+'" /> <i>Nom</i> <input id="f_nom" name="f_nom" size="'+Math.min(10+nom.length,118)+'" maxlength="128" type="text" value="'+escapeQuote(nom)+'" /> <img alt="" src="./_img/bulle_aide.png" title="Indiquer une lettre référence et un nom de domaine." />';
 						texte = 'ce domaine';
 						break;
 					case 'n2' :	// thème
 						// On récupère le nom
 						nom = $(this).parent().children('span').text();
-						new_div += '<i>Nom</i> <input id="f_nom" name="f_nom" size="'+Math.min(10+nom.length,128)+'" maxlength="128" type="text" value="'+nom+'" /> <img alt="" src="./_img/bulle_aide.png" title="Indiquer un nom de thème." />';
+						new_div += '<i>Nom</i> <input id="f_nom" name="f_nom" size="'+Math.min(10+nom.length,128)+'" maxlength="128" type="text" value="'+escapeQuote(nom)+'" /> <img alt="" src="./_img/bulle_aide.png" title="Indiquer un nom de thème." />';
 						texte = 'ce thème';
 						break;
 					case 'n3' :	// item
 						// On récupère le nom
 						nom = $(this).parent().children('b').text();
 						// On récupère le coefficient
-						coef = parseInt( $(this).parent().children('b').children('img:eq(0)').attr('src').substring(12,14) );
+						adresse = $(this).parent().children('b').children('img:eq(0)').attr('src');
+						coef = parseInt( adresse.substr(adresse.length-6,2) );
 						// On récupère l'autorisation de demande
-						cart = $(this).parent().children('b').children('img:eq(1)').attr('src').substring(11,12);
-						check1 = (cart=='1') ? ' checked' : '' ;
-						check0 = (cart=='0') ? ' checked' : '' ;
+						adresse = $(this).parent().children('b').children('img:eq(1)').attr('src');
+						cart = adresse.substr(adresse.length-7,3);
+						check1 = (cart=='oui') ? ' checked' : '' ;
+						check0 = (cart=='non') ? ' checked' : '' ;
 						// On récupère le socle
 						socle_id  = $(this).parent().children('b').children('img:eq(2)').attr('lang').substring(3);
 						socle_txt = $('label[for=socle_'+socle_id+']').text();
 						// On récupère le lien
 						item_id = $(this).parent().attr('id').substring(3);
 						lien = tab_ressources[item_id];
-						new_div += '<i>Nom</i> <input id="f_nom" name="f_nom" size="'+Math.min(10+nom.length,128)+'" maxlength="256" type="text" value="'+nom+'" /> <img alt="" src="./_img/bulle_aide.png" title="Indiquer un nom d\'item." /><br />';
+						new_div += '<i>Nom</i> <input id="f_nom" name="f_nom" size="'+Math.min(10+nom.length,128)+'" maxlength="256" type="text" value="'+escapeQuote(nom)+'" /> <img alt="" src="./_img/bulle_aide.png" title="Indiquer un nom d\'item." /><br />';
 						new_div += '<i>Socle</i> <input id="f_intitule" name="f_intitule" size="110" maxlength="256" type="text" value="'+socle_txt+'" readonly /><input id="f_socle" name="f_socle" type="hidden" value="'+socle_id+'" /><q class="choisir_compet" title="Sélectionner un item du socle commun."></q> <img alt="" src="./_img/bulle_aide.png" title="Appartenance éventuelle au socle commun." /><br />';
-						new_div += '<i>Coef.</i> <input id="f_coef" name="f_coef" type="text" value="'+coef+'" size="1" maxlength="2" /> <img alt="" src="./_img/bulle_aide.png" title="Coefficient facultatif (entier entre 0 et 20)." /> - <input id="f_cart1" name="f_cart" type="radio" value="1"'+check1+' /><label for="f_cart1"><img src="./_img/cart1.png" title="Demande possible." /></label> <input id="f_cart0" name="f_cart" type="radio" value="0"'+check0+' /><label for="f_cart0"><img src="./_img/cart0.png" title="Demande interdite." /></label> - <i>Lien</i> <input id="f_lien" name="f_lien" type="text" value="'+lien+'" size="90" /> <img alt="" src="./_img/bulle_aide.png" title="Lien (facultatif) vers une ressource internet (entraînement, remédiation&hellip;)." />';
+						new_div += '<i>Coef.</i> <input id="f_coef" name="f_coef" type="text" value="'+coef+'" size="1" maxlength="2" /> <img alt="" src="./_img/bulle_aide.png" title="Coefficient facultatif (entier entre 0 et 20)." /> - <input id="f_cart1" name="f_cart" type="radio" value="1"'+check1+' /><label for="f_cart1"><img src="./_img/etat/cart_oui.png" title="Demande possible." /></label> <input id="f_cart0" name="f_cart" type="radio" value="0"'+check0+' /><label for="f_cart0"><img src="./_img/etat/cart_non.png" title="Demande interdite." /></label> - <i>Lien</i> <input id="f_lien" name="f_lien" type="text" value="'+lien+'" size="90" /> <img alt="" src="./_img/bulle_aide.png" title="Lien (facultatif) vers une ressource internet (entraînement, remédiation&hellip;)." />';
 						texte = 'cet item';
 						break;
 					default :
@@ -392,7 +400,7 @@ $(document).ready
 			function()
 			{
 				// récupérer le nom de l'item et le reporter
-				item_nom = htmlspecialchars( entity_convert( $('#f_nom').val() ) );
+				item_nom = escapeHtml( entity_convert( $('#f_nom').val() ) );
 				$('#zone_socle span.f_nom').html(item_nom);
 				// récupérer la relation au socle commun et la cocher
 				socle_id = $(this).prev().val();
@@ -422,16 +430,16 @@ $(document).ready
 				// montrer le cadre
 				$('#zone_socle q').show();
 				$('#socle_0').parent().parent().css("display","block");
-				$('#zone_socle').show('fast');
+				$.fancybox( { 'href':'#zone_socle' , onStart:function(){$('#zone_socle').css("display","block");} , onClosed:function(){$('#zone_socle').css("display","none");} , 'modal':true , 'centerOnScroll':true } );
 				$('#socle_'+socle_id).focus();
 				objet = 'choisir_compet';
 			}
 		);
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-//	Clic sur l'image pour confirmer la relation au socle d'un item
+//	Clic sur le bouton pour confirmer la relation au socle d'un item
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.valider[lang=choisir_compet]').click
+		$('#choisir_socle_valider').click
 		(
 			function()
 			{
@@ -450,7 +458,19 @@ $(document).ready
 				$('#f_socle').val(socle_id);
 				$('#f_intitule').val(socle_nom);
 				// masquer le cadre
-				$('#zone_socle').hide('fast');
+				$.fancybox.close();
+				objet = 'editer';
+			}
+		);
+
+//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+//	Clic sur le bouton pour Annuler le choix dans le socle
+//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		$('#choisir_socle_annuler').click
+		(
+			function()
+			{
+				$.fancybox.close();
 				objet = 'editer';
 			}
 		);
@@ -538,7 +558,7 @@ $(document).ready
 					tab_id.push(li.attr('id').substring(3));
 				}
 				// Envoi des infos en ajax pour le traitement de la demande
-				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée... Veuillez patienter.');
+				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée...');
 				$.ajax
 				(
 					{
@@ -548,7 +568,7 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 						},
 						success : function(responseHTML)
 						{
@@ -558,24 +578,26 @@ $(document).ready
 								switch(contexte)
 								{
 									case 'n1' :	// domaine
-										texte = '<span>' + ref + ' - ' + htmlspecialchars(nom) + '</span>' + images[contexte.charAt(1)] + '<ul class="ul_n2"></ul>';
+										texte = '<span>' + ref + ' - ' + escapeHtml(nom) + '</span>' + images[contexte.charAt(1)] + '<ul class="ul_n2"></ul>';
 										break;
 									case 'n2' :	// thème
-										texte = '<span>' + htmlspecialchars(nom) + '</span>' + images[contexte.charAt(1)] + '<ul class="ul_n3"></ul>';
+										texte = '<span>' + escapeHtml(nom) + '</span>' + images[contexte.charAt(1)] + '<ul class="ul_n3"></ul>';
 										break;
 									case 'n3' :	// item
-										coef_texte  = '<img src="./_img/coef/'+coef+'.gif" alt="" title="Coefficient '+coef+'." />';
+										coef_image  = (coef<10) ? '0'+coef : coef ;
+										coef_texte  = '<img src="./_img/coef/'+coef_image+'.gif" alt="" title="Coefficient '+coef+'." />';
+										cart_image  = (cart>0) ? 'oui' : 'non' ;
 										cart_title  = (cart>0) ? 'Demande possible.' : 'Demande interdite.' ;
-										cart_texte  = '<img src="./_img/cart'+cart+'.png" title="'+cart_title+'" />';
-										socle_image = (socle>0) ? 'on' : 'off' ;
-										socle_nom   = $('#f_intitule').val();
-										socle_texte = '<img src="./_img/socle_'+socle_image+'.png" alt="" title="'+socle_nom+'" lang="id_'+socle+'" />';
-										lien_image  = (lien=='') ? 'off' : 'on' ;
-										lien_nom    = (lien=='') ? 'Absence de ressource.' : htmlspecialchars(lien) ;
-										lien_texte  = '<img src="./_img/link_'+lien_image+'.png" alt="" title="'+lien_nom+'" />';
-										texte = '<b>' + coef_texte + cart_texte + socle_texte + lien_texte + htmlspecialchars(nom) + '</b>' + images[contexte.charAt(1)];
+										cart_texte  = '<img src="./_img/etat/cart_'+cart_image+'.png" title="'+cart_title+'" />';
+										socle_image = (socle>0) ? 'oui' : 'non' ;
+										socle_title = $('#f_intitule').val();
+										socle_texte = '<img src="./_img/etat/socle_'+socle_image+'.png" alt="" title="'+socle_title+'" lang="id_'+socle+'" />';
+										lien_image  = (lien=='') ? 'non' : 'oui' ;
+										lien_title  = (lien=='') ? 'Absence de ressource.' : escapeHtml(lien) ;
+										lien_texte  = '<img src="./_img/etat/link_'+lien_image+'.png" alt="" title="'+lien_title+'" />';
+										texte = '<b>' + coef_texte + cart_texte + socle_texte + lien_texte + escapeHtml(nom) + '</b>' + images[contexte.charAt(1)];
 										element_id = responseHTML.substring(3);
-										tab_ressources[element_id] = (lien=='') ? '' : lien_nom ;
+										tab_ressources[element_id] = (lien=='') ? '' : lien_title ;
 										break;
 									default :
 										texte = '???';
@@ -661,7 +683,7 @@ $(document).ready
 				// On récupère l'id de l'élément concerné (domaine ou theme ou item)
 				element_id = $(this).parent().parent().attr('id').substring(3);
 				// Envoi des infos en ajax pour le traitement de la demande
-				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée... Veuillez patienter.');
+				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée...');
 				$.ajax
 				(
 					{
@@ -671,27 +693,29 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 						},
 						success : function(responseHTML)
 						{
 							initialiser_compteur();
 							if(responseHTML=='ok')	// Attention aux caractères accentués : l'utf-8 pose des pbs pour ce test
 							{
-								texte = (contexte=='n1') ? ref + ' - ' + htmlspecialchars(nom) : htmlspecialchars(nom) ;
+								texte = (contexte=='n1') ? ref + ' - ' + escapeHtml(nom) : escapeHtml(nom) ;
 								if(contexte=='n3')
 								{
-									coef_texte  = '<img src="./_img/coef/'+coef+'.gif" alt="" title="Coefficient '+coef+'." />';
+									coef_image  = (coef<10) ? '0'+coef : coef ;
+									coef_texte  = '<img src="./_img/coef/'+coef_image+'.gif" alt="" title="Coefficient '+coef+'." />';
+									cart_image  = (cart>0) ? 'oui' : 'non' ;
 									cart_title  = (cart>0) ? 'Demande possible.' : 'Demande interdite.' ;
-									cart_texte  = '<img src="./_img/cart'+cart+'.png" title="'+cart_title+'" />';
-									socle_image = (socle>0) ? 'on' : 'off' ;
-									socle_nom   = $('#f_intitule').val();
-									socle_texte = '<img src="./_img/socle_'+socle_image+'.png" alt="" title="'+socle_nom+'" lang="id_'+socle_id+'" />';
-									lien_image  = (lien=='') ? 'off' : 'on' ;
-									lien_nom    = (lien=='') ? 'Absence de ressource.' : htmlspecialchars(lien) ;
-									lien_texte  = '<img src="./_img/link_'+lien_image+'.png" alt="" title="'+lien_nom+'" />';
+									cart_texte  = '<img src="./_img/etat/cart_'+cart_image+'.png" title="'+cart_title+'" />';
+									socle_image = (socle>0) ? 'oui' : 'non' ;
+									socle_title = $('#f_intitule').val();
+									socle_texte = '<img src="./_img/etat/socle_'+socle_image+'.png" alt="" title="'+socle_title+'" lang="id_'+socle_id+'" />';
+									lien_image  = (lien=='') ? 'non' : 'oui' ;
+									lien_title  = (lien=='') ? 'Absence de ressource.' : escapeHtml(lien) ;
+									lien_texte  = '<img src="./_img/etat/link_'+lien_image+'.png" alt="" title="'+lien_title+'" />';
 									$('#ajax_msg').parent().parent().children('b').html(coef_texte+cart_texte+socle_texte+lien_texte+texte).show();
-									tab_ressources[element_id] = (lien=='') ? '' : lien_nom ;
+									tab_ressources[element_id] = (lien=='') ? '' : lien_title ;
 									infobulle();
 								}
 								else
@@ -731,7 +755,7 @@ $(document).ready
 					tab_id.push(li.attr('id').substring(3));
 				}
 				// Envoi des infos en ajax pour le traitement de la demande
-				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée... Veuillez patienter.');
+				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée...');
 				$.ajax
 				(
 					{
@@ -741,7 +765,7 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 						},
 						success : function(responseHTML)
 						{
@@ -787,7 +811,7 @@ $(document).ready
 				li_id_arrivee = $(this).parent().attr('id');
 				element2_id = li_id_arrivee.substring(3);
 				// Envoi des infos en ajax pour le traitement de la demande
-				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée... Veuillez patienter.');
+				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée...');
 				$.ajax
 				(
 					{
@@ -797,7 +821,7 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 						},
 						success : function(responseHTML)
 						{
@@ -896,7 +920,7 @@ $(document).ready
 					);
 				}
 				// Envoi des infos en ajax pour le traitement de la demande
-				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée... Veuillez patienter.');
+				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée...');
 				$.ajax
 				(
 					{
@@ -906,7 +930,7 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 						},
 						success : function(responseHTML)
 						{
@@ -933,18 +957,6 @@ $(document).ready
 						}
 					}
 				);
-			}
-		);
-
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-//	Clic sur l'image pour Annuler le choix dans le socle
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.annuler[lang=choisir_compet]').click
-		(
-			function()
-			{
-				$('#zone_socle').hide('fast');
-				objet = 'editer';
 			}
 		);
 
@@ -1023,12 +1035,13 @@ $(document).ready
 			{
 				if(e.which==13)	// touche entrée
 				{
-					if(objet=='choisir_compet') {$('#zone_socle q.valider').click();} else {$('#zone_compet q.valider').click();}
+					if(objet=='choisir_compet') {$('#choisir_socle_annuler').click();} else {$('#zone_compet q.valider').click();}
 				}
 				else if(e.which==27)	// touche escape
 				{
-					if(objet=='choisir_compet') {$('#zone_socle q.annuler').click();} else {$('#zone_compet q.annuler').click();}
+					if(objet=='choisir_compet') {$('#choisir_socle_annuler').click();} else {$('#zone_compet q.annuler').click();}
 				}
+				return false;
 			}
 		);
 

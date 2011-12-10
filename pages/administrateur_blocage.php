@@ -29,7 +29,7 @@ if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');
 $TITRE = "Blocage des connexions";
 
 // Initialisation de l'état de l'accès
-$fichier_blocage_administrateur = $CHEMIN_CONFIG.'blocage_administrateur_'.$_SESSION['BASE'].'.txt';
+$fichier_blocage_administrateur = CHEMIN_CONFIG.'blocage_administrateur_'.$_SESSION['BASE'].'.txt';
 if(is_file($fichier_blocage_administrateur))
 {
 	$label = '<label class="erreur">Application fermée : '.html(file_get_contents($fichier_blocage_administrateur)).'</label>';
@@ -52,7 +52,7 @@ else
 
 <h2>Demande de modification</h2>
 
-<form action="" method="post" id="form"><fieldset>
+<form action="#" method="post" id="form"><fieldset>
 	<label for="f_bloquer"><input type="radio" id="f_bloquer" name="f_action" value="bloquer" /> Bloquer l'application</label><br />
 	<span id="span_motif" class="hide">
 		<label class="tab" for="f_motif">Motif :</label>
@@ -61,9 +61,8 @@ else
 				<option value="demenagement">déménagement</option>
 			</select>
 			<input id="f_motif" name="f_motif" size="50" maxlength="100" type="text" value="" />
-	</span><p />
-	<label for="f_debloquer"><input type="radio" id="f_debloquer" name="f_action" value="debloquer" /> Débloquer l'application</label><p />
-	<span class="tab"></span><button id="bouton_valider" type="submit"><img alt="" src="./_img/bouton/parametre.png" /> Valider cet état.</button><label id="ajax_msg">&nbsp;</label>
+	</span>
+	<p><label for="f_debloquer"><input type="radio" id="f_debloquer" name="f_action" value="debloquer" /> Débloquer l'application</label></p>
+	<p><span class="tab"></span><button id="bouton_valider" type="submit" class="parametre">Valider cet état.</button><label id="ajax_msg">&nbsp;</label></p>
 </fieldset></form>
 
-<p />

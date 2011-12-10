@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Réglage des autorisations";
-$VERSION_JS_FILE += 6;
 
 $tab_titres  = array();
 $tab_profils = array();
@@ -39,7 +38,7 @@ $tab_objets[]  = array( 'droit_validation_entree'=>'valider des items du socle' 
 
 $tab_titres[]  = 'Référentiels en place dans l\'établissement';
 $tab_profils[] = array( 'directeur'=>'directeurs' , 'professeur'=>'professeurs' , 'parent'=>'parents' , 'eleve'=>'élèves' );
-$tab_objets[]  = array( 'droit_voir_referentiels'=>'consulter tous les référentiels' );
+$tab_objets[]  = array( 'droit_voir_referentiels'=>'consulter les référentiels' , 'droit_voir_grilles_items'=>'accéder aux grilles d\'items' );
 
 $tab_titres[]  = 'Score d\'un item &amp; état d\'acquisition';
 $tab_profils[] = array( 'directeur'=>'directeurs' , 'professeur'=>'professeurs' , 'parent'=>'parents' , 'eleve'=>'élèves' );
@@ -94,7 +93,7 @@ foreach($tab_titres as $i => $titre)
 			$type = (($i!=0)||($profil_key=='directeur')) ? 'checkbox' : 'radio' ;
 			$affichage .= '<td class="hc"><input type="'.$type.'" name="'.$objet_key.'" value="'.$profil_key.'"'.$checked.' /></td>';
 		}
-		$affichage .= '<td class="nu">&nbsp;<button name="initialiser" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Par défaut</button> <button name="valider" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Enregistrer</button> <label id="ajax_msg_'.$objet_key.'">&nbsp;</label></td></tr>';
+		$affichage .= '<td class="nu">&nbsp;<button name="initialiser" type="button" class="retourner">Par défaut</button> <button name="valider" type="button" class="parametre">Enregistrer</button> <label id="ajax_msg_'.$objet_key.'">&nbsp;</label></td></tr>';
 	}
 	$affichage .= '</tbody>';
 	$affichage .= '</table>';
@@ -110,7 +109,7 @@ foreach($tab_titres as $i => $titre)
 
 <hr />
 
-<form action="" method="post" id="form_autorisations">
+<form action="#" method="post" id="form_autorisations">
 <?php echo $affichage ?>
 </form>
-<p />
+<p>&nbsp;</p>

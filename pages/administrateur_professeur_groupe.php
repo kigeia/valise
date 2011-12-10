@@ -27,32 +27,31 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Affecter les professeurs aux groupes";
-$VERSION_JS_FILE += 1;
 ?>
 
 <?php
 // Fabrication des éléments select du formulaire
-$select_professeurs = afficher_select(DB_STRUCTURE_OPT_professeurs_etabl() , $select_nom=false , $option_first='non' , $selection=false , $optgroup='non');
-$select_groupes     = afficher_select(DB_STRUCTURE_OPT_groupes_etabl()     , $select_nom=false , $option_first='non' , $selection=false , $optgroup='non');
+$select_professeurs = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_professeurs_etabl() , $select_nom=false , $option_first='non' , $selection=false , $optgroup='non');
+$select_groupes     = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_groupes_etabl()     , $select_nom=false , $option_first='non' , $selection=false , $optgroup='non');
 ?>
 
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_groupes">DOC : Gestion des groupes</a></span></p>
 
 <hr />
 
-<form action="" method="post">
+<form action="#" method="post">
 	<table><tr>
 		<td class="nu" style="width:25em">
-			<b>Liste des professeurs :</b> <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /><br />
+			<b>Liste des professeurs :</b> <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo;&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo;&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /><br />
 			<select id="select_professeurs" name="select_professeurs[]" multiple size="10" class="t8"><?php echo $select_professeurs; ?></select>
 		</td>
 		<td class="nu" style="width:20em">
-			<b>Liste des groupes :</b> <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /><br />
+			<b>Liste des groupes :</b> <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo;&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo;&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /><br />
 			<select id="select_groupes" name="select_groupes[]" multiple size="10" class="t8"><?php echo $select_groupes; ?></select>
 		</td>
 		<td class="nu" style="width:25em">
-			<button id="ajouter" type="button"><img alt="" src="./_img/bouton/groupe_ajouter.png" /> Ajouter ces associations.</button><br />
-			<button id="retirer" type="button"><img alt="" src="./_img/bouton/groupe_retirer.png" /> Retirer ces associations.</button>
+			<button id="ajouter" type="button" class="groupe_ajouter">Ajouter ces associations.</button><br />
+			<button id="retirer" type="button" class="groupe_retirer">Retirer ces associations.</button>
 			<p><label id="ajax_msg">&nbsp;</label></p>
 		</td>
 	</tr></table>

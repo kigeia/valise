@@ -38,13 +38,14 @@ $f_profils = (isset($_POST['f_profils'])) ? clean_texte($_POST['f_profils']) : '
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 
 $tab_objet_profils = array();
-$tab_objet_profils['droit_validation_entree'] = array('directeur','professeur','profprincipal','aucunprof');
-$tab_objet_profils['droit_validation_pilier'] = array('directeur','professeur','profprincipal','aucunprof');
-$tab_objet_profils['droit_annulation_pilier'] = array('directeur','professeur','profprincipal','aucunprof');
-$tab_objet_profils['droit_voir_referentiels'] = array('directeur','professeur','parent','eleve');
-$tab_objet_profils['droit_voir_score_bilan']  = array('directeur','professeur','parent','eleve');
-$tab_objet_profils['droit_voir_algorithme']   = array('directeur','professeur','parent','eleve');
-$tab_objet_profils['droit_modifier_mdp']      = array('directeur','professeur','parent','eleve');
+$tab_objet_profils['droit_validation_entree']  = array('directeur','professeur','profprincipal','aucunprof');
+$tab_objet_profils['droit_validation_pilier']  = array('directeur','professeur','profprincipal','aucunprof');
+$tab_objet_profils['droit_annulation_pilier']  = array('directeur','professeur','profprincipal','aucunprof');
+$tab_objet_profils['droit_voir_referentiels']  = array('directeur','professeur','parent','eleve');
+$tab_objet_profils['droit_voir_grilles_items'] = array('directeur','professeur','parent','eleve');
+$tab_objet_profils['droit_voir_score_bilan']   = array('directeur','professeur','parent','eleve');
+$tab_objet_profils['droit_voir_algorithme']    = array('directeur','professeur','parent','eleve');
+$tab_objet_profils['droit_modifier_mdp']       = array('directeur','professeur','parent','eleve');
 $tab_objet_profils['droit_bilan_moyenne_score']      = array('parent','eleve');
 $tab_objet_profils['droit_bilan_pourcentage_acquis'] = array('parent','eleve');
 $tab_objet_profils['droit_bilan_note_sur_vingt']     = array('parent','eleve');
@@ -81,7 +82,7 @@ if(!$test_options)
 //	Tout est ok : on applique la modification demandée
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 
-DB_STRUCTURE_modifier_parametres( array($f_objet=>$f_profils) );
+DB_STRUCTURE_COMMUN::DB_modifier_parametres( array($f_objet=>$f_profils) );
 // ne pas oublier de mettre aussi à jour la session
 $_SESSION[strtoupper($f_objet)] = $f_profils;
 exit('ok');

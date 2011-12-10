@@ -64,11 +64,11 @@ $(document).ready
 			{
 				if( ($('#f_bilan_MS').is(':checked')) || ($('#f_bilan_PA').is(':checked')) )
 				{
-					$('label[for=f_conv_sur20]').css('visibility','visible');
+					$('label[for=f_conv_sur20]').show();
 				}
 				else
 				{
-					$('label[for=f_conv_sur20]').css('visibility','hidden');
+					$('label[for=f_conv_sur20]').hide();
 				}
 			}
 		);
@@ -196,7 +196,7 @@ $(document).ready
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#ajax_maj').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez essayer de nouveau.");
+						$('#ajax_maj').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 					},
 					success : function(responseHTML)
 					{
@@ -226,7 +226,7 @@ $(document).ready
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#ajax_maj').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez essayer de nouveau.");
+						$('#ajax_maj').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 					},
 					success : function(responseHTML)
 					{
@@ -262,7 +262,7 @@ $(document).ready
 				if(groupe_id)
 				{
 					groupe_type = $("#f_groupe option:selected").parent().attr('label');
-					$('#ajax_maj').removeAttr("class").addClass("loader").html("Actualisation en cours... Veuillez patienter.");
+					$('#ajax_maj').removeAttr("class").addClass("loader").html("Actualisation en cours...");
 					if(profil=='directeur')
 					{
 						maj_matiere(groupe_id,matiere_id);
@@ -276,6 +276,44 @@ $(document).ready
 				{
 					$('#ajax_maj').removeAttr("class").html("&nbsp;");
 				}
+			}
+		);
+
+		//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+		//	Charger toutes les matières ou seulement les matières affectées (pour un prof)
+		//	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
+
+		var modifier_action = 'ajouter';
+		$("#modifier_matiere").click
+		(
+			function()
+			{
+				$('button').prop('disabled',true);
+				var matiere_id = $("#f_matiere option:selected").val();
+				$.ajax
+				(
+					{
+						type : 'POST',
+						url : 'ajax.php?page=_maj_select_matieres_prof',
+						data : 'f_matiere='+matiere_id+'&f_action='+modifier_action,
+						dataType : "html",
+						error : function(msg,string)
+						{
+							$('button').prop('disabled',false);
+						},
+						success : function(responseHTML)
+						{
+							initialiser_compteur();
+							if(responseHTML.substring(0,7)=='<option')	// Attention aux caractères accentués : l'utf-8 pose des pbs pour ce test
+							{
+								modifier_action = (modifier_action=='ajouter') ? 'retirer' : 'ajouter' ;
+								$('#modifier_matiere').removeAttr("class").addClass("form_"+modifier_action);
+								$('#f_matiere').html(responseHTML);
+							}
+							$('button').prop('disabled',false);
+						}
+					}
+				);
 			}
 		);
 
@@ -326,7 +364,7 @@ $(document).ready
 					f_legende     : { required:true },
 					f_cases_nb    : { required:true },
 					f_cases_larg  : { required:true },
-					f_type        : { required:true },
+					'f_type[]'    : { required:true },
 					f_restriction : { required:false },
 					f_coef        : { required:false },
 					f_socle       : { required:false },
@@ -340,7 +378,7 @@ $(document).ready
 					f_retroactif  : { required:true },
 					f_matiere     : { required:true },
 					f_groupe      : { required:true },
-					f_eleve       : { required:true }
+					'f_eleve[]'   : { required:true }
 				},
 				messages :
 				{
@@ -351,7 +389,7 @@ $(document).ready
 					f_legende     : { required:"légende manquante" },
 					f_cases_nb    : { required:"nombre manquant" },
 					f_cases_larg  : { required:"largeur manquante" },
-					f_type        : { required:"type(s) manquant(s)" },
+					'f_type[]'    : { required:"type(s) manquant(s)" },
 					f_restriction : { },
 					f_coef        : { },
 					f_socle       : { },
@@ -365,13 +403,14 @@ $(document).ready
 					f_retroactif  : { required:"choix manquant" },
 					f_matiere     : { required:"matière manquante" },
 					f_groupe      : { required:"groupe manquant" },
-					f_eleve       : { required:"élève(s) manquant(s)" }
+					'f_eleve[]'   : { required:"élève(s) manquant(s)" }
 				},
 				errorElement : "label",
 				errorClass : "erreur",
 				errorPlacement : function(error,element)
 				{
-					if(element.is("select")) {element.after(error);}
+					if(element.attr("id")=='f_matiere') { element.next().after(error); }
+					else if(element.is("select")) {element.after(error);}
 					else if(element.attr("type")=="text") {element.next().after(error);}
 					else if(element.attr("type")=="radio") {element.parent().next().after(error);}
 					else if(element.attr("type")=="checkbox") {element.parent().next().next().after(error);}
@@ -399,14 +438,6 @@ $(document).ready
 		(
 			function()
 			{
-				// grouper les select multiples => normalement pas besoin si name de la forme nom[], mais ça plante curieusement sur le serveur competences.sesamath.net
-				// alors j'ai copié le tableau dans un champ hidden...
-				var f_eleve = new Array(); $("#f_eleve option:selected").each(function(){f_eleve.push($(this).val());});
-				$('#eleves').val(f_eleve);
-				// grouper les checkbox multiples => normalement pas besoin si name de la forme nom[], mais ça pose pb à jquery.validate.js d'avoir un id avec []
-				// alors j'ai copié le tableau dans un champ hidden...
-				var f_type = new Array(); $("input[name=f_type]:checked").each(function(){f_type.push($(this).val());});
-				$('#types').val(f_type);
 				// récupération du nom de la matière et du nom du groupe
 				$('#f_matiere_nom').val( $("#f_matiere option:selected").text() );
 				$('#f_groupe_nom').val( $("#f_groupe option:selected").text() );
@@ -423,7 +454,7 @@ $(document).ready
 			if(readytogo)
 			{
 				$('button').prop('disabled',true);
-				$('#ajax_msg').removeAttr("class").addClass("loader").html("Génération du relevé en cours... Veuillez patienter.");
+				$('#ajax_msg').removeAttr("class").addClass("loader").html("Génération du relevé en cours...");
 				$('#bilan').html('');
 			}
 			return readytogo;
@@ -433,7 +464,7 @@ $(document).ready
 		function retour_form_erreur(msg,string)
 		{
 			$('button').prop('disabled',false);
-			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez valider de nouveau.");
+			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 		}
 
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)
@@ -441,16 +472,26 @@ $(document).ready
 		{
 			initialiser_compteur();
 			$('button').prop('disabled',false);
-			if(responseHTML.substring(0,17)!='<ul class="puce">')
+			if(responseHTML.substring(0,6)=='<hr />')
 			{
-				$('#ajax_msg').removeAttr("class").addClass("alerte").html(responseHTML);
-			}
-			else
-			{
-				$('#ajax_msg').removeAttr("class").addClass("valide").html("Demande réalisée !");
+				$('#ajax_msg').removeAttr("class").addClass("valide").html("Terminé : voir ci-dessous.");
 				$('#bilan').html(responseHTML);
 				format_liens('#bilan');
 				infobulle();
+			}
+			else if(responseHTML.substring(0,4)=='<h2>')
+			{
+				$('#ajax_msg').removeAttr("class").html('');
+				// Mis dans le div bilan et pas balancé directement dans le fancybox sinon le format_lien() nécessite un peu plus de largeur que le fancybox ne recalcule pas (et $.fancybox.update(); ne change rien).
+				// Malgré tout, pour Chrome par exemple, la largeur est mal clculée et provoque des retours à la ligne, d'où le minWidth ajouté.
+				$('#bilan').html(responseHTML);
+				format_liens('#bilan');
+				infobulle(); // exceptionnellement il y a aussi des infobulles ici
+				$.fancybox( { 'href':'#bilan' , onClosed:function(){$('#bilan').html("");} , 'centerOnScroll':true , 'minWidth':550 } );
+			}
+			else
+			{
+				$('#ajax_msg').removeAttr("class").addClass("alerte").html(responseHTML);
 			}
 		} 
 

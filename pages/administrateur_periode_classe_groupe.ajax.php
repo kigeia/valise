@@ -31,11 +31,11 @@ if(($_SESSION['SESAMATH_ID']==ID_DEMO)&&($_GET['action']!='initialiser')){exit('
 $action     = (isset($_GET['action']))        ? $_GET['action']                     : '';
 $date_debut = (isset($_POST['f_date_debut'])) ? clean_texte($_POST['f_date_debut']) : '';
 $date_fin   = (isset($_POST['f_date_fin']))   ? clean_texte($_POST['f_date_fin'])   : '';
-$tab_select_periodes        = (isset($_POST['select_periodes']))        ? array_map('clean_entier',explode(',',$_POST['select_periodes']))        : array() ;
-$tab_select_classes_groupes = (isset($_POST['select_classes_groupes'])) ? array_map('clean_entier',explode(',',$_POST['select_classes_groupes'])) : array() ;
-$tab_select_periodes        = array_filter($tab_select_periodes,'positif');
-$tab_select_classes_groupes = array_filter($tab_select_classes_groupes,'positif');
-
+// Normalement ce sont des tableaux qui sont transmis, mais au cas où...
+$tab_select_periodes        = (isset($_POST['select_periodes']))        ? ( (is_array($_POST['select_periodes']))        ? $_POST['select_periodes']        : explode(',',$_POST['select_periodes'])        ) : array() ;
+$tab_select_classes_groupes = (isset($_POST['select_classes_groupes'])) ? ( (is_array($_POST['select_classes_groupes'])) ? $_POST['select_classes_groupes'] : explode(',',$_POST['select_classes_groupes']) ) : array() ;
+$tab_select_periodes        = array_filter( array_map( 'clean_entier' , $tab_select_periodes        ) , 'positif' );
+$tab_select_classes_groupes = array_filter( array_map( 'clean_entier' , $tab_select_classes_groupes ) , 'positif' );
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Ajouter des périodes à des classes & groupes
@@ -55,7 +55,7 @@ if( ($action=='ajouter') && $date_debut && $date_fin )
 	{
 		foreach($tab_select_classes_groupes as $groupe_id)
 		{
-			DB_STRUCTURE_modifier_liaison_groupe_periode($groupe_id,$periode_id,true,$date_debut_mysql,$date_fin_mysql);
+			DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_liaison_groupe_periode($groupe_id,$periode_id,true,$date_debut_mysql,$date_fin_mysql);
 		}
 	}
 }
@@ -70,7 +70,7 @@ elseif($action=='retirer')
 	{
 		foreach($tab_select_classes_groupes as $groupe_id)
 		{
-			DB_STRUCTURE_modifier_liaison_groupe_periode($groupe_id,$periode_id,false);
+			DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_liaison_groupe_periode($groupe_id,$periode_id,false);
 		}
 	}
 }
@@ -85,7 +85,7 @@ $tab_periode   = array();
 $tab_jointure  = array();
 $tab_graphique = array();
 // Récupérer la liste des classes & groupes, dans l'ordre des niveaux
-$DB_TAB = DB_STRUCTURE_lister_classes_et_groupes_avec_niveaux();
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_classes_et_groupes_avec_niveaux();
 if(!count($DB_TAB))
 {
 	exit('Aucune classe et aucun groupe ne sont enregistrés !');
@@ -96,7 +96,7 @@ foreach($DB_TAB as $DB_ROW)
 	$tab_graphique[$DB_ROW['groupe_id']] = '';
 }
 // Récupérer la liste des périodes, dans l'ordre choisi par l'admin
-$DB_TAB = DB_STRUCTURE_lister_periodes();
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_periodes();
 if(!count($DB_TAB))
 {
 	exit('Aucune période n\'est enregistrée !');
@@ -106,24 +106,19 @@ foreach($DB_TAB as $DB_ROW)
 	$tab_periode[$DB_ROW['periode_id']] = '<th>'.html($DB_ROW['periode_nom']).'</th>';
 }
 // Récupérer l'amplitude complète sur l'ensemble des périodes
-$DB_ROW = DB_STRUCTURE_recuperer_amplitude_periodes();
+$DB_ROW = DB_STRUCTURE_ADMINISTRATEUR::DB_recuperer_amplitude_periodes();
 $tout_debut     = ($DB_ROW['tout_debut'])     ? $DB_ROW['tout_debut']     : '2000-01-01' ;
 $toute_fin      = ($DB_ROW['toute_fin'])      ? $DB_ROW['toute_fin']      : '2000-01-01' ;
 $nb_jours_total = ($DB_ROW['nb_jours_total']) ? $DB_ROW['nb_jours_total'] : 0;
 // Récupérer la liste des jointures, et le nécessaire pour établir les graphiques
-$DB_SQL = 'SELECT * , ';
-$DB_SQL.= 'DATEDIFF(jointure_date_debut,:tout_debut) AS position_jour_debut , DATEDIFF(jointure_date_fin,jointure_date_debut) AS nb_jour ';
-$DB_SQL.= 'FROM sacoche_jointure_groupe_periode ';
-$DB_SQL.= 'ORDER BY groupe_id ASC, jointure_date_debut ASC, jointure_date_fin ASC';
-$DB_VAR = array(':tout_debut'=>$tout_debut);
-$DB_TAB = DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_jointure_groupe_periode_avec_infos_graphiques($tout_debut);
 $memo_groupe_id = 0;
 foreach($DB_TAB as $DB_ROW)
 {
 	$groupe_id = $DB_ROW['groupe_id'];
 	$date_affich_debut = convert_date_mysql_to_french($DB_ROW['jointure_date_debut']);
 	$date_affich_fin   = convert_date_mysql_to_french($DB_ROW['jointure_date_fin']);
-	$tab_jointure[$groupe_id][$DB_ROW['periode_id']] = html($date_affich_debut).' ~ '.html($date_affich_fin).' <input type="image" src="./_img/date_add.png" title="Cliquer pour importer ces dates dans les champs." />';
+	$tab_jointure[$groupe_id][$DB_ROW['periode_id']] = html($date_affich_debut).' ~ '.html($date_affich_fin).' <input type="image" alt="Importer ces dates" src="./_img/date_add.png" title="Cliquer pour importer ces dates dans les champs." />';
 	// graphique (début)
 	if($memo_groupe_id!=$groupe_id)
 	{
@@ -163,6 +158,6 @@ foreach($tab_groupe as $groupe_id => $groupe_text)
 echo'<table>';
 echo'<thead><tr><td class="nu"></td>'.implode('',$tab_periode).'<td class="graph_total">Étendue du '.convert_date_mysql_to_french($tout_debut).' au '.convert_date_mysql_to_french($toute_fin).'.</td></tr></thead>';
 echo'<tbody><tr>'.implode('</tr>'."\r\n".'<tr>',$tab_groupe).'</tr></tbody>';
-echo'</table><p />';
+echo'</table><p>&nbsp;</p>';
 
 ?>

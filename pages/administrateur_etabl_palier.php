@@ -27,14 +27,13 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Paliers du socle";
-$VERSION_JS_FILE += 1;
 ?>
 
 <div><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_paliers_socle">DOC : Paliers du socle</a></span></div>
 
 <hr />
 
-<form action="" method="post" id="socle">
+<form action="#" method="post" id="socle">
 	<table class="form">
 		<thead>
 			<tr><th class="nu"></th><th>Palier</th><th class="nu">&nbsp;</th></tr>
@@ -44,7 +43,7 @@ $VERSION_JS_FILE += 1;
 			// Cases à cocher
 			$tab_check = explode(',',$_SESSION['PALIERS']);
 			// Lister les matières partagées
-			$DB_TAB = DB_STRUCTURE_lister_paliers_SACoche();
+			$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_paliers_SACoche();
 			foreach($DB_TAB as $DB_ROW)
 			{
 				// Afficher une ligne du tableau
@@ -59,7 +58,7 @@ $VERSION_JS_FILE += 1;
 		</tbody>
 	</table>
 	<p>
-		<span class="tab"></span><button id="bouton_valider" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Valider ce choix de paliers.</button><label id="ajax_msg">&nbsp;</label>
+		<span class="tab"></span><button id="bouton_valider" type="button" class="parametre">Valider ce choix de paliers.</button><label id="ajax_msg">&nbsp;</label>
 	</p>
 </form>
 
@@ -68,7 +67,7 @@ $VERSION_JS_FILE += 1;
 <div id="zone_paliers">
 	<?php
 	// Affichage de la liste des items du socle pour chaque palier
-	$DB_TAB = DB_STRUCTURE_recuperer_arborescence_palier($palier_id=false);
+	$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_recuperer_arborescence_paliers();
 	echo str_replace( '<li class="li_m1"' , '<li class="li_m1 hide"' , afficher_arborescence_socle_from_SQL($DB_TAB,$dynamique=true,$reference=false,$aff_input=false,$ids=false) );
 	?>
 </div>

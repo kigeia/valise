@@ -27,14 +27,13 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Gérer les groupes";
-$VERSION_JS_FILE += 1;
 ?>
 
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_groupes">DOC : Gestion des groupes</a></span></p>
 
 <hr />
 
-<form action="" method="post">
+<form action="#" method="post">
 	<table class="form">
 		<thead>
 			<tr>
@@ -47,7 +46,7 @@ $VERSION_JS_FILE += 1;
 		<tbody>
 			<?php
 			// Lister les groupes avec les niveaux
-			$DB_TAB = DB_STRUCTURE_lister_groupes_avec_niveaux();
+			$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_groupes_avec_niveaux();
 			foreach($DB_TAB as $DB_ROW)
 			{
 				// Afficher une ligne du tableau
@@ -72,7 +71,7 @@ $tab_niveau_ordre_js = 'var tab_niveau_ordre = new Array();';
 
 if($_SESSION['NIVEAUX'])
 {
-	$DB_TAB = DB_STRUCTURE_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$listing_cycles=false);
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$listing_cycles=false);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$select_niveau .= '<option value="'.$DB_ROW['niveau_id'].'">'.html($DB_ROW['niveau_nom']).'</option>';

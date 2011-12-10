@@ -31,7 +31,7 @@ $TITRE = "Gérer les professeurs principaux";
 
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_professeurs">DOC : Gestion des professeurs</a></span></p>
 
-<form action="" method="post" id="pp">
+<form action="#" method="post" id="pp">
 
 	<?php
 	$tab_niveau_groupe = array();
@@ -39,7 +39,7 @@ $TITRE = "Gérer les professeurs principaux";
 	$groupe_id = 0;
 	$nb_professeurs = 0;
 	// Récupération de la liste des professeurs / classes
-	$DB_TAB = DB_STRUCTURE_lister_classes_avec_professeurs();
+	$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_classes_avec_professeurs();
 	if(count($DB_TAB))
 	{
 		foreach($DB_TAB as $DB_ROW)
@@ -82,7 +82,7 @@ $TITRE = "Gérer les professeurs principaux";
 				echo'<table>';
 				echo'<thead><tr>'.$TH[$niveau_id].'</tr></thead>';
 				echo'<tbody><tr>'.$TB[$niveau_id].'</tr></tbody>';
-				echo'</table><p />';
+				echo'</table><p>&nbsp;</p>';
 			}
 		}
 		else
@@ -97,7 +97,7 @@ $TITRE = "Gérer les professeurs principaux";
 	?>
 
 	<p>
-		<button id="valider" type="button"><img alt="" src="./_img/bouton/valider.png" /> Valider ce choix de professeurs principaux.</button><label id="ajax_msg">&nbsp;</label>
+		<button id="valider" type="button" class="valider">Valider ce choix de professeurs principaux.</button><label id="ajax_msg">&nbsp;</label>
 	</p>
 </form>
 

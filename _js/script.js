@@ -24,10 +24,37 @@
  * 
  */
 
-var please_wait = false;
 // Pour éviter une soumission d'un formulaire en double :
 // + lors de l'appui sur "entrée" (constaté avec Chrome, malgré l'usage de la biblio jquery.form.js, avant l'utilisation complémentaire de "disabled")
 // + lors d'un clic sur une image "q", même si elles sont normalement masquées...
+var please_wait = false;
+
+/**
+ * Fonction htmlspecialchars() en javascript
+ *
+ * @param unsafe
+ * @return string
+ */
+function escapeHtml(unsafe)
+{
+	return unsafe
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;");
+}
+
+/**
+ * Fonction htmlspecialchars() en javascript mais juste pour les apostrophes doubles.
+ *
+ * @param unsafe
+ * @return string
+ */
+function escapeQuote(unsafe)
+{
+	return unsafe.replace(/"/g, "&quot;");
+}
 
 /**
  * Fonction pour afficher / masquer les images cliquables (en général dans la dernière colonne du tableau)
@@ -62,9 +89,9 @@ function afficher_masquer_images_action(why)
 function format_liens(element)
 {
 	$(element).find("a.lien_ext" ).attr("target","_blank");
-	$(element).find("a.lien_ext" ).css({"padding-right":"14px" , "background":"url(./_img/popup2.gif) no-repeat right"});
-	$(element).find("a.pop_up" ).css({"padding-right":"18px" , "background":"url(./_img/popup1.gif) no-repeat right"});
-	$(element).find("a.lien_mail").css({"padding-left":"15px" , "background":"url(./_img/mail.gif) no-repeat left"});
+	$(element).find("a.lien_ext" ).css({"padding-right":"14px" , "background":"url(./_img/puce/puce_popup_onglet.gif) no-repeat right"});
+	$(element).find("a.pop_up" ).css({"padding-right":"18px" , "background":"url(./_img/puce/puce_popup_window.gif) no-repeat right"});
+	$(element).find("a.lien_mail").css({"padding-left":"15px" , "background":"url(./_img/puce/puce_mail.gif) no-repeat left"});
 }
 
 /**
@@ -113,6 +140,22 @@ function analyse_mdp(mdp)
 	var vert  = 159 + 16*Math.min(6,coef) ;   // 159 -> 255 -> 255
 	var bleu  = 159 ;
 	$('#robustesse').css('background-color','rgb('+rouge+','+vert+','+bleu+')').children('span').html(coef);
+}
+
+/**
+ * Fonction pour imprimer un contenu
+ *
+ * En javascript, print() s'applique à l'objet window, et l'usage d'une feuille se style adaptée n'a pas permis d'obtenir un résultat satisfaisant.
+ * D'où l'ouverture d'un pop-up (inspiration : http://www.asp-php.net/ressources/bouts_de_code.aspx?id=342).
+ *
+ * @param object contenu
+ * @return void
+ */
+function imprimer(contenu)
+{
+	var wp = window.open("","SACochePrint","toolbar=no,location=no,menubar=no,directories=no,status=no,scrollbars=no,resizable=no,copyhistory=no,width=1,height=1,top=0,left=0");
+	wp.document.write('<!DOCTYPE html><html><head><link rel="stylesheet" type="text/css" href="./_css/style.css" /><title>SACoche - Impression</title></head><body onload="window.print();window.close()">'+document.getElementById('info').innerHTML+contenu+'</body></html>');
+	wp.document.close();
 }
 
 //	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*
@@ -190,7 +233,7 @@ function initialiser_compteur()
 	var date = new Date();
 	SetCookie('SACoche-compteur',date.getTime());
 	DUREE_AFFICHEE = DUREE_AUTORISEE;
-	$("#clock").html('<img alt="" src="./_img/clock_fixe.png" /> '+DUREE_AFFICHEE+' min');
+	$("#clock").html(DUREE_AFFICHEE+' min').parent().removeAttr("class").addClass("button clock_fixe");
 }
 
 /**
@@ -211,7 +254,7 @@ function tester_compteur()
 		DUREE_AFFICHEE = Math.max(duree_restante,0);
 		if(DUREE_AFFICHEE>5)
 		{
-			$("#clock").html('<img alt="" src="./_img/clock_fixe.png" /> '+DUREE_AFFICHEE+' min');
+			$("#clock").html(DUREE_AFFICHEE+' min').parent().removeAttr("class").addClass("button clock_fixe");
 			if(DUREE_AFFICHEE%10==0)
 			{
 				// Fonction conserver_session_active() à appeler une fois toutes les 10min ; code placé ici pour éviter un appel après déconnection, et l'application inutile d'un 2nd compteur
@@ -222,7 +265,7 @@ function tester_compteur()
 		else
 		{
 			setVolume(100);play("bip");
-			$("#clock").html('<img alt="" src="./_img/clock_anim.gif" /> '+DUREE_AFFICHEE+' min');
+			$("#clock").html(DUREE_AFFICHEE+' min').parent().removeAttr("class").addClass("button clock_anim");
 			if(DUREE_AFFICHEE==0)
 			{
 				fermer_session();
@@ -290,12 +333,13 @@ function fermer_session()
 				$('#menu').remove();
 				if(CONNEXION_USED=='normal')
 				{
-					$('#info').html('<span class="button b"><span class="danger">Votre session a expiré. Vous êtes désormais déconnecté de SACoche !</span></span> <span class="button b"><a href="./index.php"><img alt="" src="./_img/bouton/mdp_perso.png" /> Se reconnecter</a></span>');
+					$('#top_info').html('<span class="button alerte">Votre session a expiré. Vous êtes désormais déconnecté de SACoche !</span> <span class="button connexion"><a href="./index.php">Se reconnecter&hellip;</a></span>');
 				}
 				else
 				{
-					$('#info').html('<span class="button b"><span class="danger">Session expirée. Vous êtes déconnecté de SACoche mais sans doute pas du SSO !</span></span> <span class="button b"><a href="#" onclick="document.location.reload()"><img alt="" src="./_img/bouton/mdp_perso.png" /> Se reconnecter</a></span>');
+					$('#top_info').html('<span class="button alerte">Session expirée. Vous êtes déconnecté de SACoche mais sans doute pas du SSO !</span> <span class="button connexion"><a href="#" onclick="document.location.reload()">Recharger la page&hellip;</a></span>');
 				}
+				$.fancybox( '<div class="danger">Délai de '+DUREE_AUTORISEE+'min sans activité atteint &rarr; session fermée.<br />Toute validation ultérieure ne sera pas enregistrée.</div>' , {'centerOnScroll':true} );
 			}
 		}
 	);
@@ -405,22 +449,6 @@ $(document).ready
 		//	Initialisation
 		format_liens('body');
 		infobulle();
-
-		/**
-		 * MENU - Styler les puces avec les images ; span pourrait servir pour un menu inactif, mais il n'est pas utilisé.
-		 */
-		$("#menu a , #menu span").each
-		(
-			function()
-			{
-				classe = $(this).attr("class");
-				if(classe)
-				{
-					// On n'utilise pas "#CCF url(./_img/menu/menu.png) no-repeat 1px 1px" sinon le hover{background:#DDF} ne fonctionne plus
-					$(this).css({ 'background-image':'url(./_img/menu/'+classe+'.png)' , 'background-repeat':'no-repeat' , 'background-position':'1px 1px' });
-				}
-			}
-		);
 
 		/**
 		 * MENU - Rendre transparente la page au survol.
@@ -536,6 +564,17 @@ $(document).ready
 		);
 
 		/**
+		 * Clic sur une image-lien pour imprimer un referentiel en consultation
+		 */
+		$('#fancybox-content q.imprimer').live
+		('click',
+			function()
+			{
+				imprimer(document.getElementById('fancybox-content').innerHTML);
+			}
+		);
+
+		/**
 		 * Clic sur un lien afin d'afficher ou de masquer un groupe d'options d'un formulaire
 		 */
 		$('a.toggle').click
@@ -548,7 +587,7 @@ $(document).ready
 		);
 
 		/**
-		 * Clic sur un lien afin d'afficher ou de masquer le détail d'un bilan d'acquisition du socle
+		 * Clic sur une image-lien afin d'afficher ou de masquer le détail d'un bilan d'acquisition du socle
 		 */
 		$('img.toggle').live
 		('click',

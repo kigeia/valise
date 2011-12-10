@@ -27,12 +27,11 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Personnels de direction";
-$VERSION_JS_FILE += 3;
 ?>
 
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_directeurs">DOC : Gestion des directeurs</a></span></p>
 
-<form action="" method="post">
+<form action="#" method="post">
 	<table class="form t9">
 		<thead>
 			<tr>
@@ -50,7 +49,7 @@ $VERSION_JS_FILE += 3;
 		<tbody>
 			<?php
 			// Lister les directeurs
-			$DB_TAB = DB_STRUCTURE_lister_users('directeur',$only_actifs=true,$with_classe=false);
+			$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_users('directeur',$only_actifs=true,$with_classe=false);
 			foreach($DB_TAB as $DB_ROW)
 			{
 				// Afficher une ligne du tableau

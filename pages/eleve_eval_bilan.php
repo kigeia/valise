@@ -26,8 +26,7 @@
  */
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
-$TITRE = "Résultats aux évaluations";
-$VERSION_JS_FILE += 2;
+$TITRE = "Items et notes des évaluations";
 ?>
 
 <?php
@@ -35,7 +34,7 @@ $VERSION_JS_FILE += 2;
 if( ($_SESSION['USER_PROFIL']=='parent') && ($_SESSION['NB_ENFANTS']!=1) )
 {
 	$class_form_eleve = 'show';
-	$select_eleves = afficher_select($_SESSION['OPT_PARENT_ENFANTS'] , $select_nom=false , $option_first='oui' , $selection=false , $optgroup='non');
+	$select_eleves = Formulaire::afficher_select($_SESSION['OPT_PARENT_ENFANTS'] , $select_nom=false , $option_first='oui' , $selection=false , $optgroup='non');
 }
 if( ($_SESSION['USER_PROFIL']=='parent') && ($_SESSION['NB_ENFANTS']==1) )
 {
@@ -48,20 +47,20 @@ if($_SESSION['USER_PROFIL']=='eleve')
 	$select_eleves = '<option value="'.$_SESSION['USER_ID'].'" selected>'.html($_SESSION['USER_NOM'].' '.$_SESSION['USER_PRENOM']).'</option>';
 }
 // Dates par défaut de début et de fin
-$date_debut  = date("d/m/Y",mktime(0,0,0,date("m")-1,date("d"),date("Y"))); // 1 mois avant
-$date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1 mois après
+$date_debut = date("d/m/Y",mktime(0,0,0,date("m")-2,date("d"),date("Y"))); // 2 mois avant
+$date_fin   = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1 mois après
 ?>
 
-<form action="" method="post" id="form"><fieldset>
+<form action="#" method="post" id="form"><fieldset>
 	<div class="<?php echo $class_form_eleve ?>">
 		<label class="tab" for="f_eleve">Élève(s) :</label><select id="f_eleve" name="f_eleve"><?php echo $select_eleves ?></select>
 	</div>
-	<label class="tab" for="f_periode">Période :</label>du <input id="f_date_debut" name="f_date_debut" size="9" type="text" value="<?php echo $date_debut ?>" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q> au <input id="f_date_fin" name="f_date_fin" size="9" type="text" value="<?php echo $date_fin ?>" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q><br />
-	<span class="tab"></span><input type="hidden" name="f_action" value="Afficher_evaluations" /><button id="actualiser" type="submit"><img alt="" src="./_img/bouton/actualiser.png" /> Actualiser l'affichage.</button><label id="ajax_msg">&nbsp;</label>
+	<label class="tab">Période :</label>du <input id="f_date_debut" name="f_date_debut" size="9" type="text" value="<?php echo $date_debut ?>" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q> au <input id="f_date_fin" name="f_date_fin" size="9" type="text" value="<?php echo $date_fin ?>" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q><br />
+	<span class="tab"></span><input type="hidden" name="f_action" value="Afficher_evaluations" /><button id="actualiser" type="submit" class="actualiser">Actualiser l'affichage.</button><label id="ajax_msg">&nbsp;</label>
 </fieldset></form>
 
 
-<form action="" method="post" id="zone_eval_choix" class="hide">
+<form action="#" method="post" id="zone_eval_choix" class="hide">
 	<hr />
 	<h2></h2>
 	<table class="form">
@@ -80,7 +79,6 @@ $date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1
 </form>
 
 <div id="zone_eval_detail" class="vm_nug hide">
-	<hr />
 	<p id="titre_voir" class="ti b"></p>
 	<table id="table_voir">
 		<thead>
@@ -96,5 +94,4 @@ $date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1
 		</tbody>
 	</table>
 	<?php echo affich_legende_html($note_Lomer=TRUE,$etat_bilan=TRUE); ?>
-	<p />
 </div>

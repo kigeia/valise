@@ -27,14 +27,13 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Gérer les classes";
-$VERSION_JS_FILE += 0;
 ?>
 
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_classes">DOC : Gestion des classes</a></span></p>
 
 <hr />
 
-<form action="" method="post">
+<form action="#" method="post">
 	<table class="form">
 		<thead>
 			<tr>
@@ -47,7 +46,7 @@ $VERSION_JS_FILE += 0;
 		<tbody>
 			<?php
 			// Lister les classes avec les niveaux
-			$DB_TAB = DB_STRUCTURE_lister_classes_avec_niveaux();
+			$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_classes_avec_niveaux();
 			foreach($DB_TAB as $DB_ROW)
 			{
 				// Afficher une ligne du tableau
@@ -72,7 +71,7 @@ $select_niveau = '<option value=""></option>';
 
 if($_SESSION['NIVEAUX'])
 {
-	$DB_TAB = DB_STRUCTURE_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$listing_paliers=false);
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$listing_paliers=false);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$select_niveau .= '<option value="'.$DB_ROW['niveau_id'].'">'.html($DB_ROW['niveau_nom']).'</option>';

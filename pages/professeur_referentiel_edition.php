@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Modifier le contenu des référentiels";
-$VERSION_JS_FILE += 11;
 ?>
 
 <ul class="puce">
@@ -39,7 +38,7 @@ $VERSION_JS_FILE += 11;
 
 <hr />
 
-<form action="" method="post" onsubmit="return false;">
+<form action="#" method="post" id="zone_choix_referentiel" onsubmit="return false;">
 
 <?php
 // J'ai séparé en plusieurs requêtes au bout de plusieurs heures sans m'en sortir (entre les matières sans coordonnateurs, sans référentiel, les deux à la fois...).
@@ -47,7 +46,7 @@ $VERSION_JS_FILE += 11;
 $tab_matiere = array();
 $tab_niveau  = array();
 // On récupère la liste des matières où le professeur est rattaché, et s'il en est coordonnateur
-$DB_TAB = DB_STRUCTURE_lister_matieres_professeur_infos_referentiel($_SESSION['MATIERES'],$_SESSION['USER_ID']);
+$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_matieres_professeur_infos_referentiel($_SESSION['MATIERES'],$_SESSION['USER_ID']);
 if(count($DB_TAB))
 {
 	foreach($DB_TAB as $DB_ROW)
@@ -72,15 +71,15 @@ elseif(!$_SESSION['CYCLES']) // normalement impossible
 else
 {
 	// On récupère la liste des niveaux utilisés par l'établissement
-	$DB_TAB = DB_STRUCTURE_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
 	$nb_niveaux = count($DB_TAB);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_niveau[$DB_ROW['niveau_id']] = html($DB_ROW['niveau_nom']);
 	}
 	// On récupère la liste des référentiels par matière avec indication du nombre de niveau
-	$tab_partage = array('oui'=>'<img title="Référentiel partagé sur le serveur communautaire (MAJ le ◄DATE►)." alt="" src="./_img/partage1.gif" />','non'=>'<img title="Référentiel non partagé avec la communauté (choix du ◄DATE►)." alt="" src="./_img/partage0.gif" />','bof'=>'<img title="Référentiel dont le partage est sans intérêt (pas novateur)." alt="" src="./_img/partage0.gif" />','hs'=>'<img title="Référentiel dont le partage est sans objet (matière spécifique)." alt="" src="./_img/partage0.gif" />');
-	$DB_TAB = DB_STRUCTURE_lister_referentiels_infos_groupement_matieres($listing_matieres_id,$_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
+	$tab_partage = array('oui'=>'<img title="Référentiel partagé sur le serveur communautaire (MAJ le ◄DATE►)." alt="" src="./_img/etat/partage_oui.gif" />','non'=>'<img title="Référentiel non partagé avec la communauté (choix du ◄DATE►)." alt="" src="./_img/etat/partage_non.gif" />','bof'=>'<img title="Référentiel dont le partage est sans intérêt (pas novateur)." alt="" src="./_img/etat/partage_non.gif" />','hs'=>'<img title="Référentiel dont le partage est sans objet (matière spécifique)." alt="" src="./_img/etat/partage_non.gif" />');
+	$DB_TAB = DB_STRUCTURE_REFERENTIEL::DB_lister_referentiels_infos_groupement_matieres($listing_matieres_id,$_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
 	if(count($DB_TAB))
 	{
 		foreach($DB_TAB as $DB_ROW)
@@ -94,7 +93,7 @@ else
 	{
 		$matiere_nom   = $tab['nom'];
 		$matiere_coord = $tab['coord'];
-		$affichage .= '<tr lang="'.$matiere_nom.'"><td>'.$matiere_nom.'</td>';
+		$affichage .= '<tr><td>'.$matiere_nom.'</td>';
 		$id = 'm1_'.$matiere_id;
 		if($tab_matiere[$matiere_id]['niveau_nb']>0)
 		{
@@ -114,33 +113,31 @@ else
 }
 ?>
 
-<hr />
-
-<div id="zone_compet">
-</div>
-
-<div id="zone_socle">
-	<h2>Relation au socle commun</h2>
-	<label class="tab" for="rien">Item disciplinaire :</label><span class="f_nom i"></span><br />
-	<label class="tab" for="f_lien">Socle commun :</label>Cocher ci-dessous (cliquer sur un intitulé pour déployer son contenu).<q class="valider" lang="choisir_compet" title="Valider la modification de la relation au socle commun."></q><q class="annuler" lang="choisir_compet" title="Annuler la modification de la relation au socle commun."></q>
-	<p />
-	<ul class="ul_n1"><li class="li_n3"><input id="socle_0" name="f_socle" type="radio" value="0" /><label for="socle_0">Hors-socle.</label></li></ul>
-	<p />
-	<?php
-	// Affichage de la liste des items du socle pour chaque palier
-	if($_SESSION['PALIERS'])
-	{
-		$DB_TAB = DB_STRUCTURE_recuperer_arborescence_palier($_SESSION['PALIERS']);
-		echo afficher_arborescence_socle_from_SQL($DB_TAB,$dynamique=true,$reference=false,$aff_input=true,$ids=false);
-	}
-	else
-	{
-		echo'<p><span class="danger"> Aucun palier du socle n\'est associé à l\'établissement ! L\'administrateur doit préalablement choisir les paliers évalués...</span></p>'."\r\n";
-	}
-	?>
-</div>
-
 </form>
 
-<p />
+<form action="#" method="post" id="zone_compet" onsubmit="return false;">
+</form>
 
+<div id="zone_socle" class="hide">
+	<h2>Relation au socle commun</h2>
+	<form>
+		<p>
+			<label class="tab">Item disciplinaire :</label><span class="f_nom i"></span><br />
+			<label class="tab">Socle commun :</label>Cocher ci-dessous (<span class="astuce">cliquer sur un intitulé pour déployer son contenu</span>).<br />
+			<span class="tab"></span><button id="choisir_socle_valider" type="button" class="valider">Valider le choix effectué.</button> <button id="choisir_socle_annuler" type="button" class="annuler">Annuler.</button>
+		</p>
+		<ul class="ul_n1 p"><li class="li_n3"><input id="socle_0" name="f_socle" type="radio" value="0" /><label for="socle_0">Hors-socle.</label></li></ul>
+		<?php
+		// Affichage de la liste des items du socle pour chaque palier
+		if($_SESSION['PALIERS'])
+		{
+			$DB_TAB = DB_STRUCTURE_COMMUN::DB_recuperer_arborescence_palier($_SESSION['PALIERS']);
+			echo afficher_arborescence_socle_from_SQL($DB_TAB,$dynamique=true,$reference=false,$aff_input=true,$ids=false);
+		}
+		else
+		{
+			echo'<span class="danger"> Aucun palier du socle n\'est associé à l\'établissement ! L\'administrateur doit préalablement choisir les paliers évalués...</span>';
+		}
+		?>
+	</form>
+</div>

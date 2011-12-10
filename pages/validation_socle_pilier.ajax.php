@@ -31,9 +31,12 @@ if(($_SESSION['SESAMATH_ID']==ID_DEMO)&&($_POST['f_action']!='Afficher_bilan')&&
 $action     = (isset($_POST['f_action'])) ? clean_texte($_POST['f_action'])  : '';
 $eleve_id   = (isset($_POST['f_user']))   ? clean_entier($_POST['f_user'])   : 0;
 $palier_id  = (isset($_POST['f_palier'])) ? clean_entier($_POST['f_palier']) : 0;
-$pilier_id  = (isset($_POST['f_pilier'])) ? clean_entier($_POST['f_pilier']) : 0;
-$tab_pilier = (isset($_POST['piliers']))  ? array_map('clean_entier',explode(',',$_POST['piliers'])) : array() ;
-$tab_eleve  = (isset($_POST['eleves']))   ? array_map('clean_entier',explode(',',$_POST['eleves']))  : array() ;
+$pilier_id  = (isset($_POST['f_pilier'])) ? clean_entier($_POST['f_pilier']) : 0; // Sert à afficher les informations pour aider à valider un pilier précis pour un élève donné.
+// Normalement ce sont des tableaux qui sont transmis, mais au cas où...
+$tab_pilier = (isset($_POST['f_pilier'])) ? ( (is_array($_POST['f_pilier'])) ? $_POST['f_pilier'] : explode(',',$_POST['f_pilier']) ) : array() ;
+$tab_eleve  = (isset($_POST['f_eleve']))  ? ( (is_array($_POST['f_eleve']))  ? $_POST['f_eleve']  : explode(',',$_POST['f_eleve'])  ) : array() ;
+$tab_pilier = array_filter( array_map( 'clean_entier' , $tab_pilier ) , 'positif' );
+$tab_eleve  = array_filter( array_map( 'clean_entier' , $tab_eleve  ) , 'positif' );
 
 $listing_eleve_id = implode(',',$tab_eleve);
 
@@ -43,13 +46,13 @@ $listing_eleve_id = implode(',',$tab_eleve);
 
 if( ($action=='Afficher_bilan') && $palier_id && count($tab_pilier) && count($tab_eleve) )
 {
-	save_cookie_select('palier');
+	Formulaire::save_choix('palier');
 	$affichage = '';
 	// Tableau des langues
 	$tfoot = '';
 	require_once('./_inc/tableau_langues.php');
 	// Récupérer les données des élèves
-	$tab_eleve = DB_STRUCTURE_lister_eleves_cibles($listing_eleve_id,$with_gepi=FALSE,$with_langue=TRUE);
+	$tab_eleve = DB_STRUCTURE_BILAN::DB_lister_eleves_cibles($listing_eleve_id,$with_gepi=FALSE,$with_langue=TRUE);
 	if(!is_array($tab_eleve))
 	{
 		exit('Aucun élève trouvé correspondant aux identifiants transmis !');
@@ -68,7 +71,7 @@ if( ($action=='Afficher_bilan') && $palier_id && count($tab_pilier) && count($ta
 	$affichage .= '<th class="nu">&nbsp;&nbsp;&nbsp;</th>';
 	$affichage .= '<th class="nu">';
 	$affichage .=   '<p class="danger">Rappel : la validation d\'une compétence est définitive (une invalidation peut être changée).</p>';
-	$affichage .=   '<p><button id="Enregistrer_validation" type="button"><img alt="" src="./_img/bouton/valider.png" /> Enregistrer les validations</button> <button id="fermer_zone_validation" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button><label id="ajax_msg_validation"></label></p>';
+	$affichage .=   '<p><button id="Enregistrer_validation" type="button" class="valider">Enregistrer les validations</button> <button id="fermer_zone_validation" type="button" class="retourner">Retour</button><label id="ajax_msg_validation"></label></p>';
 	$affichage .= '</th>';
 	$affichage .= '</tr></thead>';
 	$affichage .= '<tbody>';
@@ -83,7 +86,7 @@ if( ($action=='Afficher_bilan') && $palier_id && count($tab_pilier) && count($ta
 	$affichage .= '</tr>';
 	// Récupérer l'arborescence des piliers du palier du socle (enfin... uniquement les piliers, ça suffit ici)
 	$tab_pilier_id = array(); // listing des ids des piliers mis à jour au cas où la récupération dans la base soit différente des ids transmis...
-	$DB_TAB = DB_STRUCTURE_recuperer_piliers($palier_id);
+	$DB_TAB = DB_STRUCTURE_SOCLE::DB_recuperer_piliers($palier_id);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$pilier_id = $DB_ROW['pilier_id'];
@@ -107,7 +110,7 @@ if( ($action=='Afficher_bilan') && $palier_id && count($tab_pilier) && count($ta
 	// Récupérer la liste des jointures (validations)
 	$listing_eleve_id  = implode(',',$tab_eleve_id);
 	$listing_pilier_id = implode(',',$tab_pilier_id);
-	$DB_TAB = DB_STRUCTURE_lister_jointure_user_pilier($listing_eleve_id,$listing_pilier_id,$palier_id=0); // en fait on connait aussi le palier mais la requête est plus simple (pas de jointure) avec les piliers
+	$DB_TAB = DB_STRUCTURE_SOCLE::DB_lister_jointure_user_pilier($listing_eleve_id,$listing_pilier_id,$palier_id=0); // en fait on connait aussi le palier mais la requête est plus simple (pas de jointure) avec les piliers
 	$tab_bad = array();
 	$tab_bon = array();
 	foreach($DB_TAB as $DB_ROW)
@@ -131,7 +134,7 @@ elseif( ($action=='Afficher_information') && $eleve_id && $pilier_id )
 {
 	// Récupération de la liste des validations des items du palier
 	$tab_item = array();	// [entree_id] => 0/1;
-	$DB_TAB = DB_STRUCTURE_lister_jointure_user_entree($eleve_id,$listing_entree_id='',$domaine_id=0,$pilier_id,$palier_id=0);
+	$DB_TAB = DB_STRUCTURE_SOCLE::DB_lister_jointure_user_entree($eleve_id,$listing_entree_id='',$domaine_id=0,$pilier_id,$palier_id=0);
 	if(!count($DB_TAB))
 	{
 		exit('Aucune validation d\'item n\'est renseignée pour cette compétence !');
@@ -145,7 +148,7 @@ elseif( ($action=='Afficher_information') && $eleve_id && $pilier_id )
 	$tab_texte_items = array(1=>'OUI',0=>'NON',2=>'???');
 	$tab_validation_socle = array(1=>0,0=>0,2=>0);
 	$affichage_socle = '';
-	$DB_TAB = DB_STRUCTURE_recuperer_arborescence_pilier($pilier_id);
+	$DB_TAB = DB_STRUCTURE_SOCLE::DB_recuperer_arborescence_pilier($pilier_id);
 	$section_id = 0;
 	foreach($DB_TAB as $DB_ROW)
 	{
@@ -199,7 +202,7 @@ elseif($action=='Enregistrer_validation')
 	// On recupère le contenu de la base déjà enregistré pour le comparer
 	$listing_eleve_id  = implode(',',$tab_eleve_id);
 	$listing_pilier_id = implode(',',$tab_pilier_id);
-	$DB_TAB = DB_STRUCTURE_lister_jointure_user_pilier($listing_eleve_id,$listing_pilier_id,$palier_id=0);
+	$DB_TAB = DB_STRUCTURE_SOCLE::DB_lister_jointure_user_pilier($listing_eleve_id,$listing_pilier_id,$palier_id=0);
 	// On remplit au fur et à mesure $tab_nouveau_modifier et $tab_nouveau_supprimer
 	$tab_nouveau_modifier = array();
 	$tab_nouveau_supprimer = array();
@@ -240,17 +243,17 @@ elseif($action=='Enregistrer_validation')
 	foreach($tab_nouveau_ajouter as $key => $etat)
 	{
 		list($pilier_id,$eleve_id) = explode('x',$key);
-		DB_STRUCTURE_ajouter_validation('pilier',$eleve_id,$pilier_id,$etat,$date_mysql,$info);
+		DB_STRUCTURE_SOCLE::DB_ajouter_validation('pilier',$eleve_id,$pilier_id,$etat,$date_mysql,$info);
 	}
 	foreach($tab_nouveau_modifier as $key => $etat)
 	{
 		list($pilier_id,$eleve_id) = explode('x',$key);
-		DB_STRUCTURE_modifier_validation('pilier',$eleve_id,$pilier_id,$etat,$date_mysql,$info);
+		DB_STRUCTURE_SOCLE::DB_modifier_validation('pilier',$eleve_id,$pilier_id,$etat,$date_mysql,$info);
 	}
 	foreach($tab_nouveau_supprimer as $key)
 	{
 		list($pilier_id,$eleve_id) = explode('x',$key);
-		DB_STRUCTURE_supprimer_validation('pilier',$eleve_id,$pilier_id);
+		DB_STRUCTURE_SOCLE::DB_supprimer_validation('pilier',$eleve_id,$pilier_id);
 	}
 	exit('OK');
 }

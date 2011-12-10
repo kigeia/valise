@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Identité de l'installation";
-$VERSION_JS_FILE += 1;
 ?>
 
 <?php
@@ -45,7 +44,7 @@ $cnil_dates_class     = intval(CNIL_NUMERO) ? 'show' : 'hide' ;
 
 <hr />
 
-<form action="" method="post" id="form1"><fieldset>
+<form action="#" method="post" id="form1"><fieldset>
 	<h2>Caractéristiques de l'hébergement</h2>
 	<label class="tab" for="f_denomination">Dénomination <img alt="" src="./_img/bulle_aide.png" title="Exemple : <?php echo $exemple_denomination ?>" /> :</label><input id="f_denomination" name="f_denomination" size="55" type="text" value="<?php echo html(HEBERGEUR_DENOMINATION); ?>" /><br />
 	<?php echo $uai_div_hide_avant ?>
@@ -62,15 +61,15 @@ $cnil_dates_class     = intval(CNIL_NUMERO) ? 'show' : 'hide' ;
 	<h2>Coordonnées du webmestre</h2>
 	<label class="tab" for="f_nom">Nom :</label><input id="f_nom" name="f_nom" size="20" type="text" value="<?php echo html(WEBMESTRE_NOM); ?>" /><br />
 	<label class="tab" for="f_prenom">Prénom :</label><input id="f_prenom" name="f_prenom" size="20" type="text" value="<?php echo html(WEBMESTRE_PRENOM); ?>" /><br />
-	<label class="tab" for="f_courriel">Courriel :</label><input id="f_courriel" name="f_courriel" size="60" type="text" value="<?php echo html(WEBMESTRE_COURRIEL); ?>" /><p />
-	<span class="tab"></span><input id="f_action" name="f_action" type="hidden" value="enregistrer" /><button id="f_submit" type="submit"><img alt="" src="./_img/bouton/parametre.png" /> Valider ces réglages.</button><label id="ajax_msg">&nbsp;</label><br />
+	<label class="tab" for="f_courriel">Courriel :</label><input id="f_courriel" name="f_courriel" size="60" type="text" value="<?php echo html(WEBMESTRE_COURRIEL); ?>" />
+	<p><span class="tab"></span><input id="f_action" name="f_action" type="hidden" value="enregistrer" /><button id="f_submit" type="submit" class="parametre">Valider ces réglages.</button><label id="ajax_msg">&nbsp;</label></p>
 </fieldset></form>
 
 <hr />
 
 <h2>Logos disponibles</h2>
-<form action="" method="post" id="form2"><fieldset>
-	<label class="tab" for="f_upload">Uploader un logo :</label><button id="f_upload" type="button"><img alt="" src="./_img/bouton/fichier_import.png" /> Parcourir...</button><label id="ajax_upload">&nbsp;</label>
+<form action="#" method="post" id="form2"><fieldset>
+	<label class="tab" for="f_upload">Uploader un logo :</label><button id="f_upload" type="button" class="fichier_import">Parcourir...</button><label id="ajax_upload">&nbsp;</label>
 	<p><label id="ajax_listing"></label></p>
 	<ul class="puce" id="listing_logos">
 		<li></li>

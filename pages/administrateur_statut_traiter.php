@@ -27,14 +27,13 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Traiter les comptes desactivés";
-$VERSION_JS_FILE += 3;
 ?>
 
 <?php
 // Fabrication des éléments select du formulaire
-$select_f_groupes              = afficher_select(DB_STRUCTURE_OPT_regroupements_etabl()                   , $select_nom=false , $option_first='oui' , $selection=false , $optgroup='oui');
-$select_parents                = afficher_select(DB_STRUCTURE_OPT_parents_etabl($statut=0)                , $select_nom=false , $option_first='non' , $selection=false , $optgroup='non');
-$select_professeurs_directeurs = afficher_select(DB_STRUCTURE_OPT_professeurs_directeurs_etabl($statut=0) , $select_nom=false , $option_first='non' , $selection=false , $optgroup='oui');
+$select_f_groupes              = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_regroupements_etabl()                   , $select_nom=false , $option_first='oui' , $selection=false , $optgroup='oui');
+$select_parents                = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_parents_etabl($statut=0)                , $select_nom=false , $option_first='non' , $selection=false , $optgroup='non');
+$select_professeurs_directeurs = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_professeurs_directeurs_etabl($statut=0) , $select_nom=false , $option_first='non' , $selection=false , $optgroup='oui');
 ?>
 
 <ul class="puce">
@@ -44,7 +43,7 @@ $select_professeurs_directeurs = afficher_select(DB_STRUCTURE_OPT_professeurs_di
 
 <hr />
 
-<form action="" method="post">
+<form action="#" method="post">
 	<table>
 		<tr>
 			<td style="width:55em" colspan="2">
@@ -60,22 +59,22 @@ $select_professeurs_directeurs = afficher_select(DB_STRUCTURE_OPT_professeurs_di
 		<tr>
 			<td class="nu">
 				<p id="p_eleves" class="hide">
-					<b>Élèves au statut désactivé :</b> <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /><br />
+					<b>Élèves au statut désactivé :</b> <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo;&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo;&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /><br />
 					<select id="f_groupe" name="f_groupe"><?php echo $select_f_groupes ?></select><br />
 					<select id="select_eleves" name="select_eleves[]" multiple size="10" class="hide"><option value=""></option></select>
 				</p>
 				<p id="p_parents" class="hide">
-					<b>Responsables légaux au statut désactivé :</b> <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /><br />
+					<b>Responsables légaux au statut désactivé :</b> <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo;&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo;&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /><br />
 					<select id="select_parents" name="select_parents[]" multiple size="10"><?php echo $select_parents; ?></select>
 				</p>
 				<p id="p_professeurs_directeurs" class="hide">
-					<b>Professeurs / Directeurs au statut désactivé :</b> <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /><br />
+					<b>Professeurs / Directeurs au statut désactivé :</b> <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo;&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo;&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /><br />
 					<select id="select_professeurs_directeurs" name="select_professeurs_directeurs[]" multiple size="10"><?php echo $select_professeurs_directeurs; ?></select>
 				</p>
 			</td>
 			<td id="td_bouton" class="nu hide" style="width:25em">
-				<p><button id="reintegrer" type="button"><img alt="" src="./_img/bouton/user_ajouter.png" /> Réintégrer ces comptes.</button></p>
-				<p><button id="supprimer" type="button"><img alt="" src="./_img/bouton/supprimer.png" /> Supprimer définitivement ces comptes.</button></p>
+				<p><button id="reintegrer" type="button" class="user_ajouter">Réintégrer ces comptes.</button></p>
+				<p><button id="supprimer" type="button" class="supprimer">Supprimer définitivement ces comptes.</button></p>
 				<p><label id="ajax_msg">&nbsp;</label></p>
 			</td>
 		</tr>

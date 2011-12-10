@@ -51,9 +51,9 @@ if( ($type_export=='listing_users') && $groupe_id && isset($tab_types[$groupe_ty
 	// ajout du préfixe 'ELEVE_' pour éviter un bug avec M$ Excel « SYLK : Format de fichier non valide » (http://support.microsoft.com/kb/323626/fr). 
 	$export_csv  = 'ELEVE_ID'.$separateur.'LOGIN'.$separateur.'NOM'.$separateur.'PRENOM'.$separateur.'GROUPE'."\r\n\r\n";
 	// Préparation de l'export HTML
-	$export_html = '<table><thead><tr><th>Id</th><th>Login</th><th>Nom</th><th>Prénom</th><th>Groupe</th></tr></thead><tbody>'."\r\n";
+	$export_html = '<table class="p"><thead><tr><th>Id</th><th>Login</th><th>Nom</th><th>Prénom</th><th>Groupe</th></tr></thead><tbody>'."\r\n";
 	// Récupérer les élèves de la classe ou du groupe
-	$DB_TAB = DB_STRUCTURE_lister_users_actifs_regroupement('eleve',$tab_types[$groupe_type],$groupe_id,'user_id,user_login,user_nom,user_prenom');
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_users_actifs_regroupement('eleve',$tab_types[$groupe_type],$groupe_id,'user_id,user_login,user_nom,user_prenom');
 	if(count($DB_TAB))
 	{
 		foreach($DB_TAB as $DB_ROW)
@@ -78,7 +78,7 @@ if( ($type_export=='listing_users') && $groupe_id && isset($tab_types[$groupe_ty
 	$export_html .= '</tbody></table>'."\r\n";
 
 	// Affichage
-	echo'<hr /><ul class="puce"><li><a class="lien_ext" href="'.$dossier_export.$fnom.'.zip">Récupérez le listing dans un fichier au format CSV.</a></li></ul><p />';
+	echo'<ul class="puce"><li><a class="lien_ext" href="'.$dossier_export.$fnom.'.zip"><span class="file file_zip">Récupérez les données (fichier <em>csv</em> zippé.</span>)</a></li></ul>';
 	echo $export_html;
 	exit();
 }
@@ -89,15 +89,15 @@ if( ($type_export=='listing_users') && $groupe_id && isset($tab_types[$groupe_ty
 
 if( ($type_export=='listing_matiere') && $matiere_id && $matiere_nom )
 {
-	save_cookie_select('matiere');
+	Formulaire::save_choix('export_fichier');
 	// Préparation de l'export CSV
 	$separateur = ';';
 	// ajout du préfixe 'ITEM_' pour éviter un bug avec M$ Excel « SYLK : Format de fichier non valide » (http://support.microsoft.com/kb/323626/fr). 
 	$export_csv  = 'ITEM_ID'.$separateur.'MATIERE'.$separateur.'NIVEAU'.$separateur.'REFERENCE'.$separateur.'NOM'."\r\n\r\n";
 	// Préparation de l'export HTML
-	$export_html = '<table><thead><tr><th>Id</th><th>Matière</th><th>Niveau</th><th>Référence</th><th>Nom</th></tr></thead><tbody>'."\r\n";
+	$export_html = '<table class="p"><thead><tr><th>Id</th><th>Matière</th><th>Niveau</th><th>Référence</th><th>Nom</th></tr></thead><tbody>'."\r\n";
 
-	$DB_TAB = DB_STRUCTURE_recuperer_arborescence($prof_id=0,$matiere_id,$niveau_id=0,$only_socle=false,$only_item=true,$socle_nom=false);
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_recuperer_arborescence($prof_id=0,$matiere_id,$niveau_id=0,$only_socle=false,$only_item=true,$socle_nom=false);
 	if(count($DB_TAB))
 	{
 		foreach($DB_TAB as $DB_ROW)
@@ -123,7 +123,7 @@ if( ($type_export=='listing_matiere') && $matiere_id && $matiere_nom )
 	$export_html .= '</tbody></table>'."\r\n";
 
 	// Affichage
-	echo'<hr /><ul class="puce"><li><a class="lien_ext" href="'.$dossier_export.$fnom.'.zip">Récupérez le listing dans un fichier au format CSV.</a></li></ul><p />';
+	echo'<ul class="puce"><li><a class="lien_ext" href="'.$dossier_export.$fnom.'.zip"><span class="file file_zip">Récupérez les données (fichier <em>csv</em> zippé).</span></a></li></ul>';
 	echo $export_html;
 	exit();
 }
@@ -134,20 +134,20 @@ if( ($type_export=='listing_matiere') && $matiere_id && $matiere_nom )
 
 if( ($type_export=='arbre_matiere') && $matiere_id && $matiere_nom )
 {
-	save_cookie_select('matiere');
+	Formulaire::save_choix('matiere');
 	// Préparation de l'export CSV
 	$separateur = ';';
 	// ajout du préfixe 'ITEM_' pour éviter un bug avec M$ Excel « SYLK : Format de fichier non valide » (http://support.microsoft.com/kb/323626/fr). 
 	$export_csv  = 'MATIERE'.$separateur.'NIVEAU'.$separateur.'DOMAINE'.$separateur.'THEME'.$separateur.'ITEM'."\r\n\r\n";
 	// Préparation de l'export HTML
-	$export_html = '<div id="zone_compet">';
+	$export_html = '<div id="zone_compet" class="p">';
 
 	$tab_niveau  = array();
 	$tab_domaine = array();
 	$tab_theme   = array();
 	$tab_item    = array();
 	$niveau_id = 0;
-	$DB_TAB = DB_STRUCTURE_recuperer_arborescence($prof_id=0,$matiere_id,$niveau_id=0,$only_socle=false,$only_item=false,$socle_nom=false);
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_recuperer_arborescence($prof_id=0,$matiere_id,$niveau_id=0,$only_socle=false,$only_item=false,$socle_nom=false);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		if($DB_ROW['niveau_id']!=$niveau_id)
@@ -235,7 +235,7 @@ if( ($type_export=='arbre_matiere') && $matiere_id && $matiere_nom )
 	$export_html.= '</div>';
 
 	// Affichage
-	echo'<hr /><ul class="puce"><li><a class="lien_ext" href="'.$dossier_export.$fnom.'.zip">Récupérez l\'arborescence dans un fichier au format CSV.</a></li></ul><p />';
+	echo'<ul class="puce"><li><a class="lien_ext" href="'.$dossier_export.$fnom.'.zip"><span class="file file_zip">Récupérez l\'arborescence (fichier <em>csv</em> zippé).</span></a></li></ul>';
 	echo $export_html;
 	exit();
 }
@@ -246,18 +246,18 @@ if( ($type_export=='arbre_matiere') && $matiere_id && $matiere_nom )
 
 if( ($type_export=='arbre_socle') && $palier_id && $palier_nom )
 {
-	save_cookie_select('palier');
+	Formulaire::save_choix('palier');
 	// Préparation de l'export CSV
 	$separateur = ';';
 	$export_csv  = 'PALIER'.$separateur.'PILIER'.$separateur.'SECTION'.$separateur.'ITEM'."\r\n\r\n";
 	// Préparation de l'export HTML
-	$export_html = '<div id="zone_paliers">';
+	$export_html = '<div id="zone_paliers" class="p">';
 
 	$tab_pilier  = array();
 	$tab_section = array();
 	$tab_entree  = array();
 	$pilier_id = 0;
-	$DB_TAB = DB_STRUCTURE_recuperer_arborescence_palier($palier_id);
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_recuperer_arborescence_palier($palier_id);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		if($DB_ROW['pilier_id']!=$pilier_id)
@@ -328,7 +328,7 @@ if( ($type_export=='arbre_socle') && $palier_id && $palier_nom )
 	$export_html.= '</div>';
 
 	// Affichage
-	echo'<hr /><ul class="puce"><li><a class="lien_ext" href="'.$dossier_export.$fnom.'.zip">Récupérez l\'arborescence dans un fichier au format CSV.</a></li></ul><p />';
+	echo'<ul class="puce"><li><a class="lien_ext" href="'.$dossier_export.$fnom.'.zip"><span class="file file_zip">Récupérez l\'arborescence (fichier <em>csv</em> zippé).</span></a></li></ul>';
 	echo $export_html;
 	exit();
 }
@@ -339,19 +339,19 @@ if( ($type_export=='arbre_socle') && $palier_id && $palier_nom )
 
 if( ($type_export=='jointure_socle_matiere') && $palier_id && $palier_nom )
 {
-	save_cookie_select('palier');
+	Formulaire::save_choix('palier');
 	// Préparation de l'export CSV
 	$separateur = ';';
 	$export_csv  = 'PALIER SOCLE'.$separateur.'PILIER SOCLE'.$separateur.'SECTION SOCLE'.$separateur.'ITEM SOCLE'.$separateur.'ITEM MATIERE'."\r\n\r\n";
 	// Préparation de l'export HTML
-	$export_html = '<div id="zone_paliers">';
+	$export_html = '<div id="zone_paliers" class="p">';
 
 	// Récupération des données du socle
 	$tab_pilier  = array();
 	$tab_section = array();
 	$tab_socle   = array();
 	$pilier_id = 0;
-	$DB_TAB = DB_STRUCTURE_recuperer_arborescence_palier($palier_id);
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_recuperer_arborescence_palier($palier_id);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		if($DB_ROW['pilier_id']!=$pilier_id)
@@ -375,7 +375,7 @@ if( ($type_export=='jointure_socle_matiere') && $palier_id && $palier_nom )
 
 	// Récupération des données des référentiels liés au socle
 	$tab_jointure = array();
-	$DB_TAB = DB_STRUCTURE_recuperer_associations_entrees_socle();
+	$DB_TAB = DB_STRUCTURE_SOCLE::DB_recuperer_associations_entrees_socle();
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_jointure[$DB_ROW['entree_id']][] = $DB_ROW['matiere_ref'].'.'.$DB_ROW['niveau_ref'].'.'.$DB_ROW['item_ref'].' - '.$DB_ROW['item_nom'];
@@ -403,7 +403,7 @@ if( ($type_export=='jointure_socle_matiere') && $palier_id && $palier_nom )
 					foreach($tab_socle[$pilier_id][$section_id] as $socle_id => $socle_nom)
 					{
 						$export_csv .= $separateur.$separateur.$separateur.'"'.$socle_nom.'"'."\r\n";
-						$export_html .= '							<li class="li_n3">'.html($socle_nom)."\r\n";
+						$export_html .= '							<li class="li_n3"><span>'.html($socle_nom).'</span>'."\r\n";
 						if(isset($tab_jointure[$socle_id]))
 						{
 							$export_html .= '								<ul class="ul_m2">'."\r\n";
@@ -448,7 +448,7 @@ if( ($type_export=='jointure_socle_matiere') && $palier_id && $palier_nom )
 	$export_html.= '</div>';
 
 	// Affichage
-	echo'<hr /><ul class="puce"><li><a class="lien_ext" href="'.$dossier_export.$fnom.'.zip">Récupérez les associations dans un fichier au format CSV.</a></li></ul><p />';
+	echo'<ul class="puce"><li><a class="lien_ext" href="'.$dossier_export.$fnom.'.zip"><span class="file file_zip">Récupérez les associations (fichier <em>csv</em> zippé).</span></a></li></ul>';
 	echo $export_html;
 	exit();
 }

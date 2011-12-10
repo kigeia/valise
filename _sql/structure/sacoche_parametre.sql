@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS sacoche_parametre;
 
 CREATE TABLE sacoche_parametre (
-	parametre_nom    VARCHAR(25)  COLLATE utf8_unicode_ci NOT NULL DEFAULT "",
+	parametre_nom    VARCHAR(30)  COLLATE utf8_unicode_ci NOT NULL DEFAULT "",
 	parametre_valeur VARCHAR(150) COLLATE utf8_unicode_ci NOT NULL DEFAULT "",
 	PRIMARY KEY (parametre_nom)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -32,6 +32,7 @@ INSERT INTO sacoche_parametre VALUES
 ( "droit_validation_pilier"        , "directeur,profprincipal" ),
 ( "droit_annulation_pilier"        , "directeur,aucunprof" ),
 ( "droit_voir_referentiels"        , "directeur,professeur,parent,eleve" ),
+( "droit_voir_grilles_items"       , "directeur,professeur,parent,eleve" ),
 ( "droit_voir_score_bilan"         , "directeur,professeur,parent,eleve" ),
 ( "droit_voir_algorithme"          , "directeur,professeur,parent,eleve" ),
 ( "droit_bilan_moyenne_score"      , "parent,eleve" ),
@@ -63,10 +64,10 @@ INSERT INTO sacoche_parametre VALUES
 ( "note_texte_R"                   , "R" ),
 ( "note_texte_V"                   , "V" ),
 ( "note_texte_VV"                  , "VV" ),
-( "note_legende_RR"                , "Très insuffisant." ),
+( "note_legende_RR"                , "TrÃ¨s insuffisant." ),
 ( "note_legende_R"                 , "Insuffisant." ),
 ( "note_legende_V"                 , "Satisfaisant." ),
-( "note_legende_VV"                , "Très satisfaisant." ),
+( "note_legende_VV"                , "TrÃ¨s satisfaisant." ),
 ( "acquis_texte_NA"                , "NA" ),
 ( "acquis_texte_VA"                , "VA" ),
 ( "acquis_texte_A"                 , "A" ),

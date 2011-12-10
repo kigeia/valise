@@ -36,7 +36,7 @@ $(document).ready
 
 		var charger_formulaire_structures = function()
 		{
-			$('#ajax_msg').removeAttr("class").addClass("loader").html('Chargement du formulaire... Veuillez patienter.');
+			$('#ajax_msg').removeAttr("class").addClass("loader").html('Chargement du formulaire...');
 			$.ajax
 			(
 				{
@@ -61,7 +61,7 @@ $(document).ready
 							modification = false;
 							$('#ajax_msg').removeAttr("class").html('&nbsp;');
 							$('#f_structure').html(responseHTML);
-							$('#rechercher').removeAttr("class").show("fast"); // Pour IE7 le show() ne suffit pas
+							$('#rechercher').prop('disabled',false);
 						}
 					}
 				}
@@ -144,7 +144,7 @@ $(document).ready
 					return false;
 				}
 				$('#rechercher').prop('disabled',true);
-				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée... Veuillez patienter.');
+				$('#ajax_msg').removeAttr("class").addClass("loader").html('Demande envoyée...');
 				$.ajax
 				(
 					{
@@ -155,7 +155,7 @@ $(document).ready
 						error : function(msg,string)
 						{
 							$('#rechercher').prop('disabled',false);
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 							return false;
 						},
 						success : function(responseHTML)
@@ -190,7 +190,7 @@ $(document).ready
 				description    = $(this).parent().text(); // Pb : il prend le contenu du <sup> avec
 				longueur_sup   = $(this).prev().text().length;
 				description    = description.substring(0,description.length-longueur_sup);
-				new_label = '<label id="temp" class="loader">Demande envoyée... Veuillez patienter.</label>';
+				new_label = '<label id="temp" class="loader">Demande envoyée...</label>';
 				$(this).after(new_label);
 				$.ajax
 				(
@@ -201,50 +201,25 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$('label[id=temp]').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.').fadeOut(2000,function(){$('label[id=temp]').remove();});
-							return false;
+							$.fancybox( '<label class="alerte">'+'Echec de la connexion !'+'</label>' , {'centerOnScroll':true} );
+							$('label[id=temp]').remove();
 						},
 						success : function(responseHTML)
 						{
 							initialiser_compteur();
 							if(responseHTML.substring(0,18)!='<ul class="ul_n1">')
 							{
-								$('label[id=temp]').removeAttr("class").addClass("alerte").html(responseHTML).fadeOut(2000,function(){$('label[id=temp]').remove();});
+								$.fancybox( '<label class="alerte">'+responseHTML+'</label>' , {'centerOnScroll':true} );
 							}
 							else
 							{
-								$('#voir_referentiel_communautaire').addClass('calque_referentiel').html('<ul class="ul_m1"><li class="li_m1"><b>'+description+'</b><q class="imprimer" title="Imprimer le référentiel."></q><q class="retourner" title="Revenir page précédente." />'+responseHTML+'</li></ul>');
-								document.location.href = '#voir_referentiel_communautaire';
+								$.fancybox( '<ul class="ul_m1"><li class="li_m1"><b>'+description+'</b><q class="imprimer" title="Imprimer le référentiel."></q>'+responseHTML+'</li></ul>' , {'centerOnScroll':true} );
 								infobulle();
-								$('label[id=temp]').remove();
 							}
+							$('label[id=temp]').remove();
 						}
 					}
 				);
-			}
-		);
-
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-//	Clic sur une image pour Imprimer un referentiel
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-
-		$('#voir_referentiel_communautaire q.imprimer').live // live est utilisé pour prendre en compte les nouveaux éléments créés
-		('click',
-			function()
-			{
-				window.print();
-			}
-		);
-
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-//	Clic sur une image pour Fermer le calque avec le détail d'un referentiel
-//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-
-		$('#voir_referentiel_communautaire q.retourner').live // live est utilisé pour prendre en compte les nouveaux éléments créés
-		('click',
-			function()
-			{
-				$('#voir_referentiel_communautaire').removeAttr("class").html('');
 			}
 		);
 

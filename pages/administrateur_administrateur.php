@@ -27,12 +27,11 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Gérer les administrateurs";
-$VERSION_JS_FILE += 2;
 ?>
 
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_administrateurs">DOC : Gestion des administrateurs</a></span></p>
 
-<form action="" method="post">
+<form action="#" method="post">
 	<table class="form">
 		<thead>
 			<tr>
@@ -48,7 +47,7 @@ $VERSION_JS_FILE += 2;
 		<tbody>
 			<?php
 			// Lister les administrateurs
-			$DB_TAB = DB_STRUCTURE_lister_users('administrateur',$only_actifs=true,$with_classe=false);
+			$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_users('administrateur',$only_actifs=true,$with_classe=false);
 			foreach($DB_TAB as $DB_ROW)
 			{
 				// Afficher une ligne du tableau

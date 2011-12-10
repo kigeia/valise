@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Niveaux &amp; Cycles";
-$VERSION_JS_FILE += 1;
 ?>
 
 <div><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_niveaux">DOC : Niveaux &amp; Cycles</a></span></div>
@@ -36,7 +35,7 @@ $VERSION_JS_FILE += 1;
 
 <h2>Niveaux "Cycles"</h2>
 
-<form action="" method="post" id="cycles">
+<form action="#" method="post" id="cycles">
 	<table class="form check">
 		<thead>
 			<tr><th class="nu"></th><th>Codage</th><th>Dénomination</th></tr>
@@ -46,7 +45,7 @@ $VERSION_JS_FILE += 1;
 			// Cases à cocher
 			$tab_check = explode(',',$_SESSION['CYCLES']);
 			// Lister les niveaux
-			$DB_TAB = DB_STRUCTURE_lister_cycles_SACoche();
+			$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_cycles_SACoche();
 			foreach($DB_TAB as $DB_ROW)
 			{
 				$checked  = (in_array($DB_ROW['niveau_id'],$tab_check)) ? ' checked' : '' ;
@@ -60,7 +59,7 @@ $VERSION_JS_FILE += 1;
 		</tbody>
 	</table>
 	<p>
-		<span class="tab"></span><button id="bouton_valider_cycles" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Valider ce choix de cycles.</button><label id="ajax_msg_cycles">&nbsp;</label>
+		<span class="tab"></span><button id="bouton_valider_cycles" type="button" class="parametre">Valider ce choix de cycles.</button><label id="ajax_msg_cycles">&nbsp;</label>
 	</p>
 </form>
 
@@ -68,7 +67,7 @@ $VERSION_JS_FILE += 1;
 
 <h2>Niveaux annuels</h2>
 
-<form action="" method="post" id="niveaux">
+<form action="#" method="post" id="niveaux">
 	<table class="form check">
 		<thead>
 			<tr><th class="nu"></th><th>Codage</th><th>Dénomination</th></tr>
@@ -78,7 +77,7 @@ $VERSION_JS_FILE += 1;
 			// Cases à cocher
 			$tab_check = explode(',',$_SESSION['NIVEAUX']);
 			// Lister les niveaux
-			$DB_TAB = DB_STRUCTURE_lister_niveaux_SACoche();
+			$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_niveaux_SACoche();
 			foreach($DB_TAB as $DB_ROW)
 			{
 				$checked  = (in_array($DB_ROW['niveau_id'],$tab_check)) ? ' checked' : '' ;
@@ -92,6 +91,6 @@ $VERSION_JS_FILE += 1;
 		</tbody>
 	</table>
 	<p>
-		<span class="tab"></span><button id="bouton_valider_niveaux" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Valider ce choix de niveaux.</button><label id="ajax_msg_niveaux">&nbsp;</label>
+		<span class="tab"></span><button id="bouton_valider_niveaux" type="button" class="parametre">Valider ce choix de niveaux.</button><label id="ajax_msg_niveaux">&nbsp;</label>
 	</p>
 </form>

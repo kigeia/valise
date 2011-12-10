@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Configuration d'un proxy";
-$VERSION_JS_FILE += 0;
 ?>
 
 <?php
@@ -60,7 +59,7 @@ foreach($tab_select_proxy_auth_method as $option_value => $option_texte)
 
 <hr />
 
-<form action="" method="post" id="form_proxy"><fieldset>
+<form action="#" method="post" id="form_proxy"><fieldset>
 	<span class="tab"></span><label for="f_proxy_used"><input type="checkbox" id="f_proxy_used" name="f_proxy_used" value="1"<?php echo $check_proxy_used ?> /> Mon serveur nécessite d'utiliser un proxy.</label>
 	<div id="div_proxy_used" class="<?php echo $class_proxy_used ?>">
 		<label class="tab" for="f_proxy_name">Nom du proxy <img alt="" src="./_img/bulle_aide.png" title="Exemple : proxy2" /> :</label><input id="f_proxy_name" name="f_proxy_name" size="10" type="text" value="<?php echo html(SERVEUR_PROXY_NAME); ?>" /><br />
@@ -75,8 +74,8 @@ foreach($tab_select_proxy_auth_method as $option_value => $option_texte)
 		</div>
 	</div>
 	<p>
-		<span class="tab"></span><button id="f_enregistrer" type="submit"><img alt="" src="./_img/bouton/parametre.png" /> Enregistrer ces réglages.</button><label id="ajax_msg_enregistrer">&nbsp;</label><br />
-		<span class="tab"></span><button id="f_tester" type="button"><img alt="" src="./_img/bouton/parametre.png" /> Tester les réglages <span class="u">actuellement enregistrés</span>.</button><label id="ajax_msg_tester">&nbsp;</label>
+		<span class="tab"></span><button id="f_enregistrer" type="submit" class="parametre">Enregistrer ces réglages.</button><label id="ajax_msg_enregistrer">&nbsp;</label><br />
+		<span class="tab"></span><button id="f_tester" type="button" class="parametre">Tester les réglages <span class="u">actuellement enregistrés</span>.</button><label id="ajax_msg_tester">&nbsp;</label>
 	</p>
 </fieldset></form>
 

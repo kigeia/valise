@@ -27,12 +27,11 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Import / Export de validations du socle";
-$VERSION_JS_FILE += 1;
 ?>
 
 <?php
 // Test pour l'export
-$nb_eleves_sans_sconet = DB_STRUCTURE_compter_eleves_actifs_sans_id_sconet();
+$nb_eleves_sans_sconet = DB_STRUCTURE_SOCLE::DB_compter_eleves_actifs_sans_id_sconet();
 $s = ($nb_eleves_sans_sconet>1) ? 's' : '' ;
 
 $test_uai          = ($_SESSION['UAI'])                                               ? TRUE : FALSE ;
@@ -45,19 +44,19 @@ $msg_cnil         = ($test_cnil)         ? '<label class="valide">Déclaration n
 $msg_id_sconet    = ($test_id_sconet)    ? '<label class="valide">Identifiants élèves présents.</label>'                                                                                                   : '<label class="alerte">'.$nb_eleves_sans_sconet.' élève'.$s.' trouvé'.$s.' sans identifiant Sconet.</label> <span class="manuel"><a class="pop_up" href="'.SERVEUR_DOCUMENTAIRE.'?fichier=support_administrateur__import_users_sconet">DOC</a></span>' ;
 $msg_key_sesamath = ($test_key_sesamath) ? '<label class="valide">Etablissement identifié sur le serveur communautaire.</label>'                                                                           : '<label class="erreur">Identification non effectuée par un administrateur.</label> <span class="manuel"><a class="pop_up" href="'.SERVEUR_DOCUMENTAIRE.'?fichier=support_administrateur__gestion_informations_structure">DOC</a></span>' ;
 
-$bouton_export_lpc = ($test_uai && $test_cnil && $test_key_sesamath) ? 'id="bouton_export" class="enabled"' : 'id="disabled_export" disabled' ;
+$bouton_export_lpc = ($test_uai && $test_cnil && $test_key_sesamath) ? 'id="bouton_export" class="fichier_export enabled"' : 'id="disabled_export" class="fichier_export" disabled' ;
 ?>
 
 <?php
 // Fabrication des éléments select du formulaire
-$select_f_groupes = afficher_select(DB_STRUCTURE_OPT_regroupements_etabl() , $select_nom=false , $option_first='oui' , $selection=false , $optgroup='oui');
+$select_f_groupes = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_regroupements_etabl() , $select_nom=false , $option_first='oui' , $selection=false , $optgroup='oui');
 ?>
 
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=referentiels_socle__socle_export_import">DOC : Import / Export de validations du socle</a></span></p>
 
 <hr />
 
-<form action="" method="post">
+<form action="#" method="post">
 
 	<fieldset>
 		<label class="tab" for="f_choix_principal">Procédure :</label>
@@ -76,22 +75,24 @@ $select_f_groupes = afficher_select(DB_STRUCTURE_OPT_regroupements_etabl() , $se
 
 	<fieldset id="fieldset_export" class="hide">
 		<hr />
-		<label class="tab">Regroupement :</label><select id="f_groupe" name="f_groupe"><?php echo $select_f_groupes ?></select><label id="ajax_msg_groupe">&nbsp;</label><br />
-		<label class="tab"><img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /> Élèves :</label><select id="select_eleves" name="select_eleves[]" multiple size="8"><option value=""></option></select><p />
+		<p>
+			<label class="tab">Regroupement :</label><select id="f_groupe" name="f_groupe"><?php echo $select_f_groupes ?></select><label id="ajax_msg_groupe">&nbsp;</label><br />
+			<label class="tab"><img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo;&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo;&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /> Élèves :</label><select id="select_eleves" name="select_eleves[]" multiple size="8"><option value=""></option></select>
+		</p>
 	</fieldset>
 
 	<fieldset id="fieldset_export_lpc" class="hide">
 		<label class="tab">UAI :</label><?php echo $msg_uai ?><br />
 		<label class="tab">CNIL :</label><?php echo $msg_cnil ?><br />
 		<label class="tab">Sconet :</label><?php echo $msg_id_sconet ?><br />
-		<label class="tab">Sésamath :</label><?php echo $msg_key_sesamath ?><p />
-		<span class="tab"></span><button type="button" id="disabled_export" disabled><img alt="" src="./_img/bouton/fichier_export.png" /> A venir, procédure ministérielle d'accréditation en cours&hellip;</button><label id="ajax_msg_export">&nbsp;</label>
-		<!-- <span class="tab"></span><button type="button" id="export_lpc" <?php echo $bouton_export_lpc ?>><img alt="" src="./_img/bouton/fichier_export.png" /> Générer le fichier.</button> -->
+		<label class="tab">Sésamath :</label><?php echo $msg_key_sesamath ?>
+		<p><span class="tab"></span><button type="button" id="export_lpc" <?php echo $bouton_export_lpc ?>>Générer le fichier.</button><label id="ajax_msg_export">&nbsp;</label></p>
+		<!-- <button type="button" id="disabled_export" disabled class="fichier_export">A venir, procédure ministérielle d'accréditation en cours&hellip;</button> -->
 	</fieldset>
 
 	<fieldset id="fieldset_export_sacoche" class="hide">
 		<label class="tab">Sconet :</label><?php echo $msg_id_sconet ?><br />
-		<span class="tab"></span><button type="button" id="export_sacoche" class="enabled"><img alt="" src="./_img/bouton/fichier_export.png" /> Générer le fichier.</button>
+		<span class="tab"></span><button type="button" id="export_sacoche" class="fichier_export enabled">Générer le fichier.</button>
 	</fieldset>
 
 	<fieldset id="fieldset_import" class="hide">
@@ -99,20 +100,18 @@ $select_f_groupes = afficher_select(DB_STRUCTURE_OPT_regroupements_etabl() , $se
 	</fieldset>
 
 	<fieldset id="fieldset_import_lpc" class="hide">
-		<label class="tab">Sconet :</label><?php echo $msg_id_sconet ?><p />
-		<span class="tab"></span><button type="button" id="import_lpc_disabled" disabled><img alt="" src="./_img/bouton/fichier_import.png" /> A notre connaissance, <em>LPC</em> ne permet pas d'exporter un fichier de validations&hellip;</button>
+		<label class="tab">Sconet :</label><?php echo $msg_id_sconet ?>
+		<p><span class="tab"></span><button type="button" id="import_lpc_disabled" disabled class="fichier_import">A notre connaissance, <em>LPC</em> ne permet pas d'exporter un fichier de validations&hellip;</button></p>
 	</fieldset>
 
 	<fieldset id="fieldset_import_sacoche" class="hide">
-		<label class="tab">Sconet :</label><?php echo $msg_id_sconet ?><p />
-		<span class="tab"></span><button type="button" id="import_sacoche" class="enabled"><img alt="" src="./_img/bouton/fichier_import.png" /> Transmettre le fichier.</button>
+		<label class="tab">Sconet :</label><?php echo $msg_id_sconet ?>
+		<p><span class="tab"></span><button type="button" id="import_sacoche" class="fichier_import enabled">Transmettre le fichier.</button></p>
 	</fieldset>
 
 </form>
 
 <hr />
 <label id="ajax_msg">&nbsp;</label>
-<p />
-<ul class="puce" id="ajax_info">
+<ul class="puce p" id="ajax_info">
 </ul>
-<p />

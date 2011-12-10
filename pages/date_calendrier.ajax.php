@@ -37,15 +37,19 @@ $annee_maxi     = $annee_actuelle+10;
 $j = (isset($_GET['j'])) ? (int)$_GET['j'] : $jour_actuel ;
 $m = (isset($_GET['m'])) ? (int)$_GET['m'] : $mois_actuel ;
 $a = (isset($_GET['a'])) ? (int)$_GET['a'] : $annee_actuelle ;
-$tab_mois = array('','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre');
+$tab_mois = array(1=>'Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre');
 // On vérifie la cohérence des données pour éviter des soucis ensuite
+if( ($a<$annee_mini) || ($a>$annee_maxi) )
+{
+	$a = $annee_actuelle;
+}
 if(!isset($tab_mois[$m]))
 {
 	$m = $mois_actuel;
 }
-if( ($a<$annee_mini) || ($a>$annee_maxi) )
+if( ($j<1) || ($j>31) )
 {
-	$a = $annee_actuelle;
+	$j = $jour_actuel;
 }
 // Jour de la semaine
 $dayone = date('w',mktime(1,1,1,$m,1,$a));
@@ -83,19 +87,19 @@ $calendrier_navigation .= '<div class="v1 t12 g cr">';
 $an   = ($m==1) ? $a-1 : $a;
 $mois = ($m==1) ? 12   : $m-1;
 if( ( ($m==1) && ($a<=$annee_mini) )==false)
-	$calendrier_navigation .= '<input type="image" class="actu" src="./_img/fleche_g1.gif" lang="'.$mois.'_'.$an.'" />&nbsp;';
+	$calendrier_navigation .= '<input type="image" alt="Mois précédent" class="actu" src="./_img/fleche/fleche_g1.gif" lang="'.$mois.'_'.$an.'" />&nbsp;';
 else
-	$calendrier_navigation .= '<img alt="1 mois avant" src="./_img/fleche_g0.gif" />&nbsp;';
+	$calendrier_navigation .= '<img alt="1 mois avant" src="./_img/fleche/fleche_g0.gif" />&nbsp;';
 $calendrier_navigation .= $tab_mois[$m].' '.$a;
 $an   = ($m==12) ? $a+1 : $a;
 $mois = ($m==12) ? 1   : $m+1;
 if( ($m<$mois_actuel) || ($a<$annee_maxi) )
-	$calendrier_navigation .= '&nbsp;<input type="image" class="actu" src="./_img/fleche_d1.gif" lang="'.$mois.'_'.$an.'" />';
+	$calendrier_navigation .= '&nbsp;<input type="image" alt="Mois suivant" class="actu" src="./_img/fleche/fleche_d1.gif" lang="'.$mois.'_'.$an.'" />';
 else
-	$calendrier_navigation .= '<img alt="1 mois apres" src="./_img/fleche_d0.gif" />&nbsp;';
+	$calendrier_navigation .= '<img alt="1 mois apres" src="./_img/fleche/fleche_d0.gif" />&nbsp;';
 $calendrier_navigation .= '</div>';
 // Choix final de la période : tableau du calendrier du mois sélectionné
-$calendrier_affichage = '<table summary="calendrier" cellspacing="1" border="1" style="margin:auto">';
+$calendrier_affichage = '<table cellspacing="1" border="1" style="margin:auto">';
 $calendrier_affichage.= '<tr class="c1"><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th><th>D</th>';
 for($i=1;$i<=42;$i++)
 {
@@ -114,12 +118,12 @@ for($i=1;$i<=42;$i++)
 }
 $calendrier_affichage .= '</table>';
 echo'<h5>Calendrier</h5>';
-echo'<form id="form_calque" method="post" action="">';
+echo'<form action="#" method="post" id="form_calque">';
 echo'	<h6>Choisir une période :</h6>';
 echo'	<div>'.$calendrier_navigation.'</div>';
 echo'	<h6>Puis cliquer sur une date :</h6>';
 echo'	<div>'.$calendrier_affichage.'</div>';
-echo'	<div><button id="fermer_calque" type="button"><img alt="" src="./_img/bouton/annuler.png" /> Annuler / Fermer</button></div>';
+echo'	<div><button id="fermer_calque" type="button" class="annuler">Annuler / Fermer</button></div>';
 echo'</form>';
 
 ?>

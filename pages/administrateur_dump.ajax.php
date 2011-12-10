@@ -64,7 +64,7 @@ if($action=='sauvegarder')
 	$top_arrivee = microtime(TRUE);
 	$duree = number_format($top_arrivee - $top_depart,2,',','');
 	echo'<li><label class="valide">Sauvegarde de la base réalisée en '.$duree.'s.</label></li>';
-	echo'<li><a class="lien_ext" href="'.$dossier_dump.$fichier_zip_nom.'">Récupérez le fichier de sauvegarde au format ZIP.</a></li>';
+	echo'<li><a class="lien_ext" href="'.$dossier_dump.$fichier_zip_nom.'"><span class="file file_zip">Récupérez le fichier de sauvegarde au format ZIP.</span></a></li>';
 	echo'<li><label class="alerte">Pour des raisons de sécurité et de confidentialité, ce fichier sera effacé du serveur dans 1h.</label></li>';
 	exit();
 }
@@ -98,15 +98,12 @@ elseif($action=='uploader')
 	// Créer ou vider le dossier temporaire
 	Creer_ou_Vider_Dossier($dossier_temp);
 	// Dezipper dans le dossier temporaire
-	$zip = new ZipArchive();
-	$result_open = $zip->open($dossier_import.$fichier_upload_nom);
-	if($result_open!==true)
+	$code_erreur = unzip( $dossier_import.$fichier_upload_nom , $dossier_temp , TRUE /*use_ZipArchive*/ );
+	if($code_erreur)
 	{
 		require('./_inc/tableau_zip_error.php');
-		exit('<li><label class="alerte">Erreur : votre archive ZIP n\'a pas pu être ouverte ('.$result_open.$tab_zip_error[$result_open].') !</label></li>');
+		exit('<li><label class="alerte">Erreur : votre archive ZIP n\'a pas pu être ouverte ('.$code_erreur.$tab_zip_error[$code_erreur].') !</label></li>');
 	}
-	$zip->extractTo($dossier_temp);
-	$zip->close();
 	unlink($dossier_import.$fichier_upload_nom);
 	// Vérifier le contenu : noms des fichiers
 	$fichier_taille_maximale = verifier_dossier_decompression_sauvegarde($dossier_temp);

@@ -27,7 +27,9 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 
-$tab_base_id = (isset($_POST['f_listing_id'])) ? array_filter( array_map( 'clean_entier' , explode(',',$_POST['f_listing_id']) ) , 'positif' ) : array() ;
+// Transmis en tableau pour la newsletter, mais en chaine pour la suppression
+$tab_base_id = (isset($_POST['f_base'])) ? ( (is_array($_POST['f_base'])) ? $_POST['f_base'] : explode(',',$_POST['f_base']) ) : array() ;
+$tab_base_id = array_filter( array_map( 'clean_entier' , $tab_base_id ) , 'positif' );
 $nb_bases    = count($tab_base_id);
 
 $action  = (isset($_POST['f_action']))  ? clean_texte($_POST['f_action'])  : '';
@@ -49,7 +51,7 @@ if( ($action=='envoyer') && $titre && $contenu && $nb_bases )
 	$_SESSION['tmp']['contenu'] = $contenu ;
 	// Mémoriser en session les données des contacts concernés par la lettre
 	$_SESSION['tmp']['infos'] = array();
-	$DB_TAB = DB_WEBMESTRE_lister_contacts_cibles( implode(',',$tab_base_id) );
+	$DB_TAB = DB_WEBMESTRE_WEBMESTRE::DB_lister_contacts_cibles( implode(',',$tab_base_id) );
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$_SESSION['tmp']['infos'][] = array(
@@ -105,7 +107,7 @@ if( ($action=='supprimer') && $nb_bases )
 {
 	foreach($tab_base_id as $base_id)
 	{
-		DB_WEBMESTRE_supprimer_multi_structure($base_id);
+		supprimer_multi_structure($base_id);
 	}
 	exit('<ok>');
 }

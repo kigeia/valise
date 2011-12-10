@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = ''; // Pas de titre pour que le logo s'affiche à la place
-$VERSION_JS_FILE += 11;
 
 // Lecture d'un cookie sur le poste client servant à retenir le dernier établissement sélectionné si identification avec succès
 $BASE = (isset($_COOKIE[COOKIE_STRUCTURE])) ? clean_entier($_COOKIE[COOKIE_STRUCTURE]) : 0 ;
@@ -38,20 +37,8 @@ $profil = (isset($_GET['webmestre'])) ? 'webmestre' : 'normal' ;
 // Bascule profil webmestre / profils autres
 $liens_autres_profils = ($profil=='normal') ? '<a class="anti_h2" href="index.php?webmestre">profil webmestre</a>' : '<a class="anti_h2" href="index.php">profils classiques</a>' ;
 
-// Fichiers temporaires à effacer
-// Il y a ausi les sous-dossier de './__tmp/badge/' + './__tmp/cookie/' + './__tmp/rss/' traités ailleurs.
-// On fait en sorte que plusieurs utilisateurs ne lancent pas le nettoyage simultanément (sinon on trouve qqs warning php dans les logs)
-$fichier_lock = './__tmp/lock.txt';
-if(!file_exists($fichier_lock))
-{
-	Ecrire_Fichier($fichier_lock,'');
-	effacer_fichiers_temporaires('./__tmp/login-mdp' ,     10); // Nettoyer ce dossier des fichiers antérieurs à 10 minutes
-	effacer_fichiers_temporaires('./__tmp/export'    ,     60); // Nettoyer ce dossier des fichiers antérieurs à 1 heure
-	effacer_fichiers_temporaires('./__tmp/dump-base' ,     60); // Nettoyer ce dossier des fichiers antérieurs à 1 heure
-	effacer_fichiers_temporaires('./__tmp/import'    ,  10080); // Nettoyer ce dossier des fichiers antérieurs à 1 semaine
-	unlink($fichier_lock);
-}
-
+// Alerte si pas de javascript activé
+echo'<noscript><hr /><div class="danger">Vous devez activer le javascript dans votre navigateur pour utiliser <em>SACoche</em>.</div></noscript>';
 
 // Alerte non déconnexion de l'ENT si deconnexion de SACoche depuis un compte connecté via un ENT
 if( (isset($_COOKIE[COOKIE_STRUCTURE])) && (isset($_COOKIE[COOKIE_AUTHMODE])) && ($_COOKIE[COOKIE_AUTHMODE]!='normal') )

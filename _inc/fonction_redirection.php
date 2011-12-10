@@ -26,17 +26,6 @@
  */
 
 /*
- * Déclarations d'en-tête d'une page HTML (avant la section <head></head>).
- */
-function entete()
-{
-	header('Content-Type: text/html; charset='.CHARSET);
-	echo'<?xml version="1.0" encoding="'.CHARSET.'"?>';
-	echo'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">';
-	echo'<html xml:lang="fr" xmlns="http://www.w3.org/1999/xhtml">';
-}
-
-/*
  * Afficher une page HTML avec un message explicatif et un lien pour retourner en page d'accueil (si AJAX, renvoyer juste un message).
  * 
  * @param string $titre     titre de la page
@@ -48,8 +37,10 @@ function affich_message_exit($titre,$contenu,$lien='')
 {
 	if(SACoche=='index')
 	{
-		entete();
-		echo'<head><title>SACoche » '.$titre.'</title><meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'" /></head>';
+		header('Content-Type: text/html; charset='.CHARSET);
+		echo'<!DOCTYPE html>';
+		echo'<html>';
+		echo'<head><meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'" /><title>SACoche » '.$titre.'</title></head>';
 		echo'<body style="background:#EAEAFF;font:15px sans-serif;color:#D00">';
 		echo'<p>'.$contenu.'</p>';
 		echo ($lien) ? '<p>'.$lien.'</p>' : '<p><a href="./index.php">Retour en page d\'accueil de SACoche.</a></p>' ;
@@ -130,27 +121,26 @@ function redirection_immediate($adresse='index.php')
  */
 function tester_blocage_application($BASE,$demande_connexion_profil)
 {
-	global $CHEMIN_CONFIG;
 	// Blocage demandé par le webmestre pour tous les établissements (multi-structures) ou pour l'établissement (mono-structure).
-	$fichier_blocage = $CHEMIN_CONFIG.'blocage_webmestre_0.txt';
+	$fichier_blocage = CHEMIN_CONFIG.'blocage_webmestre_0.txt';
 	if( (is_file($fichier_blocage)) && ($_SESSION['USER_PROFIL']!='webmestre') && (($_SESSION['USER_PROFIL']!='public')||($demande_connexion_profil!=false)) )
 	{
 		affich_message_exit($titre='Blocage par le webmestre',$contenu='Blocage par le webmestre - '.file_get_contents($fichier_blocage) );
 	}
 	// Blocage demandé par le webmestre pour un établissement donné (multi-structures).
-	$fichier_blocage = $CHEMIN_CONFIG.'blocage_webmestre_'.$BASE.'.txt';
+	$fichier_blocage = CHEMIN_CONFIG.'blocage_webmestre_'.$BASE.'.txt';
 	if( (is_file($fichier_blocage)) && ($_SESSION['USER_PROFIL']!='webmestre') && (($_SESSION['USER_PROFIL']!='public')||($demande_connexion_profil!=false)) )
 	{
 		affich_message_exit($titre='Blocage par le webmestre',$contenu='Blocage par le webmestre - '.file_get_contents($fichier_blocage) );
 	}
 	// Blocage demandé par un administrateur pour son établissement.
-	$fichier_blocage = $CHEMIN_CONFIG.'blocage_administrateur_'.$BASE.'.txt';
+	$fichier_blocage = CHEMIN_CONFIG.'blocage_administrateur_'.$BASE.'.txt';
 	if( (is_file($fichier_blocage)) && (!in_array($_SESSION['USER_PROFIL'],array('webmestre','administrateur'))) && (($_SESSION['USER_PROFIL']!='public')||(!in_array($demande_connexion_profil,array(FALSE,'webmestre','administrateur')))) )
 	{
 		affich_message_exit($titre='Blocage par un administrateur',$contenu='Blocage par un administrateur - '.file_get_contents($fichier_blocage) );
 	}
 	// Blocage demandé par l'automate pour un établissement donné.
-	$fichier_blocage = $CHEMIN_CONFIG.'blocage_automate_'.$BASE.'.txt';
+	$fichier_blocage = CHEMIN_CONFIG.'blocage_automate_'.$BASE.'.txt';
 	if( (is_file($fichier_blocage)) && (!in_array($_SESSION['USER_PROFIL'],array('webmestre','administrateur'))) && (($_SESSION['USER_PROFIL']!='public')||(!in_array($demande_connexion_profil,array(FALSE,'webmestre','administrateur')))) )
 	{
 		// Au cas où une procédure de sauvegarde / restauration / nettoyage / tranfert échouerait, un fichier de blocage automatique pourrait être créé et ne pas être effacé.

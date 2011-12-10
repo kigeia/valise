@@ -55,9 +55,7 @@ function version_php()
 
 function version_mysql()
 {
-	$HOST = defined('SACOCHE_STRUCTURE_BD_NAME') ? SACOCHE_STRUCTURE_BD_NAME : SACOCHE_WEBMESTRE_BD_NAME ;
-	// Avec une connexion classique style mysql_connect() on peut utiliser mysql_get_server_info() .
-	$version = DB::queryOne($HOST , 'SELECT VERSION()');
+	$version = defined('SACOCHE_STRUCTURE_BD_NAME') ? DB_STRUCTURE_COMMUN::DB_recuperer_version_MySQL() : DB_WEBMESTRE_PUBLIC::DB_recuperer_version_MySQL() ;
 	$fin = strpos($version,'-');
 	return ($fin) ? substr($version,0,$fin) : $version;
 }
@@ -204,8 +202,7 @@ function minimum_limitations_upload()
 
 function max_allowed_packet()
 {
-	$HOST = defined('SACOCHE_STRUCTURE_BD_NAME') ? SACOCHE_STRUCTURE_BD_NAME : SACOCHE_WEBMESTRE_BD_NAME ;
-	$DB_ROW = DB::queryRow($HOST , 'SHOW VARIABLES LIKE "max_allowed_packet"');
+	$DB_ROW = defined('SACOCHE_STRUCTURE_BD_NAME') ? DB_STRUCTURE_COMMUN::DB_recuperer_variable_MySQL('max_allowed_packet') : DB_WEBMESTRE_PUBLIC::DB_recuperer_variable_MySQL('max_allowed_packet') ;
 	$val = $DB_ROW['Value'];
 	return number_format($val,0,'',' ');
 }
@@ -221,8 +218,7 @@ function max_allowed_packet()
 
 function max_user_connections()
 {
-	$HOST = defined('SACOCHE_STRUCTURE_BD_NAME') ? SACOCHE_STRUCTURE_BD_NAME : SACOCHE_WEBMESTRE_BD_NAME ;
-	$DB_ROW = DB::queryRow($HOST , 'SHOW VARIABLES LIKE "max_user_connections"');
+	$DB_ROW = defined('SACOCHE_STRUCTURE_BD_NAME') ? DB_STRUCTURE_COMMUN::DB_recuperer_variable_MySQL('max_user_connections') : DB_WEBMESTRE_PUBLIC::DB_recuperer_variable_MySQL('max_user_connections') ;
 	$val = $DB_ROW['Value'];
 	return ($val) ? $val : '<b>&infin;</b>' ;
 }
@@ -239,8 +235,7 @@ function max_user_connections()
 
 function group_concat_max_len()
 {
-	$HOST = defined('SACOCHE_STRUCTURE_BD_NAME') ? SACOCHE_STRUCTURE_BD_NAME : SACOCHE_WEBMESTRE_BD_NAME ;
-	$DB_ROW = DB::queryRow($HOST , 'SHOW VARIABLES LIKE "group_concat_max_len"');
+	$DB_ROW = defined('SACOCHE_STRUCTURE_BD_NAME') ? DB_STRUCTURE_COMMUN::DB_recuperer_variable_MySQL('group_concat_max_len') : DB_WEBMESTRE_PUBLIC::DB_recuperer_variable_MySQL('group_concat_max_len') ;
 	$val = $DB_ROW['Value'];
 	return number_format($val,0,'',' ');
 }
@@ -291,7 +286,7 @@ function tableau_versions_logicielles()
 {
 	global $tab_commentaires;
 	return'
-		<table>
+		<table class="p">
 			<thead>
 				<tr><th colspan="2">Versions logicielles</th></tr>
 			</thead>
@@ -309,7 +304,7 @@ function tableau_limitations_PHP()
 {
 	global $tab_commentaires;
 	return'
-		<table>
+		<table class="p">
 			<thead>
 				<tr><th colspan="2">Réglage des limitations PHP</th></tr>
 			</thead>
@@ -327,7 +322,7 @@ function tableau_limitations_MySQL()
 {
 	global $tab_commentaires;
 	return'
-		<table>
+		<table class="p">
 			<thead>
 				<tr><th colspan="2">Réglage des limitations MySQL</th></tr>
 			</thead>
@@ -360,7 +355,7 @@ function tableau_modules_PHP($nb_lignes)
 		$lignes .= '</tr>';
 	}
 	return'
-		<table>
+		<table class="p">
 			<thead>
 				<tr><th colspan="'.$nb_colonnes.'">Modules PHP compilés et chargés <img alt="" title="'.$tab_commentaires['modules_PHP'].'" src="./_img/bulle_aide.png" /></th></tr>
 			</thead>
@@ -374,7 +369,7 @@ function tableau_modules_PHP($nb_lignes)
 function tableau_serveur_et_client()
 {
 	return'
-		<table>
+		<table class="p">
 			<tbody>
 				<tr><th>Identification du serveur</th><td class="hc">'.$_SERVER['SERVER_SOFTWARE'].' &lt;'.SERVEUR_ADRESSE.'&gt;</td></tr>
 				<tr><th>Identification du client</th><td class="hc">'.$_SERVER['HTTP_USER_AGENT'].'</td></tr>

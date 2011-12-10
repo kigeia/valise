@@ -41,7 +41,7 @@ $(document).ready
 		var nb_lignes   = 1;
 		// tri du tableau (avec jquery.tablesorter.js).
 		var sorting = [[0,1],[3,0]];
-		$('table.form').tablesorter({ headers:{1:{sorter:false},2:{sorter:false},4:{sorter:false},5:{sorter:false}} });
+		$('table.form').tablesorter({ headers:{1:{sorter:false},2:{sorter:false},4:{sorter:false},5:{sorter:false},6:{sorter:false}} });
 		function trier_tableau()
 		{
 			if($('table.form tbody tr td').length>1)
@@ -73,6 +73,7 @@ $(document).ready
 			new_tr += '<td><input id="f_eleve_nombre" name="f_eleve_nombre" size="10" type="text" value="0 élève" readonly /><input id="f_eleve_liste" name="f_eleve_liste" type="hidden" value="" /><q class="choisir_eleve" title="Voir ou choisir les élèves."></q></td>';
 			new_tr += '<td><input id="f_info" name="f_info" size="20" type="text" value="" /></td>';
 			new_tr += '<td><input id="f_compet_nombre" name="f_compet_nombre" size="10" type="text" value="0 item" readonly /><input id="f_compet_liste" name="f_compet_liste" type="hidden" value="" /><q class="choisir_compet" title="Voir ou choisir les items."></q></td>';
+			new_tr += '<td><input id="f_prof_nombre" name="f_prof_nombre" size="10" type="text" value="moi seul" readonly /><input id="f_prof_liste" name="f_prof_liste" type="hidden" value="" /><q class="choisir_prof" title="Voir ou choisir les collègues."></q></td>';
 			new_tr += '<td class="nu"><input id="f_action" name="f_action" type="hidden" value="'+mode+'" /><q class="valider" title="Valider l\'ajout de cette évaluation."></q><q class="annuler" title="Annuler l\'ajout de cette évaluation."></q> <label id="ajax_msg">&nbsp;</label></td>';
 			new_tr += '</tr>';
 			// Ajouter cette nouvelle ligne
@@ -90,16 +91,17 @@ $(document).ready
 			mode = $(this).attr('class');
 			afficher_masquer_images_action('hide');
 			$('#form0').css('visibility','hidden');
-			$('#p_alerte').show();
 			// Récupérer les informations de la ligne concernée
 			var ref           = $(this).parent().attr('lang');
-			var date          = $(this).parent().prev().prev().prev().prev().prev().html();
-			var date_visible  = $(this).parent().prev().prev().prev().prev().html();
-			var nombre_eleve  = $(this).parent().prev().prev().prev().html();
-			var liste_eleve   = $(this).parent().prev().prev().prev().attr('lang');
-			var info          = $(this).parent().prev().prev().html();
-			var nombre_compet = $(this).parent().prev().html();
-			var liste_compet  = $(this).parent().prev().attr('lang');
+			var date          = $(this).parent().prev().prev().prev().prev().prev().prev().html();
+			var date_visible  = $(this).parent().prev().prev().prev().prev().prev().html();
+			var eleve_nombre  = $(this).parent().prev().prev().prev().prev().html();
+			var eleve_liste   = $(this).parent().prev().prev().prev().prev().attr('lang');
+			var info          = $(this).parent().prev().prev().prev().html();
+			var compet_nombre = $(this).parent().prev().prev().html();
+			var compet_liste  = $(this).parent().prev().prev().attr('lang');
+			var prof_nombre   = $(this).parent().prev().html();
+			var prof_liste    = $(this).parent().prev().attr('lang');
 			date = date.substring(17,date.length); // enlever la date mysql cachée
 			if(date_visible=='identique')
 			{
@@ -119,9 +121,10 @@ $(document).ready
 			new_tr += '<tr>';
 			new_tr += '<td><input id="f_date" name="f_date" size="9" type="text" value="'+date+'" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q></td>';
 			new_tr += '<td><input id="box_date" type="checkbox"'+checked+' style="vertical-align:-3px" /> <span'+classe1+' style="vertical-align:-2px">identique</span><span'+classe2+'><input id="f_date_visible" name="f_date_visible" size="9" type="text" value="'+date_visible+'" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q></span></td>';
-			new_tr += '<td><input id="f_eleve_nombre" name="f_eleve_nombre" size="10" type="text" value="'+nombre_eleve+'" readonly /><input id="f_eleve_liste" name="f_eleve_liste" type="hidden" value="'+liste_eleve+'" /><q class="choisir_eleve" title="Voir ou choisir les élèves."></q></td>';
-			new_tr += '<td><input id="f_info" name="f_info" size="'+Math.max(info.length,20)+'" type="text" value="'+info+'" /></td>';
-			new_tr += '<td><input id="f_compet_nombre" name="f_compet_nombre" size="10" type="text" value="'+nombre_compet+'" readonly /><input id="f_compet_liste" name="f_compet_liste" type="hidden" value="'+liste_compet+'" /><q class="choisir_compet" title="Voir ou choisir les items."></q></td>';
+			new_tr += '<td><input id="f_eleve_nombre" name="f_eleve_nombre" size="10" type="text" value="'+eleve_nombre+'" readonly /><input id="f_eleve_liste" name="f_eleve_liste" type="hidden" value="'+eleve_liste+'" /><q class="choisir_eleve" title="Voir ou choisir les élèves."></q></td>';
+			new_tr += '<td><input id="f_info" name="f_info" size="'+Math.max(info.length,20)+'" type="text" value="'+escapeQuote(info)+'" /></td>';
+			new_tr += '<td><input id="f_compet_nombre" name="f_compet_nombre" size="10" type="text" value="'+compet_nombre+'" readonly /><input id="f_compet_liste" name="f_compet_liste" type="hidden" value="'+compet_liste+'" /><q class="choisir_compet" title="Voir ou choisir les items."></q></td>';
+			new_tr += '<td><input id="f_prof_nombre" name="f_prof_nombre" size="10" type="text" value="'+prof_nombre+'" readonly /><input id="f_prof_liste" name="f_prof_liste" type="hidden" value="'+prof_liste+'" /><q class="choisir_prof" title="Voir ou choisir les collègues."></q></td>';
 			new_tr += '<td class="nu"><input id="f_action" name="f_action" type="hidden" value="'+mode+'" /><input id="f_ref" name="f_ref" type="hidden" value="'+ref+'" /><q class="valider" title="Valider les modifications de cette évaluation."></q><q class="annuler" title="Annuler les modifications de cette évaluation."></q> <label id="ajax_msg">&nbsp;</label></td>';
 			new_tr += '</tr>';
 			// Cacher la ligne en cours et ajouter la nouvelle
@@ -142,13 +145,15 @@ $(document).ready
 			$('#form0').css('visibility','hidden');
 			// Récupérer les informations de la ligne concernée
 			var ref           = $(this).parent().attr('lang');
-			var date          = $(this).parent().prev().prev().prev().prev().prev().html();
-			var date_visible  = $(this).parent().prev().prev().prev().prev().html();
-			var nombre_eleve  = $(this).parent().prev().prev().prev().html();
-			var liste_eleve   = $(this).parent().prev().prev().prev().attr('lang');
-			var info          = $(this).parent().prev().prev().html();
-			var nombre_compet = $(this).parent().prev().html();
-			var liste_compet  = $(this).parent().prev().attr('lang');
+			var date          = $(this).parent().prev().prev().prev().prev().prev().prev().html();
+			var date_visible  = $(this).parent().prev().prev().prev().prev().prev().html();
+			var eleve_nombre  = $(this).parent().prev().prev().prev().prev().html();
+			var eleve_liste   = $(this).parent().prev().prev().prev().prev().attr('lang');
+			var info          = $(this).parent().prev().prev().prev().html();
+			var compet_nombre = $(this).parent().prev().prev().html();
+			var compet_liste  = $(this).parent().prev().prev().attr('lang');
+			var prof_nombre   = $(this).parent().prev().html();
+			var prof_liste    = $(this).parent().prev().attr('lang');
 			date = date.substring(17,date.length); // enlever la date mysql cachée
 			if(date_visible=='identique')
 			{
@@ -168,9 +173,10 @@ $(document).ready
 			new_tr += '<tr>';
 			new_tr += '<td><input id="f_date" name="f_date" size="9" type="text" value="'+date+'" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q></td>';
 			new_tr += '<td><input id="box_date" type="checkbox"'+checked+' style="vertical-align:-3px" /> <span'+classe1+' style="vertical-align:-2px">identique</span><span'+classe2+'><input id="f_date_visible" name="f_date_visible" size="9" type="text" value="'+date_visible+'" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q></span></td>';
-			new_tr += '<td><input id="f_eleve_nombre" name="f_eleve_nombre" size="10" type="text" value="'+nombre_eleve+'" readonly /><input id="f_eleve_liste" name="f_eleve_liste" type="hidden" value="'+liste_eleve+'" /><q class="choisir_eleve" title="Voir ou choisir les élèves."></q></td>';
-			new_tr += '<td><input id="f_info" name="f_info" size="'+Math.max(info.length,20)+'" type="text" value="'+info+'" /></td>';
-			new_tr += '<td><input id="f_compet_nombre" name="f_compet_nombre" size="10" type="text" value="'+nombre_compet+'" readonly /><input id="f_compet_liste" name="f_compet_liste" type="hidden" value="'+liste_compet+'" /><q class="choisir_compet" title="Voir ou choisir les items."></q></td>';
+			new_tr += '<td><input id="f_eleve_nombre" name="f_eleve_nombre" size="10" type="text" value="'+eleve_nombre+'" readonly /><input id="f_eleve_liste" name="f_eleve_liste" type="hidden" value="'+eleve_liste+'" /><q class="choisir_eleve" title="Voir ou choisir les élèves."></q></td>';
+			new_tr += '<td><input id="f_info" name="f_info" size="'+Math.max(info.length,20)+'" type="text" value="'+escapeQuote(info)+'" /></td>';
+			new_tr += '<td><input id="f_compet_nombre" name="f_compet_nombre" size="10" type="text" value="'+compet_nombre+'" readonly /><input id="f_compet_liste" name="f_compet_liste" type="hidden" value="'+compet_liste+'" /><q class="choisir_compet" title="Voir ou choisir les items."></q></td>';
+			new_tr += '<td><input id="f_prof_nombre" name="f_prof_nombre" size="10" type="text" value="'+prof_nombre+'" readonly /><input id="f_prof_liste" name="f_prof_liste" type="hidden" value="'+prof_liste+'" /><q class="choisir_prof" title="Voir ou choisir les collègues."></q></td>';
 			new_tr += '<td class="nu"><input id="f_action" name="f_action" type="hidden" value="'+mode+'" /><input id="f_ref" name="f_ref" type="hidden" value="'+ref+'" /><q class="valider" title="Valider l\'ajout de cette évaluation."></q><q class="annuler" title="Annuler l\'ajout de cette évaluation."></q> <label id="ajax_msg">&nbsp;</label></td>';
 			new_tr += '</tr>';
 			// Ajouter cette nouvelle ligne
@@ -203,14 +209,14 @@ $(document).ready
 			mode = $(this).attr('class');
 			// Récupérer les informations de la ligne concernée
 			var ref    = $(this).parent().attr('lang');
-			var date   = $(this).parent().prev().prev().prev().prev().prev().html();
-			var groupe = $(this).parent().prev().prev().prev().html();
-			var info   = $(this).parent().prev().prev().html();
+			var date   = $(this).parent().prev().prev().prev().prev().prev().prev().html();
+			var groupe = $(this).parent().prev().prev().prev().prev().html();
+			var info   = $(this).parent().prev().prev().prev().html();
 			    date   = date.substring(17,date.length); // garder la date française
 			// Masquer le tableau et Afficher la zone associée
 			$('#form0 , #form1').hide('fast');
 			$('#zone_imprimer').css("display","block");
-			$('#titre_imprimer').html('Imprimer le cartouche d\'une évaluation | '+groupe+' | '+info+'<input id="f_ref" name="f_ref" type="hidden" value="'+ref+'" /><input id="f_date" name="f_date" type="hidden" value="'+date+'" /><input id="f_info" name="f_info" type="hidden" value="'+info+'" />');
+			$('#titre_imprimer').html('Imprimer le cartouche d\'une évaluation | '+groupe+' | '+info+'<input id="f_ref" name="f_ref" type="hidden" value="'+ref+'" /><input id="f_date" name="f_date" type="hidden" value="'+date+'" /><input id="f_info" name="f_info" type="hidden" value="'+escapeQuote(info)+'" />');
 		};
 
 		/**
@@ -229,7 +235,6 @@ $(document).ready
 				case 'modifier':
 					$(this).parent().parent().remove();
 					$("table.form tr").show(); // $(this).parent().parent().prev().show(); pose pb si tri du tableau entre temps
-					$('#p_alerte').hide();
 					break;
 				case 'supprimer':
 					$(this).parent().remove();
@@ -268,9 +273,11 @@ $(document).ready
 			mode = $(this).attr('class');
 			// Récupérer les informations de la ligne concernée
 			var ref          = $(this).parent().attr('lang');
-			var date         = $(this).parent().prev().prev().prev().prev().prev().html();
-			var date_visible = $(this).parent().prev().prev().prev().prev().html();
-			var info         = $(this).parent().prev().prev().html();
+			var date         = $(this).parent().prev().prev().prev().prev().prev().prev().html();
+			var date_visible = $(this).parent().prev().prev().prev().prev().prev().html();
+			var info         = $(this).parent().prev().prev().prev().html();
+			var objet_date   = new Date();
+			var timestamp    = parseInt(objet_date.getTime()/1000); // timestamp pour éviter les pbs de mise en cache de PDF de mêmes noms
 			date1 = date.substring(3,13); // garder la date mysql
 			date2 = date.substring(17,date.length); // garder la date française
 			// Masquer le tableau ; Afficher la zone associée et charger son contenu
@@ -278,17 +285,17 @@ $(document).ready
 			$('#msg_import').removeAttr("class").html('&nbsp;');
 			$('#zone_saisir').css("display","block");
 			$('#titre_saisir').html('Saisir les acquisitions d\'une évaluation | '+date2+' | '+info);
-			$('#msg_saisir').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+			$('#msg_saisir').removeAttr("class").addClass("loader").html("Demande envoyée...");
 			$.ajax
 			(
 				{
 					type : 'POST',
 					url : 'ajax.php?page='+PAGE,
-					data : 'f_action='+mode+'&f_ref='+ref+'&f_date='+date1+'&f_info='+info+'&f_date_visible='+date_visible+'&f_descriptif='+'Élèves sélectionnés'+':::'+info+':::'+date2,
+					data : 'f_action='+mode+'&f_ref='+ref+'&timestamp='+timestamp+'&f_date='+date1+'&f_info='+info+'&f_date_visible='+date_visible+'&f_descriptif='+'Élèves sélectionnés'+':::'+info+':::'+date2,
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#msg_saisir').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer. <button id="fermer_zone_saisir" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>');
+						$('#msg_saisir').removeAttr("class").addClass("alerte").html('Echec de la connexion ! <button id="fermer_zone_saisir" type="button" class="retourner">Retour</button>');
 						return false;
 					},
 					success : function(responseHTML)
@@ -296,7 +303,7 @@ $(document).ready
 						initialiser_compteur();
 						if(responseHTML.substring(0,1)!='<')
 						{
-							$('#msg_saisir').removeAttr("class").addClass("alerte").html(responseHTML+' <button id="fermer_zone_saisir" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>');
+							$('#msg_saisir').removeAttr("class").addClass("alerte").html(responseHTML+' <button id="fermer_zone_saisir" type="button" class="retourner">Retour</button>');
 						}
 						else
 						{
@@ -305,8 +312,8 @@ $(document).ready
 							$('#table_saisir').html(responseHTML);
 							$('#table_saisir tbody tr th img').hide(0);
 							$('img[title]').tooltip({showURL:false});
-							$('#export_file1').attr("href", $("#filename").val()+ref+'.zip' );
-							$('#export_file4').attr("href", $("#filename").val()+ref+'_sans_notes.pdf' );
+							$('#export_file1').attr("href", $("#filename").val()+ref+'_'+timestamp+'.zip' );
+							$('#export_file4').attr("href", $("#filename").val()+ref+'_'+timestamp+'_sans_notes.pdf' );
 							colorer_cellules();
 							format_liens('#table_saisir');
 							infobulle();
@@ -332,24 +339,26 @@ $(document).ready
 			mode = $(this).attr('class');
 			// Récupérer les informations de la ligne concernée
 			var ref  = $(this).parent().attr('lang');
-			var date = $(this).parent().prev().prev().prev().prev().prev().html();
-			var info = $(this).parent().prev().prev().html();
+			var date = $(this).parent().prev().prev().prev().prev().prev().prev().html();
+			var info = $(this).parent().prev().prev().prev().html();
 			    date = date.substring(17,date.length); // garder la date française
+			var objet_date = new Date();
+			var timestamp  = parseInt(objet_date.getTime()/1000); // timestamp pour éviter les pbs de mise en cache de PDF de mêmes noms
 			// Masquer le tableau ; Afficher la zone associée et charger son contenu
 			$('#form0 , #form1').hide('fast');
 			$('#zone_voir').css("display","block");
 			$('#titre_voir').html('Voir les acquisitions d\'une évaluation | '+date+' | '+info);
-			$('#msg_voir').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+			$('#msg_voir').removeAttr("class").addClass("loader").html("Demande envoyée...");
 			$.ajax
 			(
 				{
 					type : 'POST',
 					url : 'ajax.php?page='+PAGE,
-					data : 'f_action='+mode+'&f_ref='+ref+'&f_date='+date+'&f_descriptif='+'Élèves sélectionnés'+':::'+info+':::'+date,
+					data : 'f_action='+mode+'&f_ref='+ref+'&timestamp='+timestamp+'&f_date='+date+'&f_descriptif='+'Élèves sélectionnés'+':::'+info+':::'+date,
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#msg_voir').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer. <button id="fermer_zone_voir" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>');
+						$('#msg_voir').removeAttr("class").addClass("alerte").html('Echec de la connexion ! <button id="fermer_zone_voir" type="button" class="retourner">Retour</button>');
 						return false;
 					},
 					success : function(responseHTML)
@@ -357,16 +366,16 @@ $(document).ready
 						initialiser_compteur();
 						if(responseHTML.substring(0,1)!='<')
 						{
-							$('#msg_voir').removeAttr("class").addClass("alerte").html(responseHTML+' <button id="fermer_zone_voir" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>');
+							$('#msg_voir').removeAttr("class").addClass("alerte").html(responseHTML+' <button id="fermer_zone_voir" type="button" class="retourner">Retour</button>');
 						}
 						else
 						{
 							$('#msg_voir').removeAttr("class").html('&nbsp;');
 							$('#table_voir').html(responseHTML);
 							$('#table_voir tbody tr th img').hide(0);
-							$('#export_file2').attr("href", $("#filename").val()+ref+'.zip' );
-							$('#export_file3').attr("href", $("#filename").val()+ref+'_sans_notes.pdf' );
-							$('#export_file5').attr("href", $("#filename").val()+ref+'_avec_notes.pdf' );
+							$('#export_file2').attr("href", $("#filename").val()+ref+'_'+timestamp+'.zip' );
+							$('#export_file3').attr("href", $("#filename").val()+ref+'_'+timestamp+'_sans_notes.pdf' );
+							$('#export_file5').attr("href", $("#filename").val()+ref+'_'+timestamp+'_avec_notes.pdf' );
 							$('#table_voir tbody td').css({"background-color":"#DDF","text-align":"center","vertical-align":"middle","font-size":"110%"});
 							infobulle();
 						}
@@ -384,24 +393,25 @@ $(document).ready
 			mode = $(this).attr('class');
 			// Récupérer les informations de la ligne concernée
 			var ref  = $(this).parent().attr('lang');
-			var date = $(this).parent().prev().prev().prev().prev().prev().html();
-			var info = $(this).parent().prev().prev().html();
+			var date = $(this).parent().prev().prev().prev().prev().prev().prev().html();
+			var info = $(this).parent().prev().prev().prev().html();
 			    date = date.substring(17,date.length); // garder la date française
-			// Masquer le tableau ; Afficher la zone associée et charger son contenu
+			var objet_date = new Date();
+			var timestamp  = parseInt(objet_date.getTime()/1000); // timestamp pour éviter les pbs de mise en cache de PDF de mêmes noms
 			$('#form0 , #form1').hide('fast');
 			$('#zone_voir_repart').css("display","block");
 			$('#titre_voir_repart').html('Voir les répartitions des élèves à une évaluation | '+date+' | '+info);
-			$('#msg_voir_repart').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+			$('#msg_voir_repart').removeAttr("class").addClass("loader").html("Demande envoyée...");
 			$.ajax
 			(
 				{
 					type : 'POST',
 					url : 'ajax.php?page='+PAGE,
-					data : 'f_action='+mode+'&f_ref='+ref+'&f_date='+date+'&f_descriptif='+'Élèves sélectionnés'+':::'+info+':::'+date,
+					data : 'f_action='+mode+'&f_ref='+ref+'&timestamp='+timestamp+'&f_date='+date+'&f_descriptif='+'Élèves sélectionnés'+':::'+info+':::'+date,
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#msg_voir_repart').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer. <button id="fermer_zone_voir_repart" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>');
+						$('#msg_voir_repart').removeAttr("class").addClass("alerte").html('Echec de la connexion ! <button id="fermer_zone_voir_repart" type="button" class="retourner">Retour</button>');
 						return false;
 					},
 					success : function(responseHTML)
@@ -410,15 +420,15 @@ $(document).ready
 						tab_response = responseHTML.split('<SEP>');
 						if( tab_response.length!=2 )
 						{
-							$('#msg_voir_repart').removeAttr("class").addClass("alerte").html(responseHTML+' <button id="fermer_zone_voir_repart" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>');
+							$('#msg_voir_repart').removeAttr("class").addClass("alerte").html(responseHTML+' <button id="fermer_zone_voir_repart" type="button" class="retourner">Retour</button>');
 						}
 						else
 						{
-							$('#msg_voir_repart').removeAttr("class").html('<button id="fermer_zone_voir_repart" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>');
+							$('#msg_voir_repart').removeAttr("class").html('<button id="fermer_zone_voir_repart" type="button" class="retourner">Retour</button>');
 							$('#table_voir_repart1').html(tab_response[0]);
 							$('#table_voir_repart2').html(tab_response[1]);
-							$('#export_file6').attr("href", $("#filename").val()+ref+'_repartition_quantitative.pdf' );
-							$('#export_file7').attr("href", $("#filename").val()+ref+'_repartition_nominative.pdf' );
+							$('#export_file6').attr("href", $("#filename").val()+ref+'_'+timestamp+'_repartition_quantitative.pdf' );
+							$('#export_file7').attr("href", $("#filename").val()+ref+'_'+timestamp+'_repartition_nominative.pdf' );
 							$('#table_voir_repart1 tbody td').css({"background-color":"#DDF","font-weight":"normal","text-align":"center"});
 							$('#table_voir_repart2 tbody td').css({"background-color":"#DDF","font-weight":"normal","font-size":"85%"});
 							infobulle();
@@ -435,9 +445,7 @@ $(document).ready
 		var choisir_compet = function()
 		{
 			// Ne pas changer ici la valeur de "mode" (qui est à "ajouter" ou "modifier" ou "dupliquer").
-			$('#form0 , #form1').hide('fast');
 			$('#zone_compet ul').css("display","none");
-			$('#zone_compet').css("display","block");
 			$('#zone_compet ul.ul_m1').css("display","block");
 			var liste = $('#f_compet_liste').val();
 			// Décocher tout
@@ -465,6 +473,8 @@ $(document).ready
 					}
 				}
 			}
+			// Afficher la zone
+			$.fancybox( { 'href':'#zone_compet' , onStart:function(){$('#zone_compet').css("display","block");} , onClosed:function(){$('#zone_compet').css("display","none");} , 'modal':true , 'centerOnScroll':true } );
 		};
 
 		/**
@@ -474,9 +484,7 @@ $(document).ready
 		var choisir_eleve = function()
 		{
 			// Ne pas changer ici la valeur de "mode" (qui est à "ajouter" ou "modifier" ou "dupliquer").
-			$('#form0 , #form1').hide('fast');
 			$('#zone_eleve ul').css("display","none");
-			$('#zone_eleve').css("display","block");
 			$('#zone_eleve ul.ul_m1').css("display","block");
 			var liste = $('#f_eleve_liste').val();
 			// Décocher tout
@@ -501,6 +509,8 @@ $(document).ready
 					}
 				}
 			}
+			// Afficher la zone
+			$.fancybox( { 'href':'#zone_eleve' , onStart:function(){$('#zone_eleve').css("display","block");} , onClosed:function(){$('#zone_eleve').css("display","none");} , 'modal':true , 'centerOnScroll':true } );
 		};
 
 		/**
@@ -512,13 +522,13 @@ $(document).ready
 			mode = $(this).attr('class');
 			// Récupérer les informations de la ligne concernée
 			var ref    = $(this).parent().attr('lang');
-			var groupe = $(this).parent().prev().prev().prev().html();
-			var info   = $(this).parent().prev().prev().html();
+			var groupe = $(this).parent().prev().prev().prev().prev().html();
+			var info   = $(this).parent().prev().prev().prev().html();
 			// Masquer le tableau ; Afficher la zone associée et charger son contenu
 			$('#form0 , #form1').hide('fast');
 			$('#zone_ordonner').css("display","block");
 			$('#titre_ordonner').html('Réordonner les items d\'une évaluation | '+groupe+' | '+info);
-			$('#msg_ordonner').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+			$('#msg_ordonner').removeAttr("class").addClass("loader").html("Demande envoyée...");
 			$.ajax
 			(
 				{
@@ -528,7 +538,7 @@ $(document).ready
 					dataType : "html",
 					error : function(msg,string)
 					{
-						$('#msg_ordonner').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer. <button id="fermer_zone_ordonner" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>');
+						$('#msg_ordonner').removeAttr("class").addClass("alerte").html('Echec de la connexion ! <button id="fermer_zone_ordonner" type="button" class="retourner">Retour</button>');
 						return false;
 					},
 					success : function(responseHTML)
@@ -536,20 +546,53 @@ $(document).ready
 						initialiser_compteur();
 						if(responseHTML.substring(0,10)!='<div id="i')
 						{
-							$('#msg_ordonner').removeAttr("class").addClass("alerte").html(responseHTML+' <button id="fermer_zone_ordonner" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>');
+							$('#msg_ordonner').removeAttr("class").addClass("alerte").html(responseHTML+' <button id="fermer_zone_ordonner" type="button" class="retourner">Retour</button>');
 						}
 						else
 						{
 							modification = false;
 							$('#msg_ordonner').removeAttr("class").html('&nbsp;');
 							$('#div_ordonner').html(responseHTML);
-							$('img[title]').tooltip({showURL:false});
-							format_liens('#div_ordonner');
-							infobulle();
 						}
 					}
 				}
 			);
+		};
+
+		/**
+		 * Choisir les professeurs associés à une évaluation : mise en place du formulaire
+		 * @return void
+		 */
+		var choisir_prof = function()
+		{
+			// Récupérer les informations de la ligne concernée
+			var prof_liste = $('#f_prof_liste').val();
+			// Décocher tout
+			$("#zone_profs input[type=checkbox]").each
+			(
+				function()
+				{
+					if(this.disabled == false)
+					{
+						this.checked = false;
+					}
+				}
+			);
+			// Cocher des cases des profs
+			if(prof_liste.length)
+			{
+				var tab_id = prof_liste.split('_');
+				for(i in tab_id)
+				{
+					var id = 'p_'+tab_id[i];
+					if($('#'+id).length)
+					{
+						$('#'+id).prop('checked',true);
+					}
+				}
+			}
+			// Afficher la zone
+			$.fancybox( { 'href':'#zone_profs' , onStart:function(){$('#zone_profs').css("display","block");} , onClosed:function(){$('#zone_profs').css("display","none");} , 'modal':true , 'centerOnScroll':true } );
 		};
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
@@ -564,13 +607,35 @@ $(document).ready
 		$('q.valider').live(   'click' , function(){formulaire.submit();} );
 		$('table.form input , table.form select').live( 'keyup' , function(e){intercepter(e);} );
 
-		$('q.ordonner').live(        'click' , ordonner );
-		$('q.imprimer').live(        'click' , imprimer );
-		$('q.saisir').live(          'click' , saisir );
-		$('q.voir').live(            'click' , voir );
-		$('q.voir_repart').live(     'click' , voir_repart );
-		$('q.choisir_compet').live(  'click' , choisir_compet );
-		$('q.choisir_eleve').live(   'click' , choisir_eleve );
+		$('q.ordonner').live(       'click' , ordonner );
+		$('q.imprimer').live(       'click' , imprimer );
+		$('q.saisir').live(         'click' , saisir );
+		$('q.voir').live(           'click' , voir );
+		$('q.voir_repart').live(    'click' , voir_repart );
+		$('q.choisir_compet').live( 'click' , choisir_compet );
+		$('q.choisir_eleve').live(  'click' , choisir_eleve );
+		$('q.choisir_prof').live(   'click' , choisir_prof );
+
+//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+//	Cocher / décocher par lot des individus
+//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+
+		$('#prof_check_all').click
+		(
+			function()
+			{
+				$('.prof_liste').find('input:enabled').prop('checked',true);
+				return false;
+			}
+		);
+		$('#prof_uncheck_all').click
+		(
+			function()
+			{
+				$('.prof_liste').find('input:enabled').prop('checked',false);
+				return false;
+			}
+		);
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur le checkbox pour choisir ou non une date visible différente de la date du devoir
@@ -612,8 +677,7 @@ $(document).ready
 		(
 			function()
 			{
-				$('#zone_compet').css("display","none");
-				$('#form0 , #form1').show('fast');
+				$.fancybox.close();
 				return(false);
 			}
 		);
@@ -625,8 +689,19 @@ $(document).ready
 		(
 			function()
 			{
-				$('#zone_eleve').css("display","none");
-				$('#form0 , #form1').show('fast');
+				$.fancybox.close();
+				return(false);
+			}
+		);
+
+//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+//	Clic sur le bouton pour fermer le cadre des professeurs associés à une évaluation (annuler / retour)
+//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		$('#annuler_profs').click
+		(
+			function()
+			{
+				$.fancybox.close();
 				return(false);
 			}
 		);
@@ -728,7 +803,7 @@ $(document).ready
 				s = (nombre>1) ? 's' : '';
 				$('#f_compet_liste').val(liste);
 				$('#f_compet_nombre').val(nombre+' item'+s);
-				$('#annuler_compet').click();
+				$.fancybox.close();
 			}
 		);
 
@@ -759,7 +834,32 @@ $(document).ready
 				var s = (nombre>1) ? 's' : '';
 				$('#f_eleve_liste').val(liste);
 				$('#f_eleve_nombre').val(nombre+' élève'+s);
-				$('#annuler_eleve').click();
+				$.fancybox.close();
+			}
+		);
+
+//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+//	Clic sur le bouton pour valider le choix des profs associés à une évaluation
+//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		$('#valider_profs').click
+		(
+			function()
+			{
+				var liste = '';
+				var nombre = 0;
+				$("#zone_profs input[type=checkbox]:checked").each
+				(
+					function()
+					{
+						liste += $(this).val()+'_';
+						nombre++;
+					}
+				);
+				liste  = (nombre==1) ? '' : liste.substring(0,liste.length-1) ;
+				nombre = (nombre==1) ? 'moi seul' : nombre+' profs' ;
+				$('#f_prof_liste').val(liste);
+				$('#f_prof_nombre').val(nombre);
+				$.fancybox.close();
 			}
 		);
 
@@ -792,7 +892,7 @@ $(document).ready
 			function()
 			{
 				$('button').prop('disabled',true);
-				$('#msg_imprimer').removeAttr("class").addClass("loader").html("Génération en cours... Veuillez patienter.");
+				$('#msg_imprimer').removeAttr("class").addClass("loader").html("Génération en cours...");
 				$('#zone_imprimer_retour').html("&nbsp;");
 				$.ajax
 				(
@@ -804,7 +904,7 @@ $(document).ready
 						error : function(msg,string)
 						{
 							$('button').prop('disabled',false);
-							$('#msg_imprimer').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+							$('#msg_imprimer').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 							return false;
 						},
 						success : function(responseHTML)
@@ -949,7 +1049,7 @@ $(document).ready
 						$(this).parent().css("background-color","#F6D").focus();
 						if(modification==false)
 						{
-							$('#fermer_zone_saisir').html('<img alt="" src="./_img/bouton/annuler.png" /> Annuler / Retour');
+							$('#fermer_zone_saisir').removeAttr("class").addClass("annuler").html('Annuler / Retour');
 							modification = true;
 						}
 						$('#msg_saisir').removeAttr("class").html("&nbsp;");
@@ -1080,7 +1180,7 @@ $(document).ready
 				$(this).addClass("on").parent().parent().css("background-color","#F6D");
 				if(modification==false)
 				{
-					$('#fermer_zone_saisir').html('<img alt="" src="./_img/bouton/annuler.png" /> Annuler / Retour');
+					$('#fermer_zone_saisir').removeAttr("class").addClass("annuler").html('Annuler / Retour');
 					modification = true;
 				}
 				$('#msg_saisir').removeAttr("class").html("&nbsp;");
@@ -1127,7 +1227,7 @@ $(document).ready
 						$('#msg_report').removeAttr("class").addClass("valide").html(compteur+' report'+s+' effectué'+s+'.');
 						if(modification==false)
 						{
-							$('#fermer_zone_saisir').html('<img alt="" src="./_img/bouton/annuler.png" /> Annuler / Retour');
+							$('#fermer_zone_saisir').removeAttr("class").addClass("annuler").html('Annuler / Retour');
 							modification = true;
 						}
 						$('#msg_saisir').removeAttr("class").html("&nbsp;");
@@ -1151,7 +1251,7 @@ $(document).ready
 				para_clic.after(para_prev);
 				if(modification==false)
 				{
-					$('#fermer_zone_ordonner').html('<img alt="" src="./_img/bouton/annuler.png" /> Annuler / Retour');
+					$('#fermer_zone_ordonner').removeAttr("class").addClass("annuler").html('Annuler / Retour');
 					modification = true;
 					$('#ajax_msg').removeAttr("class").html("&nbsp;");
 				}
@@ -1187,7 +1287,7 @@ $(document).ready
 						}
 					);
 					$('button').prop('disabled',true);
-					$('#ajax_msg').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+					$('#ajax_msg').removeAttr("class").addClass("loader").html("Demande envoyée...");
 					$.ajax
 					(
 						{
@@ -1198,7 +1298,7 @@ $(document).ready
 							error : function(msg,string)
 							{
 								$('button').prop('disabled',false);
-								$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+								$('#ajax_msg').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 								return false;
 							},
 							success : function(responseHTML)
@@ -1213,7 +1313,7 @@ $(document).ready
 								{
 									modification = false;
 									$('#ajax_msg').removeAttr("class").addClass("valide").html("Ordre enregistré !");
-									$('#fermer_zone_ordonner').html('<img alt="" src="./_img/bouton/retourner.png" /> Retour');
+									$('#fermer_zone_ordonner').removeAttr("class").addClass("retourner").html('Retour');
 								}
 							}
 						}
@@ -1237,7 +1337,7 @@ $(document).ready
 				else
 				{
 					$('button').prop('disabled',true);
-					$('#msg_saisir').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+					$('#msg_saisir').removeAttr("class").addClass("loader").html("Demande envoyée...");
 					// Grouper les saisies dans une variable unique afin d'éviter tout problème dûe à une limitation du module "suhosin" (voir par exemple http://xuxu.fr/2008/12/04/nombre-de-variables-post-limite-ou-tronque).
 					var f_notes = new Array();
 					$("#table_saisir tbody input").each
@@ -1262,7 +1362,7 @@ $(document).ready
 							error : function(msg,string)
 							{
 								$('button').prop('disabled',false);
-								$('#msg_saisir').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+								$('#msg_saisir').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 								return false;
 							},
 							success : function(responseHTML)
@@ -1277,7 +1377,7 @@ $(document).ready
 								{
 									modification = false;
 									$('#msg_saisir').removeAttr("class").addClass("valide").html("Saisies enregistrées !");
-									$('#fermer_zone_saisir').html('<img alt="" src="./_img/bouton/retourner.png" /> Retour');
+									$('#fermer_zone_saisir').removeAttr("class").addClass("retourner").html('Retour');
 									colorer_cellules();
 								}
 							}
@@ -1331,6 +1431,7 @@ $(document).ready
 					f_date_visible : { required:function(){return !$('#box_date').is(':checked');} , dateITA:true },
 					f_eleve_liste  : { required:true },
 					f_info         : { required:false , maxlength:60 },
+					f_prof_liste   : { required:false },
 					f_compet_liste : { required:true }
 				},
 				messages :
@@ -1339,6 +1440,7 @@ $(document).ready
 					f_date_visible : { required:"date manquante" , dateITA:"format JJ/MM/AAAA non respecté" },
 					f_eleve_liste  : { required:"élève(s) manquant(s)" },
 					f_info         : { maxlength:"60 caractères maximum" },
+					f_prof_liste   : { },
 					f_compet_liste : { required:"item(s) manquant(s)" }
 				},
 				errorElement : "label",
@@ -1356,6 +1458,7 @@ $(document).ready
 			clearForm : false,
 			resetForm : false,
 			target : "#ajax_msg",
+			beforeSerialize : action_form_avant_serialize,
 			beforeSubmit : test_form_avant_envoi,
 			error : retour_form_erreur,
 			success : retour_form_valide
@@ -1366,11 +1469,6 @@ $(document).ready
 		(
 			function()
 			{
-				if($('#box_date').is(':checked'))
-				{
-					// Obligé rajouter le test à ce niveau car si la date a été changé depuis le calendrier, l'événement change() n'a pas été déclenché (et dans test_form_avant_envoi() c'est trop tard).
-					$('#f_date_visible').val($('#f_date').val());
-				}
 				if (!please_wait)
 				{
 					$(this).ajaxSubmit(ajaxOptions);
@@ -1383,6 +1481,16 @@ $(document).ready
 			}
 		); 
 
+		// Fonction précédent le trantement du formulaire (avec jquery.form.js)
+		function action_form_avant_serialize(jqForm, options)
+		{
+			if($('#box_date').is(':checked'))
+			{
+				// Obligé rajouter le test à ce niveau car si la date a été changé depuis le calendrier, l'événement change() n'a pas été déclenché (et dans test_form_avant_envoi() c'est trop tard).
+				$('#f_date_visible').val($('#f_date').val());
+			}
+		}
+
 		// Fonction précédent l'envoi du formulaire (avec jquery.form.js)
 		function test_form_avant_envoi(formData, jqForm, options)
 		{
@@ -1392,7 +1500,7 @@ $(document).ready
 			{
 				please_wait = true;
 				$('#ajax_msg').parent().children('q').hide();
-				$('#ajax_msg').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+				$('#ajax_msg').removeAttr("class").addClass("loader").html("Demande envoyée...");
 			}
 			return readytogo;
 		}
@@ -1402,7 +1510,7 @@ $(document).ready
 		{
 			please_wait = false;
 			$('#ajax_msg').parent().children('q').show();
-			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez recommencer.");
+			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 		}
 
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)
@@ -1431,7 +1539,6 @@ $(document).ready
 					case 'modifier':
 						$('q.valider').parent().parent().prev().addClass("new").html(responseHTML).show();
 						$('q.valider').parent().parent().remove();
-						$('#p_alerte').hide();
 						break;
 					case 'supprimer':
 						$('q.valider').parent().parent().parent().remove();
@@ -1505,7 +1612,7 @@ $(document).ready
 			var readytogo = validation0.form();
 			if(readytogo)
 			{
-				$('#ajax_msg0').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+				$('#ajax_msg0').removeAttr("class").addClass("loader").html("Demande envoyée...");
 			}
 			return readytogo;
 		}
@@ -1513,7 +1620,7 @@ $(document).ready
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)
 		function retour_form_erreur0(msg,string)
 		{
-			$('#ajax_msg0').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez recommencer.");
+			$('#ajax_msg0').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 		}
 
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)
@@ -1575,7 +1682,7 @@ $(document).ready
 			else
 			{
 				$('button').prop('disabled',true);
-				$('#msg_import').removeAttr("class").addClass("loader").html('Fichier envoyé... Veuillez patienter.');
+				$('#msg_import').removeAttr("class").addClass("loader").html('Fichier envoyé...');
 				return true;
 			}
 		}
@@ -1624,6 +1731,9 @@ $(document).ready
 				$('#msg_import').removeAttr("class").addClass("valide").html("Tableau complété ! N'oubliez pas d'enregistrer...");
 			}
 		}
+
+		// N'afficher les formulaire qu'une fois le js bien chargé...
+		$('#form0 , #form1').show('fast');
 
 	}
 );

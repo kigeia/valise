@@ -50,9 +50,6 @@ $date_complement = ($retroactif=='oui') ? ' (évaluations antérieures comptabil
 $texte_periode   = ($format!='selection') ? 'Du '.$date_debut.' au '.$date_fin.$date_complement : false;
 $tab_titre       = array('matiere'=>'d\'items - '.$matiere_nom , 'multimatiere'=>'d\'items pluridisciplinaire' , 'selection'=>'d\'items sélectionnés');
 
-require('./_lib/FPDF/fpdf.php');
-require('./_inc/class.PDF.php');
-
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 /* 
  * Libérer de la place mémoire car les scripts de bilans sont assez gourmands.
@@ -86,10 +83,28 @@ $moyenne_pourcentage_acquis   = 0;	// moyenne des moyennes des pourcentages d'it
 	$tab_infos_acquis_eleve[$matiere_id][$eleve_id]
 */
 
+// Pour la synthèse d'items de plusieurs matières (/ élève)
+if( ($matiere_nb>1) && (in_array('synthese',$tab_type)) )
+{
+	$tab_total_somme_scores_non_ponderes = array();
+	$tab_total_nb_scores                 = array();
+	$tab_total_nb_acquis                 = array();
+	$tab_total_nb_non_acquis             = array();
+	$tab_total_nb_voie_acquis            = array();
+}
+
 // Pour chaque élève...
 foreach($tab_eleve as $key => $tab)
 {
 	extract($tab);	// $eleve_id $eleve_nom $eleve_prenom $eleve_id_gepi
+	if( ($matiere_nb>1) && (in_array('synthese',$tab_type)) )
+	{
+		$tab_total_somme_scores_non_ponderes[$eleve_id] = 0;
+		$tab_total_nb_scores[$eleve_id]                 = 0;
+		$tab_total_nb_acquis[$eleve_id]                 = 0;
+		$tab_total_nb_non_acquis[$eleve_id]             = 0;
+		$tab_total_nb_voie_acquis[$eleve_id]            = 0;
+	}
 	// Si cet élève a été évalué...
 	if(isset($tab_eval[$eleve_id]))
 	{
@@ -116,9 +131,14 @@ foreach($tab_eleve as $key => $tab)
 				$somme_coefs = 0;
 				if($nb_scores)
 				{
-					// En l'absence de coefficients, ces 2 lignes suffiraient :
-					// $somme_scores_ponderes = array_sum($tableau_score_filtre);
-					// $somme_coefs = $nb_scores;
+					if( ($matiere_nb>1) && (in_array('synthese',$tab_type)) )
+					{
+						// Total multimatières sans coef
+						$tab_total_somme_scores_non_ponderes[$eleve_id] += array_sum($tableau_score_filtre);
+						$tab_total_nb_scores[$eleve_id]                 += $nb_scores;
+					}
+					// $somme_scores_ponderes = 
+					// $somme_coefs = 
 					foreach($tableau_score_filtre as $item_id => $item_score)
 					{
 						$somme_scores_ponderes += $item_score*$tab_item[$item_id][0]['item_coef'];
@@ -142,6 +162,13 @@ foreach($tab_eleve as $key => $tab)
 					$nb_voie_acquis = $nb_scores - $nb_acquis - $nb_non_acquis;
 					$tab_pourcentage_acquis_eleve[$matiere_id][$eleve_id] = round( 50 * ( ($nb_acquis*2 + $nb_voie_acquis) / $nb_scores ) ,0);
 					$tab_infos_acquis_eleve[$matiere_id][$eleve_id]       = $nb_acquis.$_SESSION['ACQUIS_TEXTE']['A'].' '. $nb_voie_acquis.$_SESSION['ACQUIS_TEXTE']['VA'].' '. $nb_non_acquis.$_SESSION['ACQUIS_TEXTE']['NA'];
+					if( ($matiere_nb>1) && (in_array('synthese',$tab_type)) )
+					{
+						// Total multimatières
+						$tab_total_nb_acquis[$eleve_id]      += $nb_acquis;
+						$tab_total_nb_non_acquis[$eleve_id]  += $nb_non_acquis;
+						$tab_total_nb_voie_acquis[$eleve_id] += $nb_voie_acquis;
+					}
 				}
 				else
 				{
@@ -152,6 +179,20 @@ foreach($tab_eleve as $key => $tab)
 			}
 		}
 		$tab_eleve[$key]['nb_matieres'] = count($tab_score_eleve_item[$eleve_id]);
+		if( ($matiere_nb>1) && (in_array('synthese',$tab_type)) )
+		{
+			// On prend la matière 0 pour mettre les résultats toutes matières confondues
+			if($tab_total_nb_scores[$eleve_id])
+			{
+				$tab_moyenne_scores_eleve[0][$eleve_id]     = round($tab_total_somme_scores_non_ponderes[$eleve_id]/$tab_total_nb_scores[$eleve_id],0);
+				$tab_pourcentage_acquis_eleve[0][$eleve_id] = round( 50 * ( ($tab_total_nb_acquis[$eleve_id]*2 + $tab_total_nb_voie_acquis[$eleve_id]) / $tab_total_nb_scores[$eleve_id] ) ,0);
+			}
+			else
+			{
+				$tab_moyenne_scores_eleve[0][$eleve_id]     = false;
+				$tab_pourcentage_acquis_eleve[0][$eleve_id] = false;
+			}
+		}
 	}
 }
 
@@ -166,7 +207,7 @@ if(in_array('synthese',$tab_type))
 	// Pour chaque item...
 	foreach($tab_liste_item as $item_id)
 	{
-		$tableau_score_filtre = array_filter($tab_score_item_eleve[$item_id],'non_nul');
+		$tableau_score_filtre = isset($tab_score_item_eleve[$item_id]) ? array_filter($tab_score_item_eleve[$item_id],'non_nul') : array() ; // Test pour éviter de rares "array_filter() expects parameter 1 to be array, null given"
 		$nb_scores = count( $tableau_score_filtre );
 		if($nb_scores)
 		{
@@ -199,6 +240,10 @@ if(in_array('synthese',$tab_type))
 
 if( (in_array('synthese',$tab_type)) || (in_array('bulletin',$tab_type)) )
 {
+	if( ($matiere_nb>1) && (in_array('synthese',$tab_type)) )
+	{
+		$matiere_id = 0; // C'est l'indice choisi pour stocker les infos dans le cas d'une synthèse d'items issus de plusieurs matières
+	}
 	// $moyenne_moyenne_scores
 	$somme  = array_sum($tab_moyenne_scores_eleve[$matiere_id]);
 	$nombre = count( array_filter($tab_moyenne_scores_eleve[$matiere_id],'non_nul') );
@@ -213,15 +258,18 @@ if( (in_array('synthese',$tab_type)) || (in_array('bulletin',$tab_type)) )
 // Elaboration du bilan individuel, disciplinaire ou transdisciplinaire, en HTML et PDF
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+$affichage_direct = ( ( in_array($_SESSION['USER_PROFIL'],array('eleve','parent')) ) && (SACoche!='webservices') ) ? TRUE : FALSE ;
+
 if(in_array('individuel',$tab_type))
 {
-	$releve_HTML_individuel  = '<style type="text/css">'.$_SESSION['CSS'].'</style>';
-	$releve_HTML_individuel .= '<h1>Bilan '.$tab_titre[$format].'</h1>';
-	$releve_HTML_individuel .= '<h2>'.html($texte_periode).'</h2>';
+	$releve_HTML_individuel  = $affichage_direct ? '' : '<style type="text/css">'.$_SESSION['CSS'].'</style>';
+	$releve_HTML_individuel .= $affichage_direct ? '' : '<h1>Bilan '.$tab_titre[$format].'</h1>';
+	$releve_HTML_individuel .= $affichage_direct ? '' : '<h2>'.html($texte_periode).'</h2>';
 	// Appel de la classe et définition de qqs variables supplémentaires pour la mise en page PDF
 	$releve_PDF = new PDF($orientation,$marge_min,$couleur,$legende);
 	$releve_PDF->bilan_item_individuel_initialiser($format,$cases_nb,$cases_largeur,$lignes_nb=$item_nb+$aff_bilan_MS+$aff_bilan_PA,$eleve_nb,$pages_nb);
 	$bilan_colspan = $cases_nb + 2 ;
+	$separation = (count($tab_eleve)>1) ? '<hr class="breakafter" />' : '' ;
 	// Pour chaque élève...
 	foreach($tab_eleve as $tab)
 	{
@@ -231,7 +279,7 @@ if(in_array('individuel',$tab_type))
 		{
 			// Intitulé
 			$releve_PDF->bilan_item_individuel_entete($format,$nb_matieres,$nb_items+($aff_bilan_MS+$aff_bilan_PA)*$nb_matieres,$pages_nb,$tab_titre[$format],$texte_periode,$groupe_nom,$eleve_nom,$eleve_prenom);
-			$releve_HTML_individuel .= '<hr class="breakafter" /><h2>'.html($groupe_nom).' - '.html($eleve_nom).' '.html($eleve_prenom).'</h2>';
+			$releve_HTML_individuel .= $separation.'<h2>'.html($groupe_nom).' - '.html($eleve_nom).' '.html($eleve_prenom).'</h2>';
 			// Pour chaque matiere...
 			foreach($tab_matiere as $matiere_id => $matiere_nom)
 			{
@@ -342,7 +390,7 @@ if(in_array('individuel',$tab_type))
 						$releve_PDF->bilan_item_individuel_ligne_synthese('Pourcentage d\'items acquis '.$texte_bilan);
 					}
 					$releve_HTML_table_foot = ($releve_HTML_table_foot) ? '<tfoot>'.$releve_HTML_table_foot.'</tfoot>'."\r\n" : '';
-					$releve_HTML_individuel .= '<table id="table'.$eleve_id.'x'.$matiere_id.'" class="bilan">'.$releve_HTML_table_head.$releve_HTML_table_foot.$releve_HTML_table_body.'</table><p />';
+					$releve_HTML_individuel .= '<table id="table'.$eleve_id.'x'.$matiere_id.'" class="bilan">'.$releve_HTML_table_head.$releve_HTML_table_foot.$releve_HTML_table_body.'</table>';
 					$releve_HTML_individuel .= '<script type="text/javascript">$("#table'.$eleve_id.'x'.$matiere_id.'").tablesorter();</script>';
 				}
 			}
@@ -364,8 +412,8 @@ if(in_array('individuel',$tab_type))
 
 if(in_array('synthese',$tab_type))
 {
-	$releve_HTML_synthese  = '<style type="text/css">'.$_SESSION['CSS'].'</style>';
-	$releve_HTML_synthese .= '<h1>Bilan '.$tab_titre[$format].'</h1>';
+	$releve_HTML_synthese  = $affichage_direct ? '' : '<style type="text/css">'.$_SESSION['CSS'].'</style>';
+	$releve_HTML_synthese .= $affichage_direct ? '' : '<h1>Bilan '.$tab_titre[$format].'</h1>';
 	$releve_HTML_synthese .= '<h2>'.html($matiere_nom.' - '.$groupe_nom).'</h2>';
 	if($texte_periode)
 	{
@@ -389,10 +437,10 @@ if(in_array('synthese',$tab_type))
 		$memo_x = $releve_PDF->GetX();
 		$memo_y = $releve_PDF->GetY();
 		list($ref_matiere,$ref_suite) = explode('.',$tab_item[$item_id][0]['item_ref'],2);
-		$releve_PDF->SetFont('Helvetica' , '' , $releve_PDF->taille_police-1);
+		$releve_PDF->SetFont('Arial' , '' , $releve_PDF->taille_police-1);
 		$releve_PDF->Cell($releve_PDF->cases_largeur , $releve_PDF->cases_hauteur/2 , pdf($ref_matiere) , 0 , 2 , 'C' , true , '');
 		$releve_PDF->Cell($releve_PDF->cases_largeur , $releve_PDF->cases_hauteur/2 , pdf($ref_suite) , 0 , 2 , 'C' , true , '');
-		$releve_PDF->SetFont('Helvetica' , '' , $releve_PDF->taille_police);
+		$releve_PDF->SetFont('Arial' , '' , $releve_PDF->taille_police);
 		$releve_PDF->SetXY($memo_x , $memo_y);
 		$releve_PDF->Cell($releve_PDF->cases_largeur , $releve_PDF->cases_hauteur , '' , 1 , 0 , 'C' , false , '');
 		$releve_HTML_table_head .= '<th title="'.html($tab_item[$item_id][0]['item_nom']).'">'.html($ref_matiere).'<br />'.html($ref_suite).'</th>';
@@ -419,10 +467,15 @@ if(in_array('synthese',$tab_type))
 			// Pour chaque item...
 			foreach($tab_liste_item as $item_id)
 			{
+				$matiere_id = $tab_matiere_for_item[$item_id];
 				$score = (isset($tab_score_eleve_item[$eleve_id][$matiere_id][$item_id])) ? $tab_score_eleve_item[$eleve_id][$matiere_id][$item_id] : false ;
 				$releve_PDF->afficher_score_bilan($score,$br=0);
 				$releve_HTML_table_body1 .= affich_score_html($score,'score');
 				$releve_HTML_table_body2 .= affich_score_html($score,'etat');
+			}
+			if( ($matiere_nb>1) && (in_array('synthese',$tab_type)) )
+			{
+				$matiere_id = 0; // C'est l'indice choisi pour stocker les infos dans le cas d'une synthèse d'items issus de plusieurs matières
 			}
 			$releve_PDF->bilan_periode_synthese_pourcentages($tab_moyenne_scores_eleve[$matiere_id][$eleve_id],$tab_pourcentage_acquis_eleve[$matiere_id][$eleve_id],false,true);
 			$releve_HTML_table_body1 .= '<td class="nu">&nbsp;</td>'.affich_score_html($tab_moyenne_scores_eleve[$matiere_id][$eleve_id],'score','%').affich_score_html($tab_pourcentage_acquis_eleve[$matiere_id][$eleve_id],'score','%').'</tr>'."\r\n";
@@ -468,25 +521,13 @@ if(in_array('synthese',$tab_type))
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Elaboration du bulletin (moyenne & appréciation) en HTML et CSV pour GEPI
+// Elaboration du bulletin (moyenne et/ou appréciation) en HTML et CSV pour GEPI
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 if(in_array('bulletin',$tab_type))
 {
-	/*
-	$tab_bad[] = '0NA'; $tab_bon[] = '0 non acquise';
-	$tab_bad[] = '1NA'; $tab_bon[] = '1 non acquise';
-	$tab_bad[] =  'NA'; $tab_bon[] = ' non acquises';
-	$tab_bad[] = '0VA'; $tab_bon[] = '0 partiellement acquise ;';
-	$tab_bad[] = '1VA'; $tab_bon[] = '1 partiellement acquise ;';
-	$tab_bad[] =  'VA'; $tab_bon[] = ' partiellement acquises ;';
-	$tab_bad[] =  '0A'; $tab_bon[] = '0 acquise ;';
-	$tab_bad[] =  '1A'; $tab_bon[] = '1 acquise ;';
-	$tab_bad[] =   'A'; $tab_bon[] = ' acquises ;';
-	// pour str_replace($tab_bad,$tab_bon,$tab_infos_acquis_eleve[$matiere_id][$eleve_id])
-	*/
 	$bulletin_body = '';
-	$bulletin_csv_gepi = 'GEPI_IDENTIFIANT;NOTE;APPRECIATION'."\r\n";	// Ajout du préfixe 'GEPI_' pour éviter un bug avec M$ Excel « SYLK : Format de fichier non valide » (http://support.microsoft.com/kb/323626/fr)
+	$bulletin_csv_entete = 'GEPI_IDENTIFIANT;NOTE;APPRECIATION'."\r\n";	// Ajout du préfixe 'GEPI_' pour éviter un bug avec M$ Excel « SYLK : Format de fichier non valide » (http://support.microsoft.com/kb/323626/fr)
+	$tab_bulletin_csv_gepi = array_fill_keys( array('note_appreciation','note','appreciation') , $bulletin_csv_entete );
 	// Pour chaque élève...
 	foreach($tab_eleve as $tab)
 	{
@@ -494,11 +535,13 @@ if(in_array('bulletin',$tab_type))
 		// Si cet élève a été évalué...
 		if(isset($tab_eval[$eleve_id]))
 		{
-			$note         = ($tab_moyenne_scores_eleve[$matiere_id][$eleve_id] !== false)          ? sprintf("%04.1f",$tab_moyenne_scores_eleve[$matiere_id][$eleve_id]/5)                                                                             : '-' ;
+			$note         = ($tab_moyenne_scores_eleve[$matiere_id][$eleve_id] !== false)     ? sprintf("%04.1f",$tab_moyenne_scores_eleve[$matiere_id][$eleve_id]/5)                                                           : '-' ;
 			$appreciation = ($tab_pourcentage_acquis_eleve[$matiere_id][$eleve_id] !== false) ? $tab_pourcentage_acquis_eleve[$matiere_id][$eleve_id].'% d\'items acquis ('.$tab_infos_acquis_eleve[$matiere_id][$eleve_id].')' : '-' ;
 			$bulletin_body     .= '<tr><th>'.html($eleve_nom.' '.$eleve_prenom).'</th><td>'.$note.'</td><td>'.$appreciation.'</td></tr>'."\r\n";
-			// Pour GEPI je remplace le point décimal par une virgule sinon le tableur convertit en date...
-			$bulletin_csv_gepi .= $eleve_id_gepi.';'.str_replace('.',',',$note).';'.$appreciation."\r\n";
+			$note         = str_replace('.',',',$note); // Pour GEPI je remplace le point décimal par une virgule sinon le tableur convertit en date...
+			$tab_bulletin_csv_gepi['note_appreciation'] .= $eleve_id_gepi.';'.$note.';'.$appreciation."\r\n";
+			$tab_bulletin_csv_gepi['note']              .= $eleve_id_gepi.';'.$note."\r\n";
+			$tab_bulletin_csv_gepi['appreciation']      .= $eleve_id_gepi.';'.''   .';'.$appreciation."\r\n";
 		}
 	}
 	$bulletin_head  = '<thead><tr><th>Elève</th><th>Moyenne pondérée sur 20<br />(des scores d\'acquisitions)</th><th>Élément d\'appréciation<br />(pourcentage d\'items acquis)</th></tr></thead>'."\r\n";
@@ -512,7 +555,10 @@ if(in_array('bulletin',$tab_type))
 	$bulletin_html .= '<script type="text/javascript">$("#export20").tablesorter({ headers:{2:{sorter:false}} });</script>';
 	// On enregistre la sortie HTML et CSV
 	Ecrire_Fichier($dossier.$fichier_lien.'_bulletin.html',$bulletin_html);
-	Ecrire_Fichier($dossier.$fichier_lien.'_bulletin.csv',utf8_decode($bulletin_csv_gepi));
+	foreach($tab_bulletin_csv_gepi as $format => $bulletin_csv_gepi_contenu)
+	{
+		Ecrire_Fichier($dossier.$fichier_lien.'_bulletin_'.$format.'.csv',utf8_decode($bulletin_csv_gepi_contenu));
+	}
 }
 
 ?>

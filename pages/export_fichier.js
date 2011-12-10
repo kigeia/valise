@@ -140,7 +140,7 @@ $(document).ready
 			if(readytogo)
 			{
 				$("#bouton_exporter").prop('disabled',true);
-				$('#ajax_msg').removeAttr("class").addClass("loader").html("Transmission du fichier en cours... Veuillez patienter.");
+				$('#ajax_msg').removeAttr("class").addClass("loader").html("Demande envoyée...");
 				$('#bilan').html('');
 			}
 			return readytogo;
@@ -150,7 +150,7 @@ $(document).ready
 		function retour_form_erreur(msg,string)
 		{
 			$("#bouton_exporter").prop('disabled',false);
-			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez valider de nouveau.");
+			$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 		}
 
 		// Fonction suivant l'envoi du formulaire (avec jquery.form.js)
@@ -158,15 +158,15 @@ $(document).ready
 		{
 			initialiser_compteur();
 			$("#bouton_exporter").prop('disabled',false);
-			if(responseHTML.substring(0,23)!='<hr /><ul class="puce">')
+			if(responseHTML.substring(0,17)!='<ul class="puce">')
 			{
 				$('#ajax_msg').removeAttr("class").addClass("alerte").html(responseHTML);
 			}
 			else
 			{
-				$('#ajax_msg').removeAttr("class").addClass("valide").html("Demande réalisée !");
-				$('#bilan').html(responseHTML);
-				format_liens('#bilan');
+				$('#ajax_msg').removeAttr("class").html('');
+				$.fancybox( responseHTML , {'centerOnScroll':true} );
+				format_liens('#fancybox-content');
 			}
 		} 
 

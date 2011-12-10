@@ -26,17 +26,16 @@
  */
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
-$VERSION_JS_FILE += 10;
 ?>
 
 <?php
 $selection = (isset($_POST['listing_ids'])) ? explode(',',$_POST['listing_ids']) : false ; // demande de stats depuis structure_multi.php
-$select_structure = afficher_select(DB_WEBMESTRE_OPT_structures_sacoche() , $select_nom=false , $option_first='non' , $selection , $optgroup='oui') ;
+$select_structure = Formulaire::afficher_select(DB_WEBMESTRE_SELECT::DB_OPT_structures_sacoche() , $select_nom=false , $option_first='non' , $selection , $optgroup='oui') ;
 ?>
 
-<form action="" method="post" id="form_stats"><fieldset>
-	<label class="tab" for="f_basic">Structure(s) <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /> :</label><select id="f_base" name="f_base" multiple size="10"><?php echo $select_structure ?></select><br />
-	<span class="tab"></span><input type="hidden" id="f_action" name="f_action" value="calculer" /><input type="hidden" id="f_listing_id" name="f_listing_id" value="" /><button id="bouton_valider" type="button"><img alt="" src="./_img/bouton/stats.png" /> Calculer les statistiques.</button><label id="ajax_msg">&nbsp;</label>
+<form action="#" method="post" id="form_stats"><fieldset>
+	<label class="tab" for="f_basic">Structure(s) <img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo;&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo;&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /> :</label><select id="f_base" name="f_base" multiple size="10"><?php echo $select_structure ?></select><br />
+	<span class="tab"></span><input type="hidden" id="f_action" name="f_action" value="calculer" /><input type="hidden" id="f_listing_id" name="f_listing_id" value="" /><button id="bouton_valider" type="button" class="stats">Calculer les statistiques.</button><label id="ajax_msg">&nbsp;</label>
 </fieldset></form>
 
 <div id="ajax_info" class="hide">
@@ -47,14 +46,14 @@ $select_structure = afficher_select(DB_WEBMESTRE_OPT_structures_sacoche() , $sel
 	<span id="ajax_max" class="hide"></span>
 </div>
 
-<p />
+<p>&nbsp;</p>
 
-<form action="" method="post" id="structures" class="hide">
+<form action="#" method="post" id="structures" class="hide">
 	<hr />
 	<table class="form" id="statistiques">
 		<thead>
 			<tr>
-				<th class="nu"><input id="all_check" type="image" src="./_img/all_check.gif" title="Tout cocher." /><br /><input id="all_uncheck" type="image" src="./_img/all_uncheck.gif" title="Tout décocher." /></th>
+				<th class="nu"><input id="all_check" type="image" alt="Tout cocher." src="./_img/all_check.gif" title="Tout cocher." /><br /><input id="all_uncheck" type="image" alt="Tout décocher." src="./_img/all_uncheck.gif" title="Tout décocher." /></th>
 				<th>Id</th>
 				<th>Structure</th>
 				<th>Contact</th>
@@ -77,9 +76,9 @@ $select_structure = afficher_select(DB_WEBMESTRE_OPT_structures_sacoche() , $sel
 	</table>
 	<p id="zone_actions">
 		Pour les structures cochées : <input id="listing_ids" name="listing_ids" type="hidden" value="" />
-		<button id="bouton_newsletter" type="button"><img alt="" src="./_img/bouton/mail_ecrire.png" /> Écrire un courriel.</button>
-		<button id="bouton_transfert" type="button"><img alt="" src="./_img/bouton/fichier_export.png" /> Exporter données &amp; bases.</button>
-		<button id="bouton_supprimer" type="button"><img alt="" src="./_img/bouton/supprimer.png" /> Supprimer.</button>
+		<button id="bouton_newsletter" type="button" class="mail_ecrire">Écrire un courriel.</button>
+		<button id="bouton_transfert" type="button" class="fichier_export">Exporter données &amp; bases.</button>
+		<button id="bouton_supprimer" type="button" class="supprimer">Supprimer.</button>
 		<label id="ajax_supprimer">&nbsp;</label>
 	</p>
 	<div class="astuce">Concernant les <b>utilisateurs enregistrés</b>, seuls sont comptés ceux au statut "actif".</div>

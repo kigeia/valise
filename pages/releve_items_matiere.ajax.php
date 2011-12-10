@@ -45,23 +45,43 @@ $only_socle     = (isset($_POST['f_restriction'])) ? 1                          
 $aff_coef       = (isset($_POST['f_coef']))        ? 1                                     : 0;
 $aff_socle      = (isset($_POST['f_socle']))       ? 1                                     : 0;
 $aff_lien       = (isset($_POST['f_lien']))        ? 1                                     : 0;
-$aff_bilan_MS   = (isset($_POST['f_bilan_MS']))    ? 1                                     : 0;	// en cas de manipulation type Firebug, peut être forcé pour élève/parent avec (mb_substr_count($_SESSION['DROIT_BILAN_MOYENNE_SCORE'],$_SESSION['USER_PROFIL']))
-$aff_bilan_PA   = (isset($_POST['f_bilan_PA']))    ? 1                                     : 0;	// en cas de manipulation type Firebug, peut être forcé pour élève/parent avec (mb_substr_count($_SESSION['DROIT_BILAN_POURCENTAGE_ACQUIS'],$_SESSION['USER_PROFIL']))
-$aff_conv_sur20 = (isset($_POST['f_conv_sur20']))  ? 1                                     : 0;	// en cas de manipulation type Firebug, peut être forcé pour élève/parent avec (mb_substr_count($_SESSION['DROIT_BILAN_NOTE_SUR_VINGT'],$_SESSION['USER_PROFIL']))
-$groupe_id      = (isset($_POST['f_groupe']))      ? clean_entier($_POST['f_groupe'])      : 0;	// en cas de manipulation type Firebug, peut être forcé pour l'élève à $_SESSION['ELEVE_CLASSE_ID']
-$groupe_nom     = (isset($_POST['f_groupe_nom']))  ? clean_texte($_POST['f_groupe_nom'])   : '';	// en cas de manipulation type Firebug, peut être forcé pour l'élève à $_SESSION['ELEVE_CLASSE_NOM']
-$tab_eleve      = (isset($_POST['eleves']))        ? array_map('clean_entier',explode(',',$_POST['eleves'])) : array() ;	// en cas de manipulation type Firebug, peut être forcé pour l'élève avec $_SESSION['USER_ID']
-$tab_type       = (isset($_POST['types']))         ? array_map('clean_texte',explode(',',$_POST['types']))   : array() ;	// en cas de manipulation type Firebug, peut être forcé pour l'élève à 'individuel'
+$aff_bilan_MS   = (isset($_POST['f_bilan_MS']))    ? 1                                     : 0;
+$aff_bilan_PA   = (isset($_POST['f_bilan_PA']))    ? 1                                     : 0;
+$aff_conv_sur20 = (isset($_POST['f_conv_sur20']))  ? 1                                     : 0;
+$groupe_id      = (isset($_POST['f_groupe']))      ? clean_entier($_POST['f_groupe'])      : 0;
+$groupe_nom     = (isset($_POST['f_groupe_nom']))  ? clean_texte($_POST['f_groupe_nom'])   : '';
 $format         = 'matiere';
+// Normalement ce sont des tableaux qui sont transmis, mais au cas où...
+$tab_eleve = (isset($_POST['f_eleve'])) ? ( (is_array($_POST['f_eleve'])) ? $_POST['f_eleve'] : explode(',',$_POST['f_eleve']) ) : array() ;
+$tab_type  = (isset($_POST['f_type']))  ? ( (is_array($_POST['f_type']))  ? $_POST['f_type']  : explode(',',$_POST['f_type'])  ) : array() ;
+$tab_eleve = array_filter( array_map( 'clean_entier' , $tab_eleve ) , 'positif' );
+$tab_type  = array_map( 'clean_texte' , $tab_type );
 
-$tab_eleve     = array_filter($tab_eleve,'positif');
+// En cas de manipulation du formulaire (avec Firebug par exemple) ; on pourrait aussi vérifier pour un parent que c'est bien un de ses enfants...
+if(in_array($_SESSION['USER_PROFIL'],array('parent','eleve')))
+{
+	$aff_bilan_MS   = (mb_substr_count($_SESSION['DROIT_BILAN_MOYENNE_SCORE']     ,$_SESSION['USER_PROFIL'])) ? 1 : 0 ;
+	$aff_bilan_PA   = (mb_substr_count($_SESSION['DROIT_BILAN_POURCENTAGE_ACQUIS'],$_SESSION['USER_PROFIL'])) ? 1 : 0 ;
+	$aff_conv_sur20 = (mb_substr_count($_SESSION['DROIT_BILAN_NOTE_SUR_VINGT']    ,$_SESSION['USER_PROFIL'])) ? 1 : 0 ;
+	$tab_type       = array('individuel');
+}
+if($_SESSION['USER_PROFIL']=='eleve')
+{
+	$groupe_id  = $_SESSION['ELEVE_CLASSE_ID'];
+	$groupe_nom = $_SESSION['ELEVE_CLASSE_NOM'];
+	$tab_eleve  = array($_SESSION['USER_ID']);
+}
+
+$type_individuel = (in_array('individuel',$tab_type)) ? 1 : 0 ;
+$type_synthese   = (in_array('synthese',$tab_type))   ? 1 : 0 ;
+$type_bulletin   = (in_array('bulletin',$tab_type))   ? 1 : 0 ;
+
 $liste_eleve   = implode(',',$tab_eleve);
 
 if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb && $cases_largeur && ( $periode_id || ($date_debut && $date_fin) ) && $retroactif && $matiere_id && $matiere_nom && $groupe_id && $groupe_nom && count($tab_eleve) && count($tab_type) )
 {
 
-	save_cookie_select('releve_items');
-	save_cookie_select('matiere');
+	Formulaire::save_choix('items_matiere');
 
 	// Période concernée
 	if($periode_id==0)
@@ -71,7 +91,7 @@ if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb
 	}
 	else
 	{
-		$DB_ROW = DB_STRUCTURE_recuperer_dates_periode($groupe_id,$periode_id);
+		$DB_ROW = DB_STRUCTURE_COMMUN::DB_recuperer_dates_periode($groupe_id,$periode_id);
 		if(!count($DB_ROW))
 		{
 			exit('La classe et la période ne sont pas reliées !');
@@ -91,12 +111,13 @@ if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb
 	$tab_eleve      = array();	// [i] => array(eleve_id,eleve_nom,eleve_prenom,eleve_id_gepi)
 	$tab_matiere    = array();	// [matiere_id] => matiere_nom
 	$tab_eval       = array();	// [eleve_id][matiere_id][item_id][devoir] => array(note,date,info) On utilise un tableau multidimensionnel vu qu'on ne sait pas à l'avance combien il y a d'évaluations pour un élève et un item donné.
+	$tab_matiere_for_item = array();	// [item_id] => matiere_id
 
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	// Récupération de la liste des items travaillés durant la période choisie, pour la matière et les élèves selectionnés
 	// Récupération de la liste des matières travaillées
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-	$tab_item = DB_STRUCTURE_recuperer_arborescence_bilan($liste_eleve,$matiere_id,$only_socle,$date_mysql_debut,$date_mysql_fin) ; // $liste_eleve ne vaut que $_SESSION['USER_ID'] si $_SESSION['USER_PROFIL']=='eleve'
+	$tab_item = DB_STRUCTURE_BILAN::DB_recuperer_arborescence_bilan($liste_eleve,$matiere_id,$only_socle,$date_mysql_debut,$date_mysql_fin) ; // $liste_eleve ne vaut que $_SESSION['USER_ID'] si $_SESSION['USER_PROFIL']=='eleve'
 	$tab_matiere[$matiere_id] = $matiere_nom;
 
 	$item_nb = count($tab_item);
@@ -116,7 +137,7 @@ if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb
 	}
 	else
 	{
-		$tab_eleve = DB_STRUCTURE_lister_eleves_cibles($liste_eleve,$with_gepi=TRUE,$with_langue=FALSE);
+		$tab_eleve = DB_STRUCTURE_BILAN::DB_lister_eleves_cibles($liste_eleve,$with_gepi=TRUE,$with_langue=FALSE);
 		if(!is_array($tab_eleve))
 		{
 			exit('Aucun élève trouvé correspondant aux identifiants transmis !');
@@ -129,21 +150,23 @@ if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb
 	// Attention, il faut éliminer certains items qui peuvent potentiellement apparaitre dans des relevés d'élèves alors qu'ils n'ont pas été interrogés sur la période considérée (mais un camarade oui).
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	$tab_score_a_garder = array();
-	$DB_TAB = DB_STRUCTURE_lister_date_last_eleves_items($liste_eleve,$liste_item);
+	$DB_TAB = DB_STRUCTURE_BILAN::DB_lister_date_last_eleves_items($liste_eleve,$liste_item);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_score_a_garder[$DB_ROW['eleve_id']][$DB_ROW['item_id']] = ($DB_ROW['date_last']<$date_mysql_debut) ? false : true ;
 	}
 
 	$date_mysql_debut = ($retroactif=='non') ? $date_mysql_debut : false;
-	$DB_TAB = DB_STRUCTURE_lister_result_eleves_matiere($liste_eleve , $liste_item , $date_mysql_debut , $date_mysql_fin , $_SESSION['USER_PROFIL']) ;
+	$DB_TAB = DB_STRUCTURE_BILAN::DB_lister_result_eleves_matiere($liste_eleve , $liste_item , $date_mysql_debut , $date_mysql_fin , $_SESSION['USER_PROFIL']) ;
 	foreach($DB_TAB as $DB_ROW)
 	{
 		if($tab_score_a_garder[$DB_ROW['eleve_id']][$DB_ROW['item_id']])
 		{
 			$tab_eval[$DB_ROW['eleve_id']][$matiere_id][$DB_ROW['item_id']][] = array('note'=>$DB_ROW['note'],'date'=>$DB_ROW['date'],'info'=>$DB_ROW['info']);
+			$tab_matiere_for_item[$DB_ROW['item_id']] = $matiere_id;	// sert pour la synthèse sur une sélection d'items issus de différentes matières
 		}
 	}
+	$matiere_nb = count(array_unique($tab_matiere_for_item)); // 1 ici
 
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	// INCLUSION DU CODE COMMUN À PLUSIEURS PAGES
@@ -151,35 +174,41 @@ if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb
 	require('./_inc/code_releve_bilan_item.php');
 
 	// Affichage du résultat
-	if($_SESSION['USER_PROFIL']=='eleve')
+	if($affichage_direct)
 	{
+		echo'<hr />';
 		echo'<ul class="puce">';
-		echo'<li><label class="alerte"><a class="lien_ext" href="'.$dossier.$fichier_lien.'_individuel.pdf">Archiver / Imprimer (format <em>pdf</em>).</a></label></li>';
-		echo'</ul><p />';
+		echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_individuel.pdf"><span class="file file_pdf">Archiver / Imprimer (format <em>pdf</em>).</span></a></li>';
+		echo'</ul>';
 		echo $releve_HTML_individuel;
 	}
 	else
 	{
-		if(in_array('bulletin',$tab_type))
+		if($type_bulletin)
 		{
+			echo'<h2>Bulletin</h2>';
 			echo'<ul class="puce">';
-			echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_bulletin.csv">Bulletin &rarr; Récupérer pour importer dans GEPI (format <em>csv</em> <img alt="" src="./_img/bulle_aide.png" title="Si le navigateur ouvre le fichier au lieu de l\'enregistrer, cliquer avec le bouton droit et choisir «&nbsp;Enregistrer&nbsp;sous...&nbsp;»." />).</a></li>';
-			echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'_bulletin">Bulletin &rarr; Explorer / Manipuler (format <em>html</em>).</a></li>';
-			echo'</ul><p />';
+			echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_bulletin_note_appreciation.csv"><span class="file file_txt">Récupérer notes et appréciations à importer dans GEPI (format <em>csv</em> <img alt="" src="./_img/bulle_aide.png" title="Si le navigateur ouvre le fichier au lieu de l\'enregistrer, cliquer avec le bouton droit et choisir «&nbsp;Enregistrer&nbsp;sous...&nbsp;»." />).</span></a></li>';
+			echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_bulletin_note.csv"><span class="file file_txt">Récupérer les notes à importer dans GEPI (format <em>csv</em> <img alt="" src="./_img/bulle_aide.png" title="Si le navigateur ouvre le fichier au lieu de l\'enregistrer, cliquer avec le bouton droit et choisir «&nbsp;Enregistrer&nbsp;sous...&nbsp;»." />).</span></a></li>';
+			echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_bulletin_appreciation.csv"><span class="file file_txt">Récupérer les appréciations à importer dans GEPI (format <em>csv</em> <img alt="" src="./_img/bulle_aide.png" title="Si le navigateur ouvre le fichier au lieu de l\'enregistrer, cliquer avec le bouton droit et choisir «&nbsp;Enregistrer&nbsp;sous...&nbsp;»." />).</span></a></li>';
+			echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'_bulletin"><span class="file file_htm">Explorer / Manipuler (format <em>html</em>).</span></a></li>';
+			echo'</ul>';
 		}
-		if(in_array('synthese',$tab_type))
+		if($type_synthese)
 		{
+			echo'<h2>Synthèse collective</h2>';
 			echo'<ul class="puce">';
-			echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_synthese.pdf">Synthèse collective &rarr; Archiver / Imprimer (format <em>pdf</em>).</a></li>';
-			echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'_synthese">Synthèse collective &rarr; Explorer / Manipuler (format <em>html</em>).</a></li>';
-			echo'</ul><p />';
+			echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_synthese.pdf"><span class="file file_pdf">Archiver / Imprimer (format <em>pdf</em>).</span></a></li>';
+			echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'_synthese"><span class="file file_htm">Explorer / Manipuler (format <em>html</em>).</span></a></li>';
+			echo'</ul>';
 		}
-		if(in_array('individuel',$tab_type))
+		if($type_individuel)
 		{
+			echo'<h2>Relevé individuel</h2>';
 			echo'<ul class="puce">';
-			echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_individuel.pdf">Relevé individuel &rarr; Archiver / Imprimer (format <em>pdf</em>).</a></li>';
-			echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'_individuel">Relevé individuel &rarr; Explorer / Manipuler (format <em>html</em>).</a></li>';
-			echo'</ul><p />';
+			echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_individuel.pdf"><span class="file file_pdf">Archiver / Imprimer (format <em>pdf</em>).</span></a></li>';
+			echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'_individuel"><span class="file file_htm">Explorer / Manipuler (format <em>html</em>).</span></a></li>';
+			echo'</ul>';
 		}
 	}
 

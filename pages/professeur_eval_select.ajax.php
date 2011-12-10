@@ -42,9 +42,10 @@ $orientation  = (isset($_POST['f_orientation']))     ? clean_texte($_POST['f_ori
 $marge_min    = (isset($_POST['f_marge_min']))       ? clean_texte($_POST['f_marge_min'])    : '';
 $couleur      = (isset($_POST['f_couleur']))         ? clean_texte($_POST['f_couleur'])      : '';
 $only_req     = (isset($_POST['f_restriction_req'])) ? true                                  : false;
+$timestamp    = (isset($_POST['timestamp']))         ? (float)$_POST['timestamp']            : time(); // Pas de (int) car sur les systèmes 32-bit, le max est 2147483647 alors que js envoie davantage (http://fr.php.net/manual/fr/language.types.integer.php#103506)
 
 $dossier_export = './__tmp/export/';
-$fnom = 'saisie_'.$_SESSION['BASE'].'_'.$_SESSION['USER_ID'].'_'.$ref;
+$fnom = 'saisie_'.$_SESSION['BASE'].'_'.$_SESSION['USER_ID'].'_'.$ref.'_'.$timestamp;
 
 // Si "ref" est renseigné (pour Éditer ou Retirer ou Saisir ou ...), il contient l'id de l'évaluation + '_' + l'initiale du type de groupe + l'id du groupe
 // Dans le cas d'une duplication, "ref" sert à retrouver l'évaluation d'origine pour évenuellement récupérer l'ordre des items
@@ -77,6 +78,10 @@ $tab_eleves = (isset($_POST['f_eleve_liste']))  ? explode('_',$_POST['f_eleve_li
 $tab_eleves = array_map('clean_entier',$tab_eleves);
 $tab_eleves = array_filter($tab_eleves,'positif');
 $nb_eleves  = count($tab_eleves);
+// Contrôler la liste des profs transmis
+$tab_profs = (isset($_POST['f_prof_liste'])) ? explode('_',$_POST['f_prof_liste']) : array() ;
+$tab_profs = array_map('clean_entier',$tab_profs);
+$tab_profs = array_filter($tab_profs,'positif');
 // Liste des notes transmises
 $tab_notes = (isset($_POST['f_notes'])) ? explode(',',$_POST['f_notes']) : array() ;
 
@@ -94,7 +99,7 @@ if( ($action=='Afficher_evaluations') && $date_debut && $date_fin )
 	{
 		exit('Erreur : la date de début est postérieure à la date de fin !');
 	}
-	$DB_TAB = DB_STRUCTURE_lister_devoirs_prof($_SESSION['USER_ID'],0,$date_debut_mysql,$date_fin_mysql);
+	$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_devoirs_prof($_SESSION['USER_ID'],0,$date_debut_mysql,$date_fin_mysql);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		// Formater la date et la référence de l'évaluation
@@ -103,6 +108,18 @@ if( ($action=='Afficher_evaluations') && $date_debut && $date_fin )
 		$ref = $DB_ROW['devoir_id'].'_'.strtoupper($DB_ROW['groupe_type']{0}).$DB_ROW['groupe_id'];
 		$cs = ($DB_ROW['items_nombre']>1) ? 's' : '';
 		$us = ($DB_ROW['users_nombre']>1) ? 's' : '';
+		if(!$DB_ROW['devoir_partage'])
+		{
+			$profs_liste = '';
+			$profs_nombre = 'moi seul';
+		}
+		else
+		{
+			$profs_liste = mb_substr($DB_ROW['devoir_partage'],1,-1);
+			$profs_nombre = mb_substr_count($DB_ROW['devoir_partage'],'_')-1;
+			$profs_nombre.= ' profs';
+		}
+		$proprio = ($DB_ROW['prof_id']==$_SESSION['USER_ID']) ? TRUE : FALSE ;
 		// Afficher une ligne du tableau
 		echo'<tr>';
 		echo	'<td><i>'.html($DB_ROW['devoir_date']).'</i>'.html($date_affich).'</td>';
@@ -110,11 +127,12 @@ if( ($action=='Afficher_evaluations') && $date_debut && $date_fin )
 		echo	'<td lang="'.html($DB_ROW['users_listing']).'">'.html($DB_ROW['users_nombre']).' élève'.$us.'</td>';
 		echo	'<td>'.html($DB_ROW['devoir_info']).'</td>';
 		echo	'<td lang="'.html($DB_ROW['items_listing']).'">'.html($DB_ROW['items_nombre']).' item'.$cs.'</td>';
+		echo	'<td lang="'.$profs_liste.'">'.$profs_nombre.'</td>';
 		echo	'<td class="nu" lang="'.$ref.'">';
-		echo		'<q class="modifier" title="Modifier cette évaluation (date, description, ...)."></q>';
-		echo		'<q class="ordonner" title="Réordonner les items de cette évaluation."></q>';
+		echo		($proprio) ? '<q class="modifier" title="Modifier cette évaluation (date, description, ...)."></q>' : '<q class="modifier_non" title="Non modifiable (évaluation d\'un collègue)."></q>' ;
+		echo		($proprio) ? '<q class="ordonner" title="Réordonner les items de cette évaluation."></q>' : '<q class="ordonner_non" title="Non réordonnable (évaluation d\'un collègue)."></q>' ;
 		echo		'<q class="dupliquer" title="Dupliquer cette évaluation."></q>';
-		echo		'<q class="supprimer" title="Supprimer cette évaluation."></q>';
+		echo		($proprio) ? '<q class="supprimer" title="Supprimer cette évaluation."></q>' : '<q class="supprimer_non" title="Non supprimable (évaluation d\'un collègue)."></q>' ;
 		echo		'<q class="imprimer" title="Imprimer un cartouche pour cette évaluation."></q>';
 		echo		'<q class="saisir" title="Saisir les acquisitions des élèves à cette évaluation."></q>';
 		echo		'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
@@ -143,24 +161,52 @@ if( (($action=='ajouter')||(($action=='dupliquer')&&($devoir_id))) && $date && $
 	{
 		exit('Erreur : date trop éloignée !');
 	}
+	// Tester les profs, mais plus leur appartenance au groupe (pour qu'on prof puisse accéder à l'éval même s'il n'a pas le groupe, même si on duplique une évaluation pour un autre groupe...) [absurde ici de toutes façons]
+	if(count($tab_profs))
+	{
+		if(!in_array($_SESSION['USER_ID'],$tab_profs))
+		{
+			exit('Erreur : absent de la liste des professeurs !');
+		}
+		/*
+		$tab_profs_groupe = array();
+		$DB_TAB_USER = DB_STRUCTURE_PROFESSEUR::DB_lister_professeurs_groupe($groupe_id);
+		foreach($DB_TAB_USER as $DB_ROW)
+		{
+			$tab_profs_groupe[] = $DB_ROW['user_id'];
+		}
+		$tab_profs = array_intersect( $tab_profs , $tab_profs_groupe );
+		*/
+		// Si y a que soi...
+		if(count($tab_profs)==1)
+		{
+			$tab_profs = array();
+		}
+	}
+	$listing_id_profs = count($tab_profs) ? implode('_',$tab_profs) : '' ;
 	// Commencer par créer un nouveau groupe de type "eval", utilisé uniquement pour cette évaluation (c'est transparent pour le professeur)
-	$groupe_id = DB_STRUCTURE_ajouter_groupe($groupe_type,$_SESSION['USER_ID'],'','',0);
+	$groupe_id = DB_STRUCTURE_PROFESSEUR::DB_ajouter_groupe_par_prof($groupe_type,'',0);
+	// Y associer le prof, en responsable du groupe
+	DB_STRUCTURE_PROFESSEUR::DB_modifier_liaison_user_groupe_par_prof($_SESSION['USER_ID'],'professeur',$groupe_id,$groupe_type,TRUE);
+	DB_STRUCTURE_PROFESSEUR::DB_ajouter_liaison_professeur_responsable($_SESSION['USER_ID'],$groupe_id);
 	// Insèrer l'enregistrement de l'évaluation
-	$devoir_id2 = DB_STRUCTURE_ajouter_devoir($_SESSION['USER_ID'],$groupe_id,$date_mysql,$info,$date_visible_mysql);
+	$devoir_id2 = DB_STRUCTURE_PROFESSEUR::DB_ajouter_devoir($_SESSION['USER_ID'],$groupe_id,$date_mysql,$info,$date_visible_mysql,$listing_id_profs);
 	// Affecter tous les élèves choisis
-	DB_STRUCTURE_modifier_liaison_devoir_user($devoir_id2,$groupe_id,$tab_eleves,'creer');
+	DB_STRUCTURE_PROFESSEUR::DB_modifier_liaison_devoir_user($devoir_id2,$groupe_id,$tab_eleves,'creer');
 	// Insérer les enregistrements des items de l'évaluation
-	DB_STRUCTURE_modifier_liaison_devoir_item($devoir_id2,$tab_items,'dupliquer',$devoir_id);
+	DB_STRUCTURE_PROFESSEUR::DB_modifier_liaison_devoir_item($devoir_id2,$tab_items,'dupliquer',$devoir_id);
 	// Afficher le retour
 	$date_visible = ($date==$date_visible) ? 'identique' : $date_visible;
 	$ref = $devoir_id2.'_'.strtoupper($groupe_type{0}).$groupe_id;
 	$cs = ($nb_items>1) ? 's' : '';
 	$us = ($nb_eleves>1)      ? 's' : '';
+	$profs_nombre = count($tab_profs) ? count($tab_profs).' profs' : 'moi seul' ;
 	echo'<td><i>'.html($date_mysql).'</i>'.html($date).'</td>';
 	echo'<td>'.html($date_visible).'</td>';
 	echo'<td lang="'.implode('_',$tab_eleves).'">'.$nb_eleves.' élève'.$us.'</td>';
 	echo'<td>'.html($info).'</td>';
 	echo'<td lang="'.implode('_',$tab_items).'">'.$nb_items.' item'.$cs.'</td>';
+	echo'<td lang="'.implode('_',$tab_profs).'">'.$profs_nombre.'</td>';
 	echo'<td class="nu" lang="'.$ref.'">';
 	echo	'<q class="modifier" title="Modifier cette évaluation (date, description, ...)."></q>';
 	echo	'<q class="ordonner" title="Réordonner les items de cette évaluation."></q>';
@@ -191,23 +237,48 @@ if( ($action=='modifier') && $devoir_id && $groupe_id && $date && $date_visible 
 	{
 		exit('Erreur : date trop éloignée !');
 	}
+	// Tester les profs, mais plus leur appartenance au groupe (pour qu'on prof puisse accéder à l'éval même s'il n'a pas le groupe, même si on duplique une évaluation pour un autre groupe...) [absurde ici de toutes façons]
+	if(count($tab_profs))
+	{
+		if(!in_array($_SESSION['USER_ID'],$tab_profs))
+		{
+			exit('Erreur : absent de la liste des professeurs !');
+		}
+		/*
+		$tab_profs_groupe = array();
+		$DB_TAB_USER = DB_STRUCTURE_PROFESSEUR::DB_lister_professeurs_groupe($groupe_id);
+		foreach($DB_TAB_USER as $DB_ROW)
+		{
+			$tab_profs_groupe[] = $DB_ROW['user_id'];
+		}
+		$tab_profs = array_intersect( $tab_profs , $tab_profs_groupe );
+		*/
+		// Si y a que soi...
+		if(count($tab_profs)==1)
+		{
+			$tab_profs = array();
+		}
+	}
+	$listing_id_profs = count($tab_profs) ? implode('_',$tab_profs) : '' ;
 	// sacoche_devoir (maj des paramètres date & info)
-	DB_STRUCTURE_modifier_devoir($devoir_id,$_SESSION['USER_ID'],$date_mysql,$info,$date_visible_mysql,$tab_items);
+	DB_STRUCTURE_PROFESSEUR::DB_modifier_devoir($devoir_id,$_SESSION['USER_ID'],$date_mysql,$info,$date_visible_mysql,$tab_items,$listing_id_profs);
 	// sacoche_jointure_user_groupe + sacoche_saisie pour les users supprimés
-	DB_STRUCTURE_modifier_liaison_devoir_user($devoir_id,$groupe_id,$tab_eleves,'substituer');
+	DB_STRUCTURE_PROFESSEUR::DB_modifier_liaison_devoir_user($devoir_id,$groupe_id,$tab_eleves,'substituer');
 	// sacoche_jointure_devoir_item + sacoche_saisie pour les items supprimés
-	DB_STRUCTURE_modifier_liaison_devoir_item($devoir_id,$tab_items,'substituer');
+	DB_STRUCTURE_PROFESSEUR::DB_modifier_liaison_devoir_item($devoir_id,$tab_items,'substituer');
 	// ************************ dans sacoche_saisie faut-il aussi virer certains scores élèves en cas de changement de groupe ... ???
 	// Afficher le retour
 	$date_visible = ($date==$date_visible) ? 'identique' : $date_visible;
 	$ref = $devoir_id.'_'.strtoupper($groupe_type{0}).$groupe_id;
 	$cs = ($nb_items>1)  ? 's' : '';
 	$us = ($nb_eleves>1) ? 's' : '';
+	$profs_nombre = count($tab_profs) ? count($tab_profs).' profs' : 'moi seul' ;
 	echo'<td><i>'.html($date_mysql).'</i>'.html($date).'</td>';
 	echo'<td>'.html($date_visible).'</td>';
 	echo'<td lang="'.implode('_',$tab_eleves).'">'.$nb_eleves.' élève'.$us.'</td>';
 	echo'<td>'.html($info).'</td>';
 	echo'<td lang="'.implode('_',$tab_items).'">'.$nb_items.' item'.$cs.'</td>';
+	echo'<td lang="'.implode('_',$tab_profs).'">'.$profs_nombre.'</td>';
 	echo'<td class="nu" lang="'.$ref.'">';
 	echo	'<q class="modifier" title="Modifier cette évaluation (date, description, ...)."></q>';
 	echo	'<q class="ordonner" title="Réordonner les items de cette évaluation."></q>';
@@ -228,9 +299,11 @@ if( ($action=='modifier') && $devoir_id && $groupe_id && $date && $date_visible 
 if( ($action=='supprimer') && $devoir_id && $groupe_id )
 {
 	// supprimer le groupe spécialement associé (invisible à l'utilisateur) et les entrées dans sacoche_jointure_user_groupe pour une évaluation avec des élèves piochés en dehors de tout groupe prédéfini
-	DB_STRUCTURE_supprimer_groupe($groupe_id,$groupe_type,$with_devoir=false);
+	DB_STRUCTURE_PROFESSEUR::DB_supprimer_groupe_par_prof( $groupe_id , $groupe_type , FALSE /*with_devoir*/ );
+	ajouter_log_SACoche('Suppression d\'un regroupement ('.$groupe_type.' '.$groupe_id.'), sans les devoirs associés.');
 	// la suite est commune aux évals sur une classe ou un groupe
-	DB_STRUCTURE_supprimer_devoir_et_saisies($devoir_id,$_SESSION['USER_ID']);
+	DB_STRUCTURE_PROFESSEUR::DB_supprimer_devoir_et_saisies($devoir_id,$_SESSION['USER_ID']);
+	ajouter_log_SACoche('Suppression d\'un devoir ('.$devoir_id.') avec les saisies associées.');
 	// Afficher le retour
 	exit('<td>ok</td>');
 }
@@ -242,7 +315,7 @@ if( ($action=='supprimer') && $devoir_id && $groupe_id )
 if( ($action=='ordonner') && $devoir_id )
 {
 	// liste des items
-	$DB_TAB_COMP = DB_STRUCTURE_lister_items_devoir($devoir_id);
+	$DB_TAB_COMP = DB_STRUCTURE_PROFESSEUR::DB_lister_items_devoir($devoir_id);
 	if(!count($DB_TAB_COMP))
 	{
 		exit('Aucun item n\'est associé à cette évaluation !');
@@ -254,10 +327,10 @@ if( ($action=='ordonner') && $devoir_id )
 		$texte_socle = ($DB_ROW['entree_id']) ? ' [S]' : ' [–]';
 		$tab_affich[] = '<div id="i'.$DB_ROW['item_id'].'"><b>'.html($item_ref.$texte_socle).'</b> - '.html($DB_ROW['item_nom']).'</div>';
 	}
-	echo implode('<div class="ti"><input type="image" src="./_img/action_ordonner.png" /></div>',$tab_affich);
+	echo implode('<div class="ti"><input type="image" alt="Ordonner" src="./_img/action_ordonner.png" /></div>',$tab_affich);
 	echo'<p>';
-	echo	'<button id="Enregistrer_ordre" type="button" value="'.$ref.'"><img alt="" src="./_img/bouton/valider.png" /> Enregistrer cet ordre</button>&nbsp;&nbsp;&nbsp;';
-	echo	'<button id="fermer_zone_ordonner" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>&nbsp;&nbsp;&nbsp;';
+	echo	'<button id="Enregistrer_ordre" type="button" value="'.$ref.'" class="valider">Enregistrer cet ordre</button>&nbsp;&nbsp;&nbsp;';
+	echo	'<button id="fermer_zone_ordonner" type="button" class="retourner">Retour</button>&nbsp;&nbsp;&nbsp;';
 	echo	'<label id="ajax_msg">&nbsp;</label>';
 	echo'</p>';
 	exit();
@@ -272,9 +345,9 @@ if( ($action=='ordonner') && $devoir_id )
 if( ($action=='saisir') && $devoir_id && $groupe_id && $date && $date_visible && $descriptif ) // $date au format MySQL ; $descriptif séparé par ::: ; $info (facultative) reportées dans input hidden
 {
 	// liste des items
-	$DB_TAB_COMP = DB_STRUCTURE_lister_items_devoir($devoir_id);
+	$DB_TAB_COMP = DB_STRUCTURE_PROFESSEUR::DB_lister_items_devoir($devoir_id);
 	// liste des élèves
-	$DB_TAB_USER = DB_STRUCTURE_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
+	$DB_TAB_USER = DB_STRUCTURE_COMMUN::DB_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
 	// Let's go
 	$item_nb = count($DB_TAB_COMP);
 	if(!$item_nb)
@@ -291,13 +364,16 @@ if( ($action=='saisir') && $devoir_id && $groupe_id && $date && $date_visible &&
 	$tab_user_id = array(); // pas indispensable, mais plus lisible
 	$tab_comp_id = array(); // pas indispensable, mais plus lisible
 	$tab_affich[0][0] = '<td>';
-	$tab_affich[0][0].= '<span class="manuel"><a class="pop_up" href="'.SERVEUR_DOCUMENTAIRE.'?fichier=support_professeur__evaluations_saisie_resultats">DOC : Saisie des résultats.</a></span><p />';
+	$tab_affich[0][0].= '<span class="manuel"><a class="pop_up" href="'.SERVEUR_DOCUMENTAIRE.'?fichier=support_professeur__evaluations_saisie_resultats">DOC : Saisie des résultats.</a></span>';
+	$tab_affich[0][0].= '<p>';
 	$tab_affich[0][0].= '<label for="radio_clavier"><input type="radio" id="radio_clavier" name="mode_saisie" value="clavier" /> <img alt="" src="./_img/pilot_keyboard.png" /> Piloter au clavier</label> <img alt="" src="./_img/bulle_aide.png" title="Sélectionner un rectangle blanc<br />au clavier (flèches) ou à la souris<br />puis utiliser les touches suivantes :<br />&nbsp;1 ; 2 ; 3 ; 4 ; A ; N ; D ; suppr" /><br />';
-	$tab_affich[0][0].= '<label for="radio_souris"><input type="radio" id="radio_souris" name="mode_saisie" value="souris" /> <img alt="" src="./_img/pilot_mouse.png" /> Piloter à la souris</label> <img alt="" src="./_img/bulle_aide.png" title="Survoler une case du tableau avec la souris<br />puis cliquer sur une des images proposées." /><p />';
+	$tab_affich[0][0].= '<label for="radio_souris"><input type="radio" id="radio_souris" name="mode_saisie" value="souris" /> <img alt="" src="./_img/pilot_mouse.png" /> Piloter à la souris</label> <img alt="" src="./_img/bulle_aide.png" title="Survoler une case du tableau avec la souris<br />puis cliquer sur une des images proposées." />';
+	$tab_affich[0][0].= '</p><p>';
 	$tab_affich[0][0].= '<label for="check_largeur"><input type="checkbox" id="check_largeur" name="check_largeur" value="retrecir_largeur" /> <img alt="" src="./_img/retrecir_largeur.gif" /> Largeur optimale</label> <img alt="" src="./_img/bulle_aide.png" title="Diminuer la largeur des colonnes<br />si les élèves sont nombreux." /><br />';
-	$tab_affich[0][0].= '<label for="check_hauteur"><input type="checkbox" id="check_hauteur" name="check_hauteur" value="retrecir_hauteur" /> <img alt="" src="./_img/retrecir_hauteur.gif" /> Hauteur optimale</label> <img alt="" src="./_img/bulle_aide.png" title="Diminuer la hauteur des lignes<br />si les items sont nombreux." /><p />';
-	$tab_affich[0][0].= '<button id="Enregistrer_saisie" type="button"><img alt="" src="./_img/bouton/valider.png" /> Enregistrer les saisies</button><input type="hidden" name="f_ref" id="f_ref" value="'.$ref.'" /><input id="f_date" name="f_date" type="hidden" value="'.$date.'" /><input id="f_date_visible" name="f_date_visible" type="hidden" value="'.$date_visible.'" /><input id="f_info" name="f_info" type="hidden" value="'.html($info).'" /><br />';
-	$tab_affich[0][0].= '<button id="fermer_zone_saisir" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>';
+	$tab_affich[0][0].= '<label for="check_hauteur"><input type="checkbox" id="check_hauteur" name="check_hauteur" value="retrecir_hauteur" /> <img alt="" src="./_img/retrecir_hauteur.gif" /> Hauteur optimale</label> <img alt="" src="./_img/bulle_aide.png" title="Diminuer la hauteur des lignes<br />si les items sont nombreux." />';
+	$tab_affich[0][0].= '</p>';
+	$tab_affich[0][0].= '<button id="Enregistrer_saisie" type="button" class="valider">Enregistrer les saisies</button><input type="hidden" name="f_ref" id="f_ref" value="'.$ref.'" /><input id="f_date" name="f_date" type="hidden" value="'.$date.'" /><input id="f_date_visible" name="f_date_visible" type="hidden" value="'.$date_visible.'" /><input id="f_info" name="f_info" type="hidden" value="'.html($info).'" /><br />';
+	$tab_affich[0][0].= '<button id="fermer_zone_saisir" type="button" class="retourner">Retour</button>';
 	$tab_affich[0][0].= '</td>';
 	// première ligne (noms prénoms des élèves)
 	$csv_ligne_eleve_nom = $separateur;
@@ -335,7 +411,7 @@ if( ($action=='saisir') && $devoir_id && $groupe_id && $date && $date_visible &&
 		}
 	}
 	// configurer le champ input
-	$DB_TAB = DB_STRUCTURE_lister_saisies_devoir($devoir_id,$with_REQ=true);
+	$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_saisies_devoir($devoir_id,$with_REQ=true);
 	$bad = 'class="X" value="X"';
 	foreach($DB_TAB as $DB_ROW)
 	{
@@ -361,8 +437,6 @@ if( ($action=='saisir') && $devoir_id && $groupe_id && $date && $date_visible &&
 	//
 	// pdf contenant un tableau de saisie vide ; on a besoin de tourner du texte à 90°
 	//
-	require('./_lib/FPDF/fpdf.php');
-	require('./_inc/class.PDF.php');
 	$sacoche_pdf = new PDF($orientation='landscape',$marge_min=10,$couleur='non');
 	$sacoche_pdf->tableau_saisie_initialiser($eleve_nb,$item_nb);
 	// 1ère ligne : référence devoir, noms élèves
@@ -419,9 +493,9 @@ if( ($action=='saisir') && $devoir_id && $groupe_id && $date && $date_visible &&
 if( ($action=='voir') && $devoir_id && $groupe_id && $date && $descriptif ) // $date française pour le csv ; $descriptif séparé par :::
 {
 	// liste des items
-	$DB_TAB_COMP = DB_STRUCTURE_lister_items_devoir($devoir_id);
+	$DB_TAB_COMP = DB_STRUCTURE_PROFESSEUR::DB_lister_items_devoir($devoir_id);
 	// liste des élèves
-	$DB_TAB_USER = DB_STRUCTURE_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
+	$DB_TAB_USER = DB_STRUCTURE_COMMUN::DB_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
 	// Let's go
 	$item_nb = count($DB_TAB_COMP);
 	if(!$item_nb)
@@ -439,8 +513,8 @@ if( ($action=='voir') && $devoir_id && $groupe_id && $date && $descriptif ) // $
 	$tab_comp_id = array(); // pas indispensable, mais plus lisible
 	$tab_affich[0][0] = '<td>';
 	$tab_affich[0][0].= '<label for="check_largeur"><input type="checkbox" id="check_largeur" name="check_largeur" value="retrecir_largeur" /> <img alt="" src="./_img/retrecir_largeur.gif" /> Largeur optimale</label> <img alt="" src="./_img/bulle_aide.png" title="Diminuer la largeur des colonnes<br />si les élèves sont nombreux." /><br />';
-	$tab_affich[0][0].= '<label for="check_hauteur"><input type="checkbox" id="check_hauteur" name="check_hauteur" value="retrecir_hauteur" /> <img alt="" src="./_img/retrecir_hauteur.gif" /> Hauteur optimale</label> <img alt="" src="./_img/bulle_aide.png" title="Diminuer la hauteur des lignes<br />si les items sont nombreux." /><p />';
-	$tab_affich[0][0].= '<button id="fermer_zone_voir" type="button"><img alt="" src="./_img/bouton/retourner.png" /> Retour</button>';
+	$tab_affich[0][0].= '<label for="check_hauteur"><input type="checkbox" id="check_hauteur" name="check_hauteur" value="retrecir_hauteur" /> <img alt="" src="./_img/retrecir_hauteur.gif" /> Hauteur optimale</label> <img alt="" src="./_img/bulle_aide.png" title="Diminuer la hauteur des lignes<br />si les items sont nombreux." />';
+	$tab_affich[0][0].= '<p><button id="fermer_zone_voir" type="button" class="retourner">Retour</button></p>';
 	$tab_affich[0][0].= '</td>';
 	// première ligne (noms prénoms des élèves)
 	$csv_ligne_eleve_nom = $separateur;
@@ -476,7 +550,7 @@ if( ($action=='voir') && $devoir_id && $groupe_id && $date && $descriptif ) // $
 	}
 	// ajouter le contenu
 	$tab_dossier = array( ''=>'' , 'RR'=>$_SESSION['NOTE_DOSSIER'].'/h/' , 'R'=>$_SESSION['NOTE_DOSSIER'].'/h/' , 'V'=>$_SESSION['NOTE_DOSSIER'].'/h/' , 'VV'=>$_SESSION['NOTE_DOSSIER'].'/h/' , 'ABS'=>'commun/h/' , 'NN'=>'commun/h/' , 'DISP'=>'commun/h/' , 'REQ'=>'' );
-	$DB_TAB = DB_STRUCTURE_lister_saisies_devoir($devoir_id,$with_REQ=true);
+	$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_saisies_devoir($devoir_id,$with_REQ=true);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		// Test pour éviter les pbs des élèves changés de groupes ou des items modifiés en cours de route
@@ -501,7 +575,6 @@ if( ($action=='voir') && $devoir_id && $groupe_id && $date && $descriptif ) // $
 	// Enregistrer le csv
 	$export_csv .= str_replace(':::',"\r\n",$descriptif)."\r\n\r\n";
 	$export_csv .= 'CODAGES AUTORISÉS : 1 2 3 4 A N D'."\r\n";
-	$fnom = 'saisie_'.$_SESSION['BASE'].'_'.$_SESSION['USER_ID'].'_'.$ref;
 	$zip = new ZipArchive();
 	$result_open = $zip->open($dossier_export.$fnom.'.zip', ZIPARCHIVE::CREATE);
 	if($result_open!==TRUE)
@@ -511,8 +584,6 @@ if( ($action=='voir') && $devoir_id && $groupe_id && $date && $descriptif ) // $
 	}
 	$zip->addFromString($fnom.'.csv',csv($export_csv));
 	$zip->close();
-	require('./_lib/FPDF/fpdf.php');
-	require('./_inc/class.PDF.php');
 	// / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 	// pdf contenant un tableau de saisie vide ; on a besoin de tourner du texte à 90°
 	// / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -594,9 +665,9 @@ if( ($action=='voir') && $devoir_id && $groupe_id && $date && $descriptif ) // $
 if( ($action=='voir_repart') && $devoir_id && $groupe_id && $date && $descriptif ) // $date française pour le csv ; $descriptif séparé par :::
 {
 	// liste des items
-	$DB_TAB_ITEM = DB_STRUCTURE_lister_items_devoir($devoir_id);
+	$DB_TAB_ITEM = DB_STRUCTURE_PROFESSEUR::DB_lister_items_devoir($devoir_id);
 	// liste des élèves
-	$DB_TAB_USER = DB_STRUCTURE_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
+	$DB_TAB_USER = DB_STRUCTURE_COMMUN::DB_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
 	// Let's go
 	$item_nb = count($DB_TAB_ITEM);
 	if(!$item_nb)
@@ -640,7 +711,7 @@ if( ($action=='voir_repart') && $devoir_id && $groupe_id && $date && $descriptif
 		$affichage_repartition_head .= '<th><img alt="'.$note.'" src="./_img/note/'.$tab_dossier[$note].$note.'.gif" /></th>';
 	}
 	// ligne suivantes
-	$DB_TAB = DB_STRUCTURE_lister_saisies_devoir($devoir_id,$with_REQ=false);
+	$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_saisies_devoir($devoir_id,$with_REQ=false);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		// Test pour éviter les pbs des élèves changés de groupes ou des items modifiés en cours de route
@@ -681,8 +752,6 @@ if( ($action=='voir_repart') && $devoir_id && $groupe_id && $date && $descriptif
 		echo'</tr>';
 	}
 	echo'</tbody>';
-	require('./_lib/FPDF/fpdf.php');
-	require('./_inc/class.PDF.php');
 	// / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 	// pdf contenant un tableau avec la répartition quantitative
 	// / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -716,7 +785,7 @@ if( ($action=='voir_repart') && $devoir_id && $groupe_id && $date && $descriptif
 			$sacoche_pdf->Cell($rect_largeur , $rect_hauteur , '' , 0 , 0 , 'C' , true , '');
 			// Écrire le %
 			$sacoche_pdf->SetXY($memo_X , $memo_Y);
-			$sacoche_pdf->SetFont('Helvetica' , '' , $sacoche_pdf->taille_police*(1+$coefficient));
+			$sacoche_pdf->SetFont('Arial' , '' , $sacoche_pdf->taille_police*(1+$coefficient));
 			$sacoche_pdf->Cell($sacoche_pdf->cases_largeur , $sacoche_pdf->cases_hauteur , pdf(round(100*$coefficient).'%') , 1 , 0 , 'C' , false , '');
 		}
 		$sacoche_pdf->SetXY($sacoche_pdf->marge_gauche , $sacoche_pdf->GetY()+$sacoche_pdf->cases_hauteur);
@@ -752,7 +821,7 @@ if( ($action=='voir_repart') && $devoir_id && $groupe_id && $date && $descriptif
 				{
 					$taille_police -= 0.5 ;
 				}
-				$sacoche_pdf->SetFont('Helvetica' , '' , $taille_police);
+				$sacoche_pdf->SetFont('Arial' , '' , $taille_police);
 				$sacoche_pdf->Cell($sacoche_pdf->cases_largeur , $sacoche_pdf->lignes_hauteur , pdf($eleve_texte) , 0 , 2 , 'L' , false , '');
 			}
 			// Ajouter la bordure
@@ -774,7 +843,7 @@ if( ($action=='voir_repart') && $devoir_id && $groupe_id && $date && $descriptif
 
 if( ($action=='Enregistrer_ordre') && $devoir_id && count($tab_id) )
 {
-	DB_STRUCTURE_modifier_ordre_item($devoir_id,$tab_id);
+	DB_STRUCTURE_PROFESSEUR::DB_modifier_ordre_item($devoir_id,$tab_id);
 	exit('<ok>');
 }
 
@@ -801,7 +870,7 @@ if( ($action=='Enregistrer_saisie') && $devoir_id && $date && $date_visible && c
 	$tab_nouveau_modifier = array();
 	$tab_nouveau_supprimer = array();
 	$tab_demande_supprimer = array();
-	$DB_TAB = DB_STRUCTURE_lister_saisies_devoir($devoir_id,$with_REQ=true);
+	$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_saisies_devoir($devoir_id,$with_REQ=true);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$key = $DB_ROW['item_id'].'x'.$DB_ROW['eleve_id'];
@@ -838,22 +907,22 @@ if( ($action=='Enregistrer_saisie') && $devoir_id && $date && $date_visible && c
 	foreach($tab_nouveau_ajouter as $key => $note)
 	{
 		list($item_id,$eleve_id) = explode('x',$key);
-		DB_STRUCTURE_ajouter_saisie($_SESSION['USER_ID'],$eleve_id,$devoir_id,$item_id,$date,$note,$info,$date_visible_mysql);
+		DB_STRUCTURE_PROFESSEUR::DB_ajouter_saisie($_SESSION['USER_ID'],$eleve_id,$devoir_id,$item_id,$date,$note,$info,$date_visible_mysql);
 	}
 	foreach($tab_nouveau_modifier as $key => $note)
 	{
 		list($item_id,$eleve_id) = explode('x',$key);
-		DB_STRUCTURE_modifier_saisie($eleve_id,$devoir_id,$item_id,$note,$info);
+		DB_STRUCTURE_PROFESSEUR::DB_modifier_saisie($eleve_id,$devoir_id,$item_id,$note,$info);
 	}
 	foreach($tab_nouveau_supprimer as $key => $key)
 	{
 		list($item_id,$eleve_id) = explode('x',$key);
-		DB_STRUCTURE_supprimer_saisie($eleve_id,$devoir_id,$item_id);
+		DB_STRUCTURE_PROFESSEUR::DB_supprimer_saisie($eleve_id,$devoir_id,$item_id);
 	}
 	foreach($tab_demande_supprimer as $key => $key)
 	{
 		list($item_id,$eleve_id) = explode('x',$key);
-		DB_STRUCTURE_supprimer_demande($eleve_id,$item_id);
+		DB_STRUCTURE_PROFESSEUR::DB_supprimer_demande_precise($eleve_id,$item_id);
 	}
 	exit('<ok>');
 }
@@ -864,13 +933,13 @@ if( ($action=='Enregistrer_saisie') && $devoir_id && $date && $date_visible && c
 
 if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_id && $date && $cart_contenu && $cart_detail && $orientation && $marge_min && $couleur )
 {
-	save_cookie_select('cartouche');
+	Formulaire::save_choix('cartouche');
 	$with_nom    = (substr($cart_contenu,0,8)=='AVEC_nom')  ? true : false ;
 	$with_result = (substr($cart_contenu,9)=='AVEC_result') ? true : false ;
 	// liste des items
-	$DB_TAB_COMP = DB_STRUCTURE_lister_items_devoir($devoir_id);
+	$DB_TAB_COMP = DB_STRUCTURE_PROFESSEUR::DB_lister_items_devoir($devoir_id);
 	// liste des élèves
-	$DB_TAB_USER = DB_STRUCTURE_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
+	$DB_TAB_USER = DB_STRUCTURE_COMMUN::DB_lister_users_actifs_regroupement('eleve',$groupe_type,$groupe_id);
 	// Let's go
 	if(!count($DB_TAB_COMP))
 	{
@@ -908,7 +977,7 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_id && $date && $car
 	// compléter si demandé avec les résultats et/ou les demandes d'évaluations
 	if($with_result || $only_req)
 	{
-		$DB_TAB = DB_STRUCTURE_lister_saisies_devoir($devoir_id,$with_REQ=$only_req);
+		$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_saisies_devoir($devoir_id,$with_REQ=$only_req);
 		foreach($DB_TAB as $DB_ROW)
 		{
 			// Test pour éviter les pbs des élèves changés de groupes ou des items modifiés en cours de route
@@ -924,9 +993,8 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_id && $date && $car
 		}
 	}
 	// On attaque l'élaboration des sorties HTML, CSV et PDF
-	$fnom = 'cartouche_'.$_SESSION['BASE'].'_'.$devoir_id.'_'.time();
-	$sacoche_htm = '<hr /><a class="lien_ext" href="'.$dossier_export.$fnom.'.pdf">Cartouches &rarr; Archiver / Imprimer (format <em>pdf</em>).</a><br />';
-	$sacoche_htm.= '<a class="lien_ext" href="'.$dossier_export.$fnom.'.zip">Cartouches &rarr; Récupérer / Manipuler (fichier <em>csv</em> pour tableur).</a><p />';
+	$sacoche_htm = '<hr /><a class="lien_ext" href="'.$dossier_export.$fnom.'_cartouche.pdf"><span class="file file_pdf">Cartouches &rarr; Archiver / Imprimer (format <em>pdf</em>).</span></a><br />';
+	$sacoche_htm.= '<a class="lien_ext" href="'.$dossier_export.$fnom.'_cartouche.zip"><span class="file file_zip">Cartouches &rarr; Récupérer / Manipuler (fichier <em>csv</em> pour tableur).</span></a>';
 	$sacoche_csv = '';
 	// Appel de la classe et définition de qqs variables supplémentaires pour la mise en page PDF
 	$item_nb = count($tab_comp_id);
@@ -934,8 +1002,6 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_id && $date && $car
 	{
 		$tab_user_nb_req = array_fill_keys( array_keys($tab_user_nb_req) , $item_nb );
 	}
-	require('./_lib/FPDF/fpdf.php');
-	require('./_inc/class.PDF.php');
 	$sacoche_pdf = new PDF($orientation,$marge_min,$couleur);
 	$sacoche_pdf->cartouche_initialiser($cart_detail,$item_nb);
 	if($cart_detail=='minimal')
@@ -962,7 +1028,7 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_id && $date && $car
 						$sacoche_pdf->cartouche_minimal_competence($tab_val_comp[0] , $tab_result[$comp_id][$user_id]);
 					}
 				}
-				$sacoche_htm .= '<tr>'.$ligne1_html.'</tr><tr>'.$ligne2_html.'</tr></tbody></table><p />';
+				$sacoche_htm .= '<tr>'.$ligne1_html.'</tr><tr>'.$ligne2_html.'</tr></tbody></table>';
 				$sacoche_csv .= $ligne1_csv."\r\n".$ligne2_csv."\r\n\r\n";
 				$sacoche_pdf->cartouche_interligne(4);
 			}
@@ -988,7 +1054,7 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_id && $date && $car
 						$sacoche_pdf->cartouche_complet_competence($tab_val_comp[0] , $tab_val_comp[1] , $tab_result[$comp_id][$user_id]);
 					}
 				}
-				$sacoche_htm .= '</tbody></table><p />';
+				$sacoche_htm .= '</tbody></table>';
 				$sacoche_csv .= "\r\n";
 				$sacoche_pdf->cartouche_interligne(2);
 			}
@@ -996,16 +1062,16 @@ if( ($action=='Imprimer_cartouche') && $devoir_id && $groupe_id && $date && $car
 	}
 	// On archive le cartouche dans un fichier tableur zippé (csv tabulé)
 	$zip = new ZipArchive();
-	$result_open = $zip->open($dossier_export.$fnom.'.zip', ZIPARCHIVE::CREATE);
+	$result_open = $zip->open($dossier_export.$fnom.'_cartouche.zip', ZIPARCHIVE::CREATE);
 	if($result_open!==TRUE)
 	{
 		require('./_inc/tableau_zip_error.php');
 		exit('Problème de création de l\'archive ZIP ('.$result_open.$tab_zip_error[$result_open].') !');
 	}
-	$zip->addFromString($fnom.'.csv',csv($sacoche_csv));
+	$zip->addFromString($fnom.'_cartouche.csv',csv($sacoche_csv));
 	$zip->close();
 	// On archive le cartouche dans un fichier pdf
-	$sacoche_pdf->Output($dossier_export.$fnom.'.pdf','F');
+	$sacoche_pdf->Output($dossier_export.$fnom.'_cartouche.pdf','F');
 	// Affichage
 	exit($sacoche_htm);
 }

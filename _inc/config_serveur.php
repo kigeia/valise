@@ -96,64 +96,77 @@ ini_set('zend.ze1_compatibility_mode',0);
 mb_internal_encoding(CHARSET);
 
 /**
- * load_sacoche_mysql_configD
- * Charge la base de donnée avec le bon numéro de base. Retourne faux si non chargé.
- *
- * @param int $BASE
- * @return false | int | string false si la base n'est pas chargée, le numéro de la base si elle est chargée
+ * Auto-chargement des classes (aucune inclusion de classe n'est nécessaire, elles sont chargées par cette fonction suivant les besoins).
+ * 
+ * @param string   $class_name   nom de la classe
+ * @return void
  */
+function __autoload($class_name)
+{
+	$tab_classes = array(
+		'DB'                          => '_lib'.DIRECTORY_SEPARATOR.'DB'.DIRECTORY_SEPARATOR.'DB.class.php' ,
+		'FirePHP'                     => '_lib'.DIRECTORY_SEPARATOR.'FirePHPCore'.DIRECTORY_SEPARATOR.'FirePHP.class.php' ,
+		'FPDF'                        => '_lib'.DIRECTORY_SEPARATOR.'FPDF'.DIRECTORY_SEPARATOR.'fpdf.php' ,
+		'PDF_Label'                   => '_lib'.DIRECTORY_SEPARATOR.'FPDF'.DIRECTORY_SEPARATOR.'PDF_Label.php' ,
+		'phpCAS'                      => '_lib'.DIRECTORY_SEPARATOR.'phpCAS'.DIRECTORY_SEPARATOR.'CAS.php' ,
+		'SimpleSAML_Auth_Simple'      => '_lib'.DIRECTORY_SEPARATOR.'SimpleSAMLphp'.DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'_autoload.php' ,
 
-function load_sacoche_mysql_config($BASE = null) {
-	
-	$path = dirname(dirname(__FILE__));
-	
-	if (!file_exists($path.'/__private/config/constantes.php')) {
-		return false;
-	} else {
-		require_once($path.'/__private/config/constantes.php');
-	}
-	
-	if (HEBERGEUR_INSTALLATION == 'mono-structure') {
-		//on regarde si le fichier de configuration existe
-		if (is_file($path.'/__private/mysql/serveur_sacoche_structure.php')) {
-			require_once($path.'/__private/mysql/serveur_sacoche_structure.php');
-			$BASE = 0;
-		} else {
-			return false;
+		'cssmin'                      => '_inc'.DIRECTORY_SEPARATOR.'class.CssMinified.php' ,
+		'MyDOMDocument'               => '_inc'.DIRECTORY_SEPARATOR.'class.domdocument.php' ,
+		'JSMin'                       => '_inc'.DIRECTORY_SEPARATOR.'class.JavaScriptMinified.php' ,
+		'JavaScriptPacker'            => '_inc'.DIRECTORY_SEPARATOR.'class.JavaScriptPacker.php' ,
+		'PDF'                         => '_inc'.DIRECTORY_SEPARATOR.'class.PDF.php' ,
+
+		'Formulaire'                  => '_inc'.DIRECTORY_SEPARATOR.'class.formulaire.php' ,
+
+		'DB_STRUCTURE_ADMINISTRATEUR' => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_administrateur.php' ,
+		'DB_STRUCTURE_DIRECTEUR'      => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_directeur.php' ,
+		'DB_STRUCTURE_ELEVE'          => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_eleve.php' ,
+		'DB_STRUCTURE_PROFESSEUR'     => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_professeur.php' ,
+		'DB_STRUCTURE_PUBLIC'         => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_public.php' ,
+		'DB_STRUCTURE_WEBMESTRE'      => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_webmestre.php' ,
+
+		'DB_STRUCTURE_BILAN'          => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_bilan.php' ,
+		'DB_STRUCTURE_COMMUN'         => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_commun.php' ,
+		'DB_STRUCTURE_MAJ_BASE'       => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_maj_base.php' ,
+		'DB_STRUCTURE_REFERENTIEL'    => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_referentiel.php' ,
+		'DB_STRUCTURE_SOCLE'          => '_sql'.DIRECTORY_SEPARATOR.'requetes_structure_socle.php' ,
+
+		'DB_WEBMESTRE_PUBLIC'         => '_sql'.DIRECTORY_SEPARATOR.'requetes_webmestre_public.php' ,
+		'DB_WEBMESTRE_SELECT'         => '_sql'.DIRECTORY_SEPARATOR.'requetes_webmestre_select.php' ,
+		'DB_WEBMESTRE_WEBMESTRE'      => '_sql'.DIRECTORY_SEPARATOR.'requetes_webmestre_webmestre.php'
+	);
+	if(isset($tab_classes[$class_name]))
+	{
+		$class_file = CHEMIN_SACOCHE.$tab_classes[$class_name];
+		if(is_file($class_file))
+		{
+			require_once($class_file);
 		}
-	} else {
-		//récupération de l'organisation (appelé rne ou base)
-		//pour sacoche c'est dans la requete : id, f_base, ou le cookie, ou dans la session
-		require_once($path.'/_inc/constantes.php');
-		if (isset($_REQUEST['id'])) {
-			$BASE = $_REQUEST['id'];
-		} else if (isset($_REQUEST['f_base'])) {
-			$BASE = $_REQUEST['f_base'];
-		} else if (isset($_REQUEST['base'])) {
-			$BASE = $_REQUEST['base'];
-		} else if (isset($_COOKIE) && isset($_COOKIE[COOKIE_STRUCTURE])) {
-			$BASE = $_COOKIE[COOKIE_STRUCTURE];
-		} else if (isset($_SESSION) && isset($_SESSION['BASE'])) {
-			$BASE = $_SESSION['BASE'];
-		}
-		if (isset($BASE) && $BASE != 0) {
-			//on le met dans la session, ça peut toujours servir
-			$_SESSION['BASE'] = $BASE;
-			//on regarde si le fichier de configuration existe
-			if (is_file($path.'/__private/mysql/serveur_sacoche_structure_'.$BASE.'.php')) {
-				require_once($path.'/__private/mysql/serveur_sacoche_structure_'.$BASE.'.php');
-			} else {
-				return false;
-			}
-		} else {
-			return false;
+		else
+		{
+			affich_message_exit($titre='Classe introuvable',$contenu='Le chemin de la classe '.$class_name.' est incorrect : '.$class_file);
 		}
 	}
-	
-	require_once($path.'/_inc/class.DB.config.sacoche_structure.php');
-	require_once($path.'/_inc/fonction_requetes_structure.php');
-	require_once($path.'/_lib/DB/DB.class.php');
-	return $BASE;
+}
+
+// Pour FirePHP
+if(DEBUG)
+{
+	ini_set('output_buffering','On');
+	$firephp = FirePHP::getInstance(TRUE);
+}
+
+function afficher_infos_debug()
+{
+	global $firephp;
+	$firephp->dump('COOKIE', $_COOKIE);
+	$firephp->dump('FILES', $_FILES);
+	$firephp->dump('GET', $_GET);
+	$firephp->dump('POST', $_POST);
+	$firephp->dump('SESSION', $_SESSION);
+	$tab_constantes = get_defined_constants(TRUE);
+	$firephp->dump('CONSTANTES', $tab_constantes['user']);
 }
 
 ?>

@@ -66,7 +66,7 @@ if($action=='importer_csv')
 	}
 	// On récupère les zones géographiques pour vérifier que l'identifiant transmis est cohérent
 	$tab_geo = array();
-	$DB_TAB = DB_WEBMESTRE_lister_zones();
+	$DB_TAB = DB_WEBMESTRE_WEBMESTRE::DB_lister_zones();
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_geo[$DB_ROW['geo_id']] = TRUE;
@@ -119,7 +119,7 @@ if($action=='importer_csv')
 			// Vérifier que le n°UAI est disponible et correct
 			if($uai)
 			{
-				if( (!tester_UAI($uai)) || (isset($tab_nouvel_uai[$uai])) || DB_WEBMESTRE_tester_structure_UAI($uai) )
+				if( (!tester_UAI($uai)) || (isset($tab_nouvel_uai[$uai])) || DB_WEBMESTRE_WEBMESTRE::DB_tester_structure_UAI($uai) )
 				{
 					$tab_erreur['uai']['nb']++;
 				}
@@ -133,7 +133,7 @@ if($action=='importer_csv')
 			// Vérifier que l'identifiant est disponible
 			if($import_id)
 			{
-				if((isset($tab_nouvel_id[$import_id])) || count(DB_WEBMESTRE_recuperer_structure($import_id)) )
+				if((isset($tab_nouvel_id[$import_id])) || (DB_WEBMESTRE_WEBMESTRE::DB_tester_structure_Id($import_id)!==NULL) )
 				{
 					$tab_erreur['id']['nb']++;
 				}
@@ -175,7 +175,7 @@ if( ($action=='ajouter') && $num && $max )
 	// Créer le fichier de connexion de la base de données de la structure
 	// Créer la base de données de la structure
 	// Créer un utilisateur pour la base de données de la structure et lui attribuer ses droits
-	$base_id = DB_WEBMESTRE_ajouter_structure($import_id,$geo_id,$uai,$localisation,$denomination,$contact_nom,$contact_prenom,$contact_courriel);
+	$base_id = ajouter_structure($import_id,$geo_id,$uai,$localisation,$denomination,$contact_nom,$contact_prenom,$contact_courriel);
 	// Créer les dossiers de fichiers temporaires par établissement : vignettes verticales, flux RSS des demandes, cookies des choix de formulaires
 	Creer_Dossier('./__tmp/badge/'.$base_id);
 	Ecrire_Fichier('./__tmp/badge/'.$base_id.'/index.htm','Circulez, il n\'y a rien à voir par ici !');
@@ -187,9 +187,9 @@ if( ($action=='ajouter') && $num && $max )
 	charger_parametres_mysql_supplementaires($base_id);
 	// Lancer les requêtes pour créer et remplir les tables
 	charger_parametres_mysql_supplementaires($base_id);
-	DB_STRUCTURE_creer_remplir_tables_structure('./_sql/structure/');
-	// Il est arrivé que la fonction DB_STRUCTURE_modifier_parametres() retourne une erreur disant que la table n'existe pas.
-	// Comme si les requêtes de DB_STRUCTURE_creer_remplir_tables_structure() étaient en cache, et pas encore toutes passées (parcequ'au final, quand on va voir la base, toutes les tables sont bien là).
+	DB_STRUCTURE_COMMUN::DB_creer_remplir_tables_structure();
+	// Il est arrivé que la fonction DB_modifier_parametres() retourne une erreur disant que la table n'existe pas.
+	// Comme si les requêtes de DB_creer_remplir_tables_structure() étaient en cache, et pas encore toutes passées (parcequ'au final, quand on va voir la base, toutes les tables sont bien là).
 	// Est-ce que c'est possible au vu du fonctionnement de la classe de connexion ? Et, bien sûr, y a-t-il quelque chose à faire pour éviter ce problème ?
 	// En attendant une réponse de SebR, j'ai mis ce sleep(1)... sans trop savoir si cela pouvait aider...
 	@sleep(1);
@@ -198,23 +198,15 @@ if( ($action=='ajouter') && $num && $max )
 	$tab_parametres['version_base'] = VERSION_BASE;
 	$tab_parametres['uai']          = $uai;
 	$tab_parametres['denomination'] = $denomination;
-	DB_STRUCTURE_modifier_parametres($tab_parametres);
+	DB_STRUCTURE_COMMUN::DB_modifier_parametres($tab_parametres);
 	// Insérer le compte administrateur dans la base de cette structure
 	$password = fabriquer_mdp();
-	$user_id = DB_STRUCTURE_ajouter_utilisateur($user_sconet_id=0,$user_sconet_elenoet=0,$reference='','administrateur',$contact_nom,$contact_prenom,$login='admin',$password,$classe_id=0,$id_ent='',$id_gepi='');
+	$user_id = DB_STRUCTURE_COMMUN::DB_ajouter_utilisateur($user_sconet_id=0,$user_sconet_elenoet=0,$reference='','administrateur',$contact_nom,$contact_prenom,$login='admin',crypter_mdp($password),$classe_id=0,$id_ent='',$id_gepi='');
 	// Et lui envoyer un courriel
 	if($courriel_envoi)
 	{
-		$texte = 'Bonjour '.$contact_prenom.' '.$contact_nom.'.'."\r\n\r\n";
-		$texte.= 'Je viens de créer une base SACoche pour l\'établissement "'.$denomination.'" sur le site hébergé par "'.HEBERGEUR_DENOMINATION.'". Pour accéder au site sans avoir besoin de sélectionner votre établissement, utilisez le lien suivant :'."\r\n".SERVEUR_ADRESSE.'/?id='.$base_id."\r\n\r\n";
-		$texte.= 'Vous êtes maintenant le contact de votre établissement pour cette installation de SACoche.'."\r\n".'Pour modifier l\'identité de la personne référente, il suffit de me communiquer ses coordonnées.'."\r\n\r\n";
-		$texte.= 'Un premier compte administrateur a été créé. Pour se connecter comme administrateur, utiliser le lien'."\r\n".SERVEUR_ADRESSE.'/?id='.$base_id."\r\n".'et entrer les identifiants'."\r\n".'nom d\'utilisateur :   admin'."\r\n".'mot de passe :   '.$password."\r\n\r\n";
-		$texte.= 'Ces identifiants sont modifiables depuis l\'espace d\'administration.'."\r\n".'Un administrateur peut déléguer son rôle en créant d\'autres administrateurs.'."\r\n\r\n";
-		$texte.= 'Ce logiciel est mis à votre disposition gratuitement, mais sans garantie, conformément à la licence libre GNU GPL3.'."\r\n".'Les administrateurs et les professeurs sont responsables de toute conséquence d\'une mauvaise manipulation de leur part.'."\r\n\r\n";
-		$texte.= 'Merci de consulter la documentation disponible depuis le site du projet :'."\r\n".SERVEUR_PROJET."\r\n\r\n";
-		$texte.= 'Cordialement'."\r\n";
-		$texte.= WEBMESTRE_PRENOM.' '.WEBMESTRE_NOM."\r\n\r\n";
-		$courriel_bilan = envoyer_webmestre_courriel($contact_courriel,'Création compte',$texte,false);
+		$courriel_contenu = contenu_courriel_inscription( $base_id , $denomination , $contact_nom , $contact_prenom , 'admin' , $password , SERVEUR_ADRESSE );
+		$courriel_bilan = envoyer_webmestre_courriel( $contact_courriel , 'Création compte' , $courriel_contenu , FALSE );
 		if(!$courriel_bilan)
 		{
 			exit('Erreur lors de l\'envoi du courriel !');
@@ -237,7 +229,7 @@ if( ($action=='supprimer') && $nb_bases )
 {
 	foreach($tab_base_id as $base_id)
 	{
-		DB_WEBMESTRE_supprimer_multi_structure($base_id);
+		supprimer_multi_structure($base_id);
 	}
 	exit('<ok>');
 }

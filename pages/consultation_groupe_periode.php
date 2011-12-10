@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Dates des périodes";
-$VERSION_JS_FILE += 0;
 ?>
 
 <p class="astuce">
@@ -48,9 +47,9 @@ $tab_jointure  = array();
 // Récupérer la liste des classes & groupes, dans l'ordre des niveaux
 switch($_SESSION['USER_PROFIL'])
 {
-	case 'directeur'  : $DB_TAB = DB_STRUCTURE_lister_classes_et_groupes_avec_niveaux(); break;
-	case 'professeur' : $DB_TAB = DB_STRUCTURE_lister_classes_groupes_professeur($_SESSION['USER_ID']); break;
-	case 'parent'     : $DB_TAB = DB_STRUCTURE_lister_classes_parent($_SESSION['USER_ID']); break;
+	case 'directeur'  : $DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_classes_et_groupes_avec_niveaux(); break;
+	case 'professeur' : $DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_classes_groupes_professeur($_SESSION['USER_ID']); break;
+	case 'parent'     : $DB_TAB = DB_STRUCTURE_ELEVE::DB_lister_classes_parent($_SESSION['USER_ID']); break;
 	case 'eleve'      : $DB_TAB = array( 0 => array( 'groupe_id' => $_SESSION['ELEVE_CLASSE_ID'] , 'groupe_nom' => $_SESSION['ELEVE_CLASSE_NOM'] ) );
 }
 if(count($DB_TAB))
@@ -61,7 +60,7 @@ if(count($DB_TAB))
 	}
 
 	// Récupérer la liste des périodes, dans l'ordre choisi par l'admin
-	$DB_TAB = DB_STRUCTURE_lister_periodes();
+	$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_periodes();
 	if(count($DB_TAB))
 	{
 		foreach($DB_TAB as $DB_ROW)
@@ -70,10 +69,8 @@ if(count($DB_TAB))
 		}
 
 		// Récupérer la liste des jointures
-		$DB_SQL = 'SELECT * ';
-		$DB_SQL.= 'FROM sacoche_jointure_groupe_periode ';
-		$DB_SQL.= 'WHERE groupe_id IN('.implode(',',array_keys($tab_groupe)).') ';
-		$DB_TAB = DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , null);
+		$listing_groupes_id = implode(',',array_keys($tab_groupe));
+		$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_jointure_groupe_periode($listing_groupes_id);
 		$memo_groupe_id = 0;
 		foreach($DB_TAB as $DB_ROW)
 		{
@@ -95,17 +92,17 @@ if(count($DB_TAB))
 		echo'<table>';
 		echo'<thead><tr><td class="nu"></td>'.implode('',$tab_periode).'</tr></thead>';
 		echo'<tbody><tr>'.implode('</tr>'."\r\n".'<tr>',$tab_groupe).'</tr></tbody>';
-		echo'</table><p />';
+		echo'</table>';
 
 	}
 	else
 	{
-		echo'<p><label for="rien" class="erreur">Aucune période prédéfinie n\'a été configurée par les administrateurs !</label></p>';
+		echo'<p><label class="erreur">Aucune période prédéfinie n\'a été configurée par les administrateurs !</label></p>';
 	}
 }
 else
 {
-	echo'<p><label for="rien" class="erreur">Aucune classe et aucun groupe ne sont affectés !</label></p>';
+	echo'<p><label class="erreur">Aucune classe et aucun groupe ne sont affectés !</label></p>';
 }
 
 ?>

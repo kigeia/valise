@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Annuler une compétence validée du socle";
-$VERSION_JS_FILE += 1;
 // Remarque : on ne peut être pp que d'une classe, pas d'un groupe, donc si seuls les PP ont un accès parmi les profs, ils ne peuvent trier les élèves que par classes
 ?>
 
@@ -42,22 +41,20 @@ foreach($tab_profils as $profil)
 }
 $texte = ($str_objet=='') ? 'aucun' : ( (strpos($str_objet,',')===false) ? 'uniquement les '.$str_objet : str_replace(',',' + ',$str_objet) ) ;
 
-// Fabrication des éléments select du formulaire
-$tab_cookie  = load_cookie_select('palier');
-$tab_paliers = DB_STRUCTURE_OPT_paliers_etabl($_SESSION['PALIERS']);
+Formulaire::load_choix_memo();
 if( ($_SESSION['USER_PROFIL']=='directeur') && (strpos($_SESSION['DROIT_ANNULATION_PILIER'],'directeur')!==false) )
 {
-	$tab_groupes = DB_STRUCTURE_OPT_classes_groupes_etabl();
+	$tab_groupes = DB_STRUCTURE_COMMUN::DB_OPT_classes_groupes_etabl();
 	$of_g = 'oui'; $og_g = 'oui'; 
 }
 elseif( ($_SESSION['USER_PROFIL']=='professeur') && (strpos($_SESSION['DROIT_ANNULATION_PILIER'],'professeur')!==false) )
 {
-	$tab_groupes = DB_STRUCTURE_OPT_groupes_professeur($_SESSION['USER_ID']);
+	$tab_groupes = DB_STRUCTURE_COMMUN::DB_OPT_groupes_professeur($_SESSION['USER_ID']);
 	$of_g = 'oui'; $og_g = 'oui'; 
 }
-elseif( (DB_STRUCTURE_tester_prof_principal($_SESSION['USER_ID'])) && (strpos($_SESSION['DROIT_ANNULATION_PILIER'],'profprincipal')!==false) )
+elseif( ($_SESSION['USER_PROFIL']=='professeur') && (strpos($_SESSION['DROIT_VALIDATION_ENTREE'],'profprincipal')!==false) && (DB_STRUCTURE_PROFESSEUR::DB_tester_prof_principal($_SESSION['USER_ID'])) )
 {
-	$tab_groupes = DB_STRUCTURE_OPT_classes_prof_principal($_SESSION['USER_ID']);
+	$tab_groupes = DB_STRUCTURE_COMMUN::DB_OPT_classes_prof_principal($_SESSION['USER_ID']);
 	$of_g = 'non'; $og_g = 'non'; 
 }
 else
@@ -65,10 +62,11 @@ else
 	$tab_groupes = 'Vous n\'avez pas un profil autorisé pour accéder au formulaire !';
 	$of_g = 'non'; $og_g = 'non'; 
 }
+$tab_paliers = DB_STRUCTURE_COMMUN::DB_OPT_paliers_etabl($_SESSION['PALIERS']);
 $of_p = (count($tab_paliers)<2) ? 'non' : 'oui' ;
 
-$select_palier = afficher_select($tab_paliers , $select_nom='f_palier' , $option_first=$of_p , $selection=$tab_cookie['palier_id'] , $optgroup='non');
-$select_groupe = afficher_select($tab_groupes , $select_nom='f_groupe' , $option_first=$of_g , $selection=false                    , $optgroup=$og_g);
+$select_palier = Formulaire::afficher_select($tab_paliers , $select_nom='f_palier' , $option_first=$of_p , $selection=Formulaire::$tab_choix['palier_id'] , $optgroup='non');
+$select_groupe = Formulaire::afficher_select($tab_groupes , $select_nom='f_groupe' , $option_first=$of_g , $selection=false                               , $optgroup=$og_g);
 ?>
 
 <ul class="puce">
@@ -78,15 +76,17 @@ $select_groupe = afficher_select($tab_groupes , $select_nom='f_groupe' , $option
 
 <hr />
 
-<form action="" method="post" id="zone_choix"><fieldset>
+<form action="#" method="post" id="zone_choix"><fieldset>
 	<label class="tab" for="f_palier">Palier :</label><?php echo $select_palier ?><label id="ajax_maj_pilier">&nbsp;</label><br />
-	<label class="tab" for="f_pilier"><img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /> Compétence(s) :</label><select id="f_pilier" name="f_pilier" multiple size="7" class="hide"><option></option></select><input type="hidden" id="piliers" name="piliers" value="" /><p />
-	<label class="tab" for="f_groupe">Classe / groupe :</label><?php echo $select_groupe ?><input type="hidden" id="f_groupe_type" name="f_groupe_type" value="" /><label id="ajax_maj_eleve">&nbsp;</label><br />
-	<label class="tab" for="f_eleve"><img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /> Élève(s) :</label><select id="f_eleve" name="f_eleve[]" multiple size="9" class="hide"><option></option></select><input type="hidden" id="eleves" name="eleves" value="" /><p />
-	<span class="tab"></span><input type="hidden" name="f_action" value="Afficher_bilan" /><button id="Afficher_validation" type="submit" class="hide"><img alt="" src="./_img/bouton/valider.png" /> Afficher le tableau des validations positives.</button><label id="ajax_msg_choix">&nbsp;</label>
+	<label class="tab" for="f_pilier"><img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo;&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo;&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /> Compétence(s) :</label><select id="f_pilier" name="f_pilier[]" multiple size="7" class="hide"><option></option></select>
+	<p>
+		<label class="tab" for="f_groupe">Classe / groupe :</label><?php echo $select_groupe ?><input type="hidden" id="f_groupe_type" name="f_groupe_type" value="" /><label id="ajax_maj_eleve">&nbsp;</label><br />
+		<label class="tab" for="f_eleve"><img alt="" src="./_img/bulle_aide.png" title="Utiliser la touche &laquo;&nbsp;Shift&nbsp;&raquo; pour une sélection multiple contiguë.<br />Utiliser la touche &laquo;&nbsp;Ctrl&nbsp;&raquo; pour une sélection multiple non contiguë." /> Élève(s) :</label><select id="f_eleve" name="f_eleve[]" multiple size="9" class="hide"><option></option></select>
+	</p>
+	<span class="tab"></span><input type="hidden" name="f_action" value="Afficher_bilan" /><button id="Afficher_validation" type="submit" class="valider" disabled>Afficher le tableau des validations positives.</button><label id="ajax_msg_choix">&nbsp;</label>
 </fieldset></form>
 
-<form action="" method="post" id="zone_validation" class="hide">
+<form action="#" method="post" id="zone_validation" class="hide">
 	<table id="tableau_validation">
 		<tbody><tr><td></td></tr></tbody>
 	</table>

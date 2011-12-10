@@ -29,10 +29,11 @@ if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');
 if(($_SESSION['SESAMATH_ID']==ID_DEMO)&&($_GET['action']!='initialiser')){exit('Action désactivée pour la démo...');}
 
 $action = (isset($_GET['action'])) ? $_GET['action'] : '';
-$tab_select_eleves  = (isset($_POST['select_eleves']))  ? array_map('clean_entier',explode(',',$_POST['select_eleves']))  : array() ;
-$tab_select_classes = (isset($_POST['select_classes'])) ? array_map('clean_entier',explode(',',$_POST['select_classes'])) : array() ;
-$tab_select_eleves  = array_filter($tab_select_eleves,'positif');
-$tab_select_classes = array_filter($tab_select_classes,'positif');
+// Normalement ce sont des tableaux qui sont transmis, mais au cas où...
+$tab_select_eleves  = (isset($_POST['select_eleves']))  ? ( (is_array($_POST['select_eleves']))  ? $_POST['select_eleves']  : explode(',',$_POST['select_eleves'])  ) : array() ;
+$tab_select_classes = (isset($_POST['select_classes'])) ? ( (is_array($_POST['select_classes'])) ? $_POST['select_classes'] : explode(',',$_POST['select_classes']) ) : array() ;
+$tab_select_eleves  = array_filter( array_map( 'clean_entier' , $tab_select_eleves  ) , 'positif' );
+$tab_select_classes = array_filter( array_map( 'clean_entier' , $tab_select_classes ) , 'positif' );
 
 // Ajouter des élèves à des classes
 if($action=='ajouter')
@@ -40,7 +41,7 @@ if($action=='ajouter')
 	$classe_id = current($tab_select_classes); // un élève ne peut être affecté qu'à 1 seule classe : inutile de toutes les passer en revue
 	foreach($tab_select_eleves as $user_id)
 	{
-		DB_STRUCTURE_modifier_liaison_user_groupe($user_id,'eleve',$classe_id,'classe',true);
+		DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_liaison_user_groupe_par_admin($user_id,'eleve',$classe_id,'classe',true);
 	}
 }
 
@@ -52,7 +53,7 @@ elseif($action=='retirer')
 	{
 		foreach($tab_select_classes as $classe_id)
 		{
-			DB_STRUCTURE_modifier_liaison_user_groupe($user_id,'eleve',$classe_id,'classe',false);
+			DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_liaison_user_groupe_par_admin($user_id,'eleve',$classe_id,'classe',false);
 		}
 	}
 }
@@ -64,14 +65,14 @@ $tab_niveau_groupe[0][0] = '<i>sans classe</i>';
 $tab_user[0]             = '';
 
 // Récupérer la liste des classes
-$DB_TAB = DB_STRUCTURE_lister_classes_avec_niveaux();
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_classes_avec_niveaux();
 foreach($DB_TAB as $DB_ROW)
 {
 	$tab_niveau_groupe[$DB_ROW['niveau_id']][$DB_ROW['groupe_id']] = html($DB_ROW['groupe_nom']);
 	$tab_user[$DB_ROW['groupe_id']] = '';
 }
 // Récupérer la liste des élèves / classes
-$DB_TAB = DB_STRUCTURE_lister_users('eleve',$only_actifs=true,$with_classe=false);
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_users('eleve',$only_actifs=true,$with_classe=false);
 foreach($DB_TAB as $DB_ROW)
 {
 	$tab_user[$DB_ROW['eleve_classe_id']] .= html($DB_ROW['user_nom'].' '.$DB_ROW['user_prenom']).'<br />';
@@ -101,6 +102,6 @@ foreach($tab_niveau_groupe as $niveau_id => $tab_groupe)
 	echo'<thead><tr>'.$TH[$niveau_id].'</tr></thead>';
 	echo'<tbody><tr>'.$TB[$niveau_id].'</tr></tbody>';
 	echo'<tfoot><tr>'.$TF[$niveau_id].'</tr></tfoot>';
-	echo'</table><p />';
+	echo'</table><p>&nbsp;</p>';
 }
 ?>

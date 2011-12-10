@@ -38,13 +38,13 @@ foreach($tab_profils as $profil)
 $texte = ($str_objet=='') ? 'aucun' : ( (strpos($str_objet,',')===false) ? 'uniquement les '.$str_objet : str_replace(',',' + ',$str_objet) ) ;
 ?>
 
-<ul class="puce noprint">
+<ul class="puce">
 	<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=referentiels_socle__referentiel_organisation">DOC : Organisation des items dans les référentiels.</a></span></li>
-	<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=environnement_generalites__calcul_scores_etats_acquisitions">DOC : Calcul des scores et des états d'acquisitions.</a></span></li>
+	<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=referentiels_socle__calcul_scores_etats_acquisitions">DOC : Calcul des scores et des états d'acquisitions.</a></span></li>
 	<li><span class="astuce">Profils autorisés par les administrateurs : <span class="u"><?php echo $texte ?></span>.</span></li>
 </ul>
 
-<form action="" method="post" class="noprint">
+<form action="#" method="post">
 <hr />
 
 <?php
@@ -55,7 +55,7 @@ $tab_niveau  = array();
 $tab_colonne = array();
 
 // On récupère la liste des matières utilisées par l'établissement
-$DB_TAB = DB_STRUCTURE_lister_matieres_etablissement($_SESSION['MATIERES'],$with_transversal=true,$order_by_name=true);
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_matieres_etablissement( $_SESSION['MATIERES'] , TRUE /*with_transversal*/ , TRUE /*order_by_name*/ );
 if(count($DB_TAB))
 {
 	foreach($DB_TAB as $DB_ROW)
@@ -66,7 +66,7 @@ if(count($DB_TAB))
 }
 $listing_matieres_id = implode(',',array_keys($tab_matiere));
 
-if(!$listing_matieres_id)
+if(!$listing_matieres_id) // normalement impossible
 {
 	echo'<p><span class="danger">Aucune matière enregistrée ou associée à l\'établissement !</span></p>';
 }
@@ -82,14 +82,14 @@ else
 {
 	echo'<p><span class="astuce">Cliquer sur l\'&oelig;il pour voir le détail d\'un référentiel.</span></p>';
 	// On récupère la liste des niveaux utilisés par l'établissement
-	$DB_TAB = DB_STRUCTURE_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
 	$nb_niveaux = count($DB_TAB);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_niveau[$DB_ROW['niveau_id']] = html($DB_ROW['niveau_nom']);
 	}
 	// On récupère la liste des coordonnateurs responsables par matières
-	$DB_TAB = DB_STRUCTURE_lister_identite_coordonnateurs_par_matiere($listing_matieres_id);
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_identite_coordonnateurs_par_matiere($listing_matieres_id);
 	if(count($DB_TAB))
 	{
 		foreach($DB_TAB as $DB_ROW)
@@ -98,8 +98,8 @@ else
 		}
 	}
 	// On récupère la liste des référentiels par matière et niveau
-	$tab_partage = array('oui'=>'<img title="Référentiel partagé sur le serveur communautaire (MAJ le ◄DATE►)." alt="" src="./_img/partage1.gif" />','non'=>'<img title="Référentiel non partagé avec la communauté (choix du ◄DATE►)." alt="" src="./_img/partage0.gif" />','bof'=>'<img title="Référentiel dont le partage est sans intérêt (pas novateur)." alt="" src="./_img/partage0.gif" />','hs'=>'<img title="Référentiel dont le partage est sans objet (matière spécifique)." alt="" src="./_img/partage0.gif" />');
-	$DB_TAB = DB_STRUCTURE_lister_referentiels_infos_details_matieres_niveaux($listing_matieres_id,$_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
+	$tab_partage = array('oui'=>'<img title="Référentiel partagé sur le serveur communautaire (MAJ le ◄DATE►)." alt="" src="./_img/etat/partage_oui.gif" />','non'=>'<img title="Référentiel non partagé avec la communauté (choix du ◄DATE►)." alt="" src="./_img/etat/partage_non.gif" />','bof'=>'<img title="Référentiel dont le partage est sans intérêt (pas novateur)." alt="" src="./_img/etat/partage_non.gif" />','hs'=>'<img title="Référentiel dont le partage est sans objet (matière spécifique)." alt="" src="./_img/etat/partage_non.gif" />');
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_referentiels_infos_details_matieres_niveaux($listing_matieres_id,$_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
 	if(count($DB_TAB))
 	{
 		foreach($DB_TAB as $DB_ROW)
@@ -141,7 +141,7 @@ else
 		$matiere_nom   = $tab['nom'];
 		$matiere_nb    = $tab['nb_demandes'].' '.$infobulle;
 		$matiere_coord = (isset($tab['coord'])) ? '>'.$tab['coord'] : ' class="r">Absence de coordonnateur.' ;
-		$affichage .= '<tr><td colspan="6" class="nu">&nbsp;</td></tr>'."\r\n";
+		$affichage .= '<tr><td colspan="7" class="nu">&nbsp;</td></tr>'."\r\n";
 		$affichage .= '<tr><td rowspan="'.$rowspan.'">'.$matiere_nom.'</td><td rowspan="'.$rowspan.'">'.$matiere_nb.'</td><td rowspan="'.$rowspan.'"'.$matiere_coord.'</td>';
 		$affichage_suite = false;
 		if(isset($tab_colonne[$matiere_id]))
@@ -167,7 +167,7 @@ else
 		}
 		else
 		{
-			$affichage .= '<td>-</td>'.'<td class="r">Absence de référentiel.</td><td class="r">Sans objet.</td><td class="nu"></td></td>'.'<td class="nu"></td>'.'</tr>'."\r\n";
+			$affichage .= '<td>-</td>'.'<td class="r">Absence de référentiel.</td><td class="r">Sans objet.</td>'.'<td class="nu"></td>'.'</tr>'."\r\n";
 		}
 	}
 	$affichage .= '</tbody></table>'."\r\n";
@@ -176,8 +176,3 @@ else
 ?>
 
 </form>
-
-<div id="referentiel">
-</div>
-
-

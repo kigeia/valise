@@ -79,7 +79,7 @@ $(document).ready
 						}
 					);
 					$('#form_ordonner button').prop('disabled',true);
-					$('#ajax_msg_ordre').removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+					$('#ajax_msg_ordre').removeAttr("class").addClass("loader").html("Demande envoyée...");
 					$.ajax
 					(
 						{
@@ -90,7 +90,7 @@ $(document).ready
 							error : function(msg,string)
 							{
 								$('#form_ordonner button').prop('disabled',false);
-								$('#ajax_msg_ordre').removeAttr("class").addClass("alerte").html('Echec de la connexion ! Veuillez recommencer.');
+								$('#ajax_msg_ordre').removeAttr("class").addClass("alerte").html('Echec de la connexion !');
 								return false;
 							},
 							success : function(responseHTML)
@@ -138,7 +138,7 @@ $(document).ready
 						$('#theme_'+ids).addClass("hide");
 						break;
 				}
-				$('#bouton_'+ids).removeAttr("class");
+				$('#bouton_'+ids).prop('disabled',false);
 				$('#label_'+ids).removeAttr("class").addClass("alerte").html("Modification non enregistrée !");
 			}
 		);
@@ -161,8 +161,9 @@ $(document).ready
 				var tab_infos = ids.split('_');
 				var f_matiere = tab_infos[0];
 				var f_niveau  = tab_infos[1];
-				$("#form_synthese button").prop('disabled',true);
-				$('#label_'+ids).removeAttr("class").addClass("loader").html("Demande envoyée... Veuillez patienter.");
+				$('#bouton_'+ids).prop('disabled',true);
+				// $("#form_synthese button").prop('disabled',true);
+				$('#label_'+ids).removeAttr("class").addClass("loader").html("Demande envoyée...");
 				$.ajax
 				(
 					{
@@ -172,14 +173,16 @@ $(document).ready
 						dataType : "html",
 						error : function(msg,string)
 						{
-							$("#form_synthese button").prop('disabled',false);
-							$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion ! Veuillez recommencer.");
+							$('#bouton_'+ids).prop('disabled',false);
+							// $("#form_synthese button").prop('disabled',false);
+							$('#ajax_msg').removeAttr("class").addClass("alerte").html("Echec de la connexion !");
 							return false;
 						},
 						success : function(responseHTML)
 						{
 							initialiser_compteur();
-							$("#form_synthese button").prop('disabled',false);
+							$('#bouton_'+ids).prop('disabled',false);
+							// $("#form_synthese button").prop('disabled',false);
 							if(responseHTML!='ok')
 							{
 								$('#label_'+ids).removeAttr("class").addClass("alerte").html(responseHTML);

@@ -27,7 +27,6 @@
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Créer / paramétrer les référentiels";
-$VERSION_JS_FILE += 13;
 ?>
 
 <script type="text/javascript">
@@ -64,13 +63,13 @@ $VERSION_JS_FILE += 13;
 	var listing_id_niveaux_cycles = "<?php echo LISTING_ID_NIVEAUX_CYCLES ?>";
 </script>
 
-<form action="" method="post" id="form_instance" class="noprint">
+<form action="#" method="post" id="form_instance">
 
 <ul class="puce">
 	<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=referentiels_socle__referentiel_creer_parametrer">DOC : Créer / paramétrer les référentiels.</a></span></li>
 	<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=referentiels_socle__referentiel_organisation">DOC : Organisation des items dans les référentiels.</a></span></li>
-	<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=environnement_generalites__calcul_scores_etats_acquisitions">DOC : Calcul des scores et des états d'acquisitions.</a></span></li>
-	<li><span class="danger">Détruire un référentiel supprime les résultats associés de tous les élèves !</span></li>
+	<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=referentiels_socle__calcul_scores_etats_acquisitions">DOC : Calcul des scores et des états d'acquisitions.</a></span></li>
+	<li><span class="danger">Supprimer un référentiel efface les résultats associés de tous les élèves !</span></li>
 </ul>
 
 <hr />
@@ -83,7 +82,7 @@ $tab_niveau  = array();
 $tab_colonne = array();
 
 // On récupère la liste des matières où le professeur est rattaché, et s'il en est coordonnateur
-$DB_TAB = DB_STRUCTURE_lister_matieres_professeur_infos_referentiel($_SESSION['MATIERES'],$_SESSION['USER_ID']);
+$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_matieres_professeur_infos_referentiel($_SESSION['MATIERES'],$_SESSION['USER_ID']);
 if(count($DB_TAB))
 {
 	foreach($DB_TAB as $DB_ROW)
@@ -108,15 +107,15 @@ elseif(!$_SESSION['CYCLES']) // normalement impossible
 else
 {
 	// On récupère la liste des niveaux utilisés par l'établissement
-	$DB_TAB = DB_STRUCTURE_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
 	$nb_niveaux = count($DB_TAB);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_niveau[$DB_ROW['niveau_id']] = html($DB_ROW['niveau_nom']);
 	}
 	// On récupère la liste des référentiels par matière et niveau
-	$tab_partage = array('oui'=>'<img title="Référentiel partagé sur le serveur communautaire (MAJ le ◄DATE►)." alt="" src="./_img/partage1.gif" />','non'=>'<img title="Référentiel non partagé avec la communauté (choix du ◄DATE►)." alt="" src="./_img/partage0.gif" />','bof'=>'<img title="Référentiel dont le partage est sans intérêt (pas novateur)." alt="" src="./_img/partage0.gif" />','hs'=>'<img title="Référentiel dont le partage est sans objet (matière spécifique)." alt="" src="./_img/partage0.gif" />');
-	$DB_TAB = DB_STRUCTURE_lister_referentiels_infos_details_matieres_niveaux($listing_matieres_id,$_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
+	$tab_partage = array('oui'=>'<img title="Référentiel partagé sur le serveur communautaire (MAJ le ◄DATE►)." alt="" src="./_img/etat/partage_oui.gif" />','non'=>'<img title="Référentiel non partagé avec la communauté (choix du ◄DATE►)." alt="" src="./_img/etat/partage_non.gif" />','bof'=>'<img title="Référentiel dont le partage est sans intérêt (pas novateur)." alt="" src="./_img/etat/partage_non.gif" />','hs'=>'<img title="Référentiel dont le partage est sans objet (matière spécifique)." alt="" src="./_img/etat/partage_non.gif" />');
+	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_referentiels_infos_details_matieres_niveaux($listing_matieres_id,$_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
 	if(count($DB_TAB))
 	{
 		foreach($DB_TAB as $DB_ROW)
@@ -208,54 +207,49 @@ else
 <div id="choisir_referentiel" class="hide">
 	<hr />
 	<h2>Choisir un référentiel</h2>
-	<p><button id="choisir_initialiser" type="button" value="id_0"><img alt="" src="./_img/bouton/valider.png" /> Démarrer avec un référentiel vierge.</button></p>
+	<p><button id="choisir_initialiser" type="button" value="id_0" class="valider">Démarrer avec un référentiel vierge.</button></p>
 	<?php
 	if( (!$_SESSION['SESAMATH_ID']) || (!$_SESSION['SESAMATH_KEY']) )
 	{
-		echo'<p><label for="rien" class="erreur">Pour pouvoir effectuer la recherche d\'un référentiel partagé sur le serveur communautaire, un administrateur doit préalablement identifier l\'établissement dans la base Sésamath (<span class="manuel"><a class="pop_up" href="'.SERVEUR_DOCUMENTAIRE.'?fichier=support_administrateur__gestion_informations_structure">DOC : Gestion de l\'identité de l\'établissement</a></span>).</label></p>';
+		echo'<p><label class="erreur">Pour pouvoir effectuer la recherche d\'un référentiel partagé sur le serveur communautaire, un administrateur doit préalablement identifier l\'établissement dans la base Sésamath (<span class="manuel"><a class="pop_up" href="'.SERVEUR_DOCUMENTAIRE.'?fichier=support_administrateur__gestion_informations_structure">DOC : Gestion de l\'identité de l\'établissement</a></span>).</label></p>';
 	}
 	else
 	{
-		echo'<p><button id="choisir_rechercher" type="button"><img alt="" src="./_img/bouton/rechercher.png" /> Rechercher parmi les référentiels partagés sur le serveur communautaire.</button></p>';
-		echo'<p><button id="choisir_importer" type="button" value="id_x"><img alt="" src="./_img/bouton/valider.png" /> Démarrer avec ce référentiel : <b id="reporter"></b></button></p>';
+		echo'<p><button id="choisir_rechercher" type="button" class="rechercher">Rechercher parmi les référentiels partagés sur le serveur communautaire.</button></p>';
+		echo'<p><button id="choisir_importer" type="button" value="id_x" class="valider">Démarrer avec ce référentiel : <b id="reporter"></b></button></p>';
 	}
 	?>
-	<p><button id="choisir_annuler" type="button"><img alt="" src="./_img/bouton/annuler.png" /> Annuler la création d'un référentiel.</button></p>
+	<p><button id="choisir_annuler" type="button" class="annuler">Annuler la création d'un référentiel.</button></p>
 	<label id="ajax_msg_choisir">&nbsp;</label>
 </div>
 
 </form>
 
-<form action="" method="post" id="form_communautaire" class="hide">
+<form action="#" method="post" id="form_communautaire" class="hide">
 
 <?php
 // Fabrication des éléments select du formulaire, pour pouvoir prendre un référentiel d'une autre matière ou d'un autre niveau (demandé...).
-$select_matiere = afficher_select(DB_STRUCTURE_OPT_matieres_communes() , $select_nom='f_matiere' , $option_first='val' , $selection=false , $optgroup='non');
-$select_niveau  = afficher_select(DB_STRUCTURE_OPT_niveaux()           , $select_nom='f_niveau'  , $option_first='val' , $selection=false , $optgroup='non');
+$select_matiere = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_matieres_communes() , $select_nom='f_matiere' , $option_first='val' , $selection=false , $optgroup='non');
+$select_niveau  = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_niveaux()           , $select_nom='f_niveau'  , $option_first='val' , $selection=false , $optgroup='non');
 ?>
 
-<div class="noprint">
-	<div id="choisir_referentiel_communautaire">
-		<h2>Rechercher un référentiel partagé sur le serveur communautaire</h2>
-		<p><button id="rechercher_annuler" type="button"><img alt="" src="./_img/bouton/annuler.png" /> Annuler la recherche d'un référentiel.</button></p>
-		<fieldset>
-			<label class="tab" for="f_matiere">Matière :</label><?php echo $select_matiere ?><br />
-			<label class="tab" for="f_niveau">Niveau :</label><?php echo $select_niveau ?><br />
-			<label class="tab" for="f_structure"><img alt="" src="./_img/bulle_aide.png" title="Seules les structures partageant au moins un référentiel apparaissent." /> Structure :</label><select id="f_structure" name="f_structure"><option></option></select><br />
-			<span class="tab"></span><button id="rechercher" type="button" class="hide"><img alt="" src="./_img/bouton/rechercher.png" /> Lancer / Actualiser la recherche.</button><label id="ajax_msg">&nbsp;</label>
-		</fieldset>
-		<hr />
-		<div id="lister_referentiel_communautaire" class="hide">
-			<h2>Liste des référentiels trouvés</h2>
-			<div class="danger">Les référentiels partagés ne sont pas des modèles exemplaires à suivre ! Ils peuvent être améliorables, voir inadaptés...</div>
-			<ul>
-				<li></li>
-			</ul>
-		</div>
+<div id="choisir_referentiel_communautaire">
+	<h2>Rechercher un référentiel partagé sur le serveur communautaire</h2>
+	<fieldset>
+		<label class="tab" for="f_matiere">Matière :</label><?php echo $select_matiere ?><br />
+		<label class="tab" for="f_niveau">Niveau :</label><?php echo $select_niveau ?><br />
+		<label class="tab" for="f_structure"><img alt="" src="./_img/bulle_aide.png" title="Seules les structures partageant au moins un référentiel apparaissent." /> Structure :</label><select id="f_structure" name="f_structure"><option></option></select><br />
+		<span class="tab"></span><button id="rechercher" type="button" class="rechercher">Lancer / Actualiser la recherche.</button><label id="ajax_msg">&nbsp;</label><br />
+		<span class="tab"></span><button id="rechercher_annuler" type="button" class="annuler">Annuler la recherche d'un référentiel.</button>
+	</fieldset>
+	<hr />
+	<div id="lister_referentiel_communautaire" class="hide">
+		<h2>Liste des référentiels trouvés</h2>
+		<div class="danger">Les référentiels partagés ne sont pas des modèles exemplaires à suivre ! Ils peuvent être améliorables, voir inadaptés...</div>
+		<ul>
+			<li></li>
+		</ul>
 	</div>
 </div>
 
 </form>
-
-<div id="voir_referentiel">
-</div>

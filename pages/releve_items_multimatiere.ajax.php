@@ -50,17 +50,33 @@ $aff_bilan_PA   = (isset($_POST['f_bilan_PA']))    ? 1                          
 $aff_conv_sur20 = (isset($_POST['f_conv_sur20']))  ? 1                                    : 0;
 $groupe_id      = (isset($_POST['f_groupe']))      ? clean_entier($_POST['f_groupe'])     : 0;
 $groupe_nom     = (isset($_POST['f_groupe_nom']))  ? clean_texte($_POST['f_groupe_nom'])  : '';
-$tab_eleve      = (isset($_POST['eleves']))        ? array_map('clean_entier',explode(',',$_POST['eleves'])) : array() ;
-$tab_type[]     = 'individuel';
 $format         = 'multimatiere';
+$type_individuel = 1;
+// Normalement c'est un tableau qui est transmis, mais au cas où...
+$tab_eleve = (isset($_POST['f_eleve'])) ? ( (is_array($_POST['f_eleve'])) ? $_POST['f_eleve'] : explode(',',$_POST['f_eleve']) ) : array() ;
+$tab_eleve = array_filter( array_map( 'clean_entier' , $tab_eleve ) , 'positif' );
+$tab_type[] = 'individuel';
 
-$tab_eleve     = array_filter($tab_eleve,'positif');
+// En cas de manipulation du formulaire (avec Firebug par exemple) ; on pourrait aussi vérifier pour un parent que c'est bien un de ses enfants...
+if(in_array($_SESSION['USER_PROFIL'],array('parent','eleve')))
+{
+	$aff_bilan_MS   = (mb_substr_count($_SESSION['DROIT_BILAN_MOYENNE_SCORE']     ,$_SESSION['USER_PROFIL'])) ? 1 : 0 ;
+	$aff_bilan_PA   = (mb_substr_count($_SESSION['DROIT_BILAN_POURCENTAGE_ACQUIS'],$_SESSION['USER_PROFIL'])) ? 1 : 0 ;
+	$aff_conv_sur20 = (mb_substr_count($_SESSION['DROIT_BILAN_NOTE_SUR_VINGT']    ,$_SESSION['USER_PROFIL'])) ? 1 : 0 ;
+}
+if($_SESSION['USER_PROFIL']=='eleve')
+{
+	$groupe_id  = $_SESSION['ELEVE_CLASSE_ID'];
+	$groupe_nom = $_SESSION['ELEVE_CLASSE_NOM'];
+	$tab_eleve  = array($_SESSION['USER_ID']);
+}
+
 $liste_eleve   = implode(',',$tab_eleve);
 
 if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb && $cases_largeur && ( $periode_id || ($date_debut && $date_fin) ) && $retroactif && $matiere_id && $groupe_id && $groupe_nom && count($tab_eleve) && count($tab_type) )
 {
 
-	save_cookie_select('releve_items');
+	Formulaire::save_choix('items_multimatiere');
 
 	// Permet d'avoir des informations accessibles en cas d'erreur type « PHP Fatal error : Allowed memory size of ... bytes exhausted ».
 	// ajouter_log_PHP( $log_objet='Demande de bilan' , $log_contenu=serialize($_POST) , $log_fichier=__FILE__ , $log_ligne=__LINE__ , $only_sesamath=true );
@@ -73,7 +89,7 @@ if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb
 	}
 	else
 	{
-		$DB_ROW = DB_STRUCTURE_recuperer_dates_periode($groupe_id,$periode_id);
+		$DB_ROW = DB_STRUCTURE_COMMUN::DB_recuperer_dates_periode($groupe_id,$periode_id);
 		if(!count($DB_ROW))
 		{
 			exit('La classe et la période ne sont pas reliées !');
@@ -93,12 +109,13 @@ if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb
 	$tab_eleve      = array();	// [i] => array(eleve_id,eleve_nom,eleve_prenom)
 	$tab_matiere    = array();	// [matiere_id] => matiere_nom
 	$tab_eval       = array();	// [eleve_id][matiere_id][item_id][devoir] => array(note,date,info) On utilise un tableau multidimensionnel vu qu'on ne sait pas à l'avance combien il y a d'évaluations pour un élève et un item donnés.
+	$tab_matiere_for_item = array();	// [item_id] => matiere_id
 
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	// Récupération de la liste des items travaillés durant la période choisie, pour les élèves selectionnés, toutes matières confondues
 	// Récupération de la liste des matières travaillées
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-	list($tab_item,$tab_matiere) = DB_STRUCTURE_recuperer_arborescence_bilan($liste_eleve,$matiere_id=false,$only_socle,$date_mysql_debut,$date_mysql_fin);
+	list($tab_item,$tab_matiere) = DB_STRUCTURE_BILAN::DB_recuperer_arborescence_bilan($liste_eleve,$matiere_id=false,$only_socle,$date_mysql_debut,$date_mysql_fin);
 	// $tab_matiere déjà renseigné à la requête précédente.
 
 	$item_nb = count($tab_item);
@@ -112,7 +129,7 @@ if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	// Récupération de la liste des élèves
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-	$tab_eleve = DB_STRUCTURE_lister_eleves_cibles($liste_eleve,$with_gepi=FALSE,$with_langue=FALSE);
+	$tab_eleve = DB_STRUCTURE_BILAN::DB_lister_eleves_cibles($liste_eleve,$with_gepi=FALSE,$with_langue=FALSE);
 	if(!is_array($tab_eleve))
 	{
 		exit('Aucun élève trouvé correspondant aux identifiants transmis !');
@@ -124,21 +141,23 @@ if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb
 	// Attention, il faut éliminer certains items qui peuvent potentiellement apparaitre dans des relevés d'élèves alors qu'ils n'ont pas été interrogés sur la période considérée (mais un camarade oui).
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	$tab_score_a_garder = array();
-	$DB_TAB = DB_STRUCTURE_lister_date_last_eleves_items($liste_eleve,$liste_item);
+	$DB_TAB = DB_STRUCTURE_BILAN::DB_lister_date_last_eleves_items($liste_eleve,$liste_item);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$tab_score_a_garder[$DB_ROW['eleve_id']][$DB_ROW['item_id']] = ($DB_ROW['date_last']<$date_mysql_debut) ? false : true ;
 	}
 
 	$date_mysql_debut = ($retroactif=='non') ? $date_mysql_debut : false;
-	$DB_TAB = DB_STRUCTURE_lister_result_eleves_matieres($liste_eleve , $liste_item , $date_mysql_debut , $date_mysql_fin , $_SESSION['USER_PROFIL']);
+	$DB_TAB = DB_STRUCTURE_BILAN::DB_lister_result_eleves_matieres($liste_eleve , $liste_item , $date_mysql_debut , $date_mysql_fin , $_SESSION['USER_PROFIL']);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		if($tab_score_a_garder[$DB_ROW['eleve_id']][$DB_ROW['item_id']])
 		{
 			$tab_eval[$DB_ROW['eleve_id']][$DB_ROW['matiere_id']][$DB_ROW['item_id']][] = array('note'=>$DB_ROW['note'],'date'=>$DB_ROW['date'],'info'=>$DB_ROW['info']);
+			$tab_matiere_for_item[$DB_ROW['item_id']] = $DB_ROW['matiere_id'];	// sert pour la synthèse sur une sélection d'items issus de différentes matières
 		}
 	}
+	$matiere_nb = count(array_unique($tab_matiere_for_item));
 
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	// INCLUSION DU CODE COMMUN À PLUSIEURS PAGES
@@ -148,19 +167,20 @@ if( $orientation && $couleur && $legende && $marge_min && $pages_nb && $cases_nb
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 	// On retourne les résultats
 	//	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-	if($_SESSION['USER_PROFIL']=='eleve')
+	if($affichage_direct)
 	{
+		echo'<hr />';
 		echo'<ul class="puce">';
-		echo'<li><label class="alerte"><a class="lien_ext" href="'.$dossier.$fichier_lien.'_individuel.pdf">Archiver / Imprimer (format <em>pdf</em>).</a></label></li>';
-		echo'</ul><p />';
+		echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_individuel.pdf"><span class="file file_pdf">Archiver / Imprimer (format <em>pdf</em>).</span></a></li>';
+		echo'</ul>';
 		echo $releve_HTML_individuel;
 	}
 	else
 	{
 		echo'<ul class="puce">';
-		echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_individuel.pdf">Archiver / Imprimer (format <em>pdf</em>).</a></li>';
-		echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'_individuel">Explorer / Manipuler (format <em>html</em>).</a></li>';
-		echo'</ul><p />';
+		echo'<li><a class="lien_ext" href="'.$dossier.$fichier_lien.'_individuel.pdf"><span class="file file_pdf">Archiver / Imprimer (format <em>pdf</em>).</span></a></li>';
+		echo'<li><a class="lien_ext" href="./releve-html.php?fichier='.$fichier_lien.'_individuel"><span class="file file_htm">Explorer / Manipuler (format <em>html</em>).</span></a></li>';
+		echo'</ul>';
 	}
 }
 

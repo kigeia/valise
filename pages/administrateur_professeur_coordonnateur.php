@@ -31,7 +31,7 @@ $TITRE = "Gérer les professeurs coordonnateurs";
 
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_professeurs">DOC : Gestion des professeurs</a></span></p>
 
-<form action="" method="post" id="coord">
+<form action="#" method="post" id="coord">
 
 	<?php
 	$tab_matiere = array();
@@ -39,14 +39,7 @@ $TITRE = "Gérer les professeurs coordonnateurs";
 	$matiere_id = 0;
 	$nb_professeurs = 0;
 	// Récupération de la liste des professeurs / matières
-	$DB_SQL = 'SELECT * FROM sacoche_matiere ';
-	$DB_SQL.= 'LEFT JOIN sacoche_jointure_user_matiere USING (matiere_id) ';
-	$DB_SQL.= 'LEFT JOIN sacoche_user USING (user_id) ';
-	$DB_SQL.= 'WHERE user_profil=:profil AND user_statut=:statut ';
-	$DB_SQL.= 'AND (matiere_id IN('.$_SESSION['MATIERES'].') OR matiere_partage=:partage) '; // Test matiere car un prof peut être encore relié à des matières décochées par l'admin.
-	$DB_SQL.= 'ORDER BY matiere_transversal DESC, matiere_nom ASC, user_nom ASC, user_prenom ASC';
-	$DB_VAR = array(':profil'=>'professeur',':statut'=>1,':partage'=>0);
-	$DB_TAB = DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_professeurs_par_matiere($_SESSION['MATIERES']);
 	if(count($DB_TAB))
 	{
 		foreach($DB_TAB as $DB_ROW)
@@ -61,13 +54,10 @@ $TITRE = "Gérer les professeurs coordonnateurs";
 			if(!is_null($DB_ROW['user_id']))
 			{
 				// Nouveau professeur
-				if($DB_ROW['user_statut'])
-				{
-					$checked = ($DB_ROW['jointure_coord']) ? ' checked' : '' ;
-					$id = $DB_ROW['matiere_id'].'x'.$DB_ROW['user_id'];
-					$tab_user[$DB_ROW['matiere_id']] .= '<input type="checkbox" id="id_'.$id.'" name="f_tab_id" value="'.$id.'"'.$checked.' /> <label for="id_'.$id.'">'.html($DB_ROW['user_nom'].' '.$DB_ROW['user_prenom']).'</label><br />';
-					$nb_professeurs++;
-				}
+				$checked = ($DB_ROW['jointure_coord']) ? ' checked' : '' ;
+				$id = $DB_ROW['matiere_id'].'x'.$DB_ROW['user_id'];
+				$tab_user[$DB_ROW['matiere_id']] .= '<input type="checkbox" id="id_'.$id.'" name="f_tab_id" value="'.$id.'"'.$checked.' /> <label for="id_'.$id.'">'.html($DB_ROW['user_nom'].' '.$DB_ROW['user_prenom']).'</label><br />';
+				$nb_professeurs++;
 			}
 		}
 		if($nb_professeurs)
@@ -99,7 +89,7 @@ $TITRE = "Gérer les professeurs coordonnateurs";
 				echo'<table'.$class.'>';
 				echo'<thead><tr>'.$TH[$tab_i].'</tr></thead>';
 				echo'<tbody><tr>'.$TB[$tab_i].'</tr></tbody>';
-				echo'</table><p />';
+				echo'</table><p>&nbsp;</p>';
 			}
 		}
 		else
@@ -114,7 +104,7 @@ $TITRE = "Gérer les professeurs coordonnateurs";
 	?>
 
 	<p>
-		<button id="valider" type="button"><img alt="" src="./_img/bouton/valider.png" /> Valider ce choix de professeurs coordonnateurs.</button><label id="ajax_msg">&nbsp;</label>
+		<button id="valider" type="button" class="valider">Valider ce choix de professeurs coordonnateurs.</button><label id="ajax_msg">&nbsp;</label>
 	</p>
 </form>
 

@@ -61,7 +61,6 @@ if(!isset($tab_droits[$PAGE]))
 	$tab_messages_erreur[] = 'Erreur : droits de la page "'.$PAGE.'" manquants.';
 	$PAGE = (substr($PAGE,0,6)=='public') ? 'public_accueil' : 'compte_accueil' ;
 }
-
 if (isset($_REQUEST['f_action']) && $_REQUEST['f_action'] == 'logout') {
 	open_old_session();
 	if (isset($_SESSION['USER_PROFIL'])) {
@@ -225,7 +224,7 @@ declaration_entete( TRUE /*is_meta_robots*/ , TRUE /*is_favicon*/ , TRUE /*is_rs
 		echo'		<span class="button home">'.html($_SESSION['DENOMINATION']).'</span>'."\r\n";
 		echo'		<span class="button profil_'.$_SESSION['USER_PROFIL'].'">'.html($_SESSION['USER_PRENOM'].' '.$_SESSION['USER_NOM']).' ('.$_SESSION['USER_PROFIL'].')</span>'."\r\n";
 		echo'		<span class="button clock_fixe"><span id="clock">'.$_SESSION['DUREE_INACTIVITE'].' min</span></span>'."\r\n";
-		echo'		<button id="deconnecter" class="deconnecter">;
+		echo'		<button id="deconnecter" class="deconnecter">';
 		if ($_SESSION['CONNEXION_MODE'] == 'cas' || ($_SESSION['CONNEXION_MODE'] == 'ssaml' && $_SESSION['CONNEXION_NOM'] == 'configured_source' && false !== strpos($_SESSION['AUTH_SIMPLESAML_SOURCE'], 'distant')) ) {
 			echo 'Retour au portail';
 		} else {

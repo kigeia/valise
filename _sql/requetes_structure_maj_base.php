@@ -1257,7 +1257,7 @@ public function DB_maj_base($version_actuelle)
 		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
 			{
 			$version_actuelle = '2011-10-02';
-			//DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base" LIMIT 1' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
 			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ("auth_simpleSAML_source" , "")' );
 			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ("integration_gepi" , "no")' );
 			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_devoir ADD gepi_cn_devoirs_id INT(11) COMMENT "Id de l\évaluation gepi"' );

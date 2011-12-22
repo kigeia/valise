@@ -162,7 +162,7 @@ function load_sacoche_mysql_config($BASE = null) {
  * @param string   $class_name   nom de la classe
  * @return void
  */
-function __autoload($class_name)
+function autoload($class_name)
 {
 	$tab_classes = array(
 		'DB'                          => '_lib'.DIRECTORY_SEPARATOR.'DB'.DIRECTORY_SEPARATOR.'DB.class.php' ,
@@ -210,7 +210,7 @@ function __autoload($class_name)
 		}
 	}
 }
-
+spl_autoload_register('autoload');
 // Pour FirePHP
 if(DEBUG)
 {

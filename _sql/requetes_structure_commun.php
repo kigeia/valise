@@ -362,6 +362,27 @@ public function DB_lister_jointure_groupe_periode($listing_groupes_id)
 }
 
 /**
+ * DB_STRUCTURE_recuperer_donnees_utilisateur
+ *
+ * @param string $mode_connection   'normal' ou 'cas' ou ...
+ * @param string $login
+ * @return array
+ */
+function DB_STRUCTURE_recuperer_donnees_utilisateur_id($mode_connection,$id)
+{
+	$champ = ($mode_connection=='normal') ? 'user_id' : 'user_id_ent' ;
+	$DB_SQL = 'SELECT sacoche_user.*, sacoche_groupe.groupe_nom, ';
+	$DB_SQL.= 'UNIX_TIMESTAMP(sacoche_user.user_tentative_date) AS tentative_unix ';
+	$DB_SQL.= 'FROM sacoche_user ';
+	$DB_SQL.= 'LEFT JOIN sacoche_groupe ON sacoche_user.eleve_classe_id=sacoche_groupe.groupe_id ';
+	$DB_SQL.= 'WHERE '.$champ.'=:identifiant ';
+	$DB_SQL.= 'LIMIT 1';
+	$DB_VAR = array(':identifiant'=>$id);
+	return DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+}
+
+
+/**
  * ajouter_utilisateur
  *
  * @param string $user_sconet_id

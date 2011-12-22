@@ -96,6 +96,67 @@ ini_set('zend.ze1_compatibility_mode',0);
 mb_internal_encoding(CHARSET);
 
 /**
+ * load_sacoche_mysql_configD
+ * Charge la base de donnée avec le bon numéro de base. Retourne faux si non chargé.
+ *
+ * @param int $BASE
+ * @return false | int | string false si la base n'est pas chargée, le numéro de la base si elle est chargée
+ */
+
+function load_sacoche_mysql_config($BASE = null) {
+	
+	$path = dirname(dirname(__FILE__));
+	
+	if (!file_exists($path.'/__private/config/constantes.php')) {
+		return false;
+	} else {
+		require_once($path.'/__private/config/constantes.php');
+	}
+	
+	if (HEBERGEUR_INSTALLATION == 'mono-structure') {
+		//on regarde si le fichier de configuration existe
+		if (is_file($path.'/__private/mysql/serveur_sacoche_structure.php')) {
+			require_once($path.'/__private/mysql/serveur_sacoche_structure.php');
+			$BASE = 0;
+		} else {
+			return false;
+		}
+	} else {
+		//récupération de l'organisation (appelé rne ou base)
+		//pour sacoche c'est dans la requete : id, f_base, ou le cookie, ou dans la session
+		require_once($path.'/_inc/constantes.php');
+		if (isset($_REQUEST['id'])) {
+			$BASE = $_REQUEST['id'];
+		} else if (isset($_REQUEST['f_base'])) {
+			$BASE = $_REQUEST['f_base'];
+		} else if (isset($_REQUEST['base'])) {
+			$BASE = $_REQUEST['base'];
+		} else if (isset($_COOKIE) && isset($_COOKIE[COOKIE_STRUCTURE])) {
+			$BASE = $_COOKIE[COOKIE_STRUCTURE];
+		} else if (isset($_SESSION) && isset($_SESSION['BASE'])) {
+			$BASE = $_SESSION['BASE'];
+		}
+		if (isset($BASE) && $BASE != 0) {
+			//on le met dans la session, ça peut toujours servir
+			$_SESSION['BASE'] = $BASE;
+			//on regarde si le fichier de configuration existe
+			if (is_file($path.'/__private/mysql/serveur_sacoche_structure_'.$BASE.'.php')) {
+				require_once($path.'/__private/mysql/serveur_sacoche_structure_'.$BASE.'.php');
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+	
+	require_once($path.'/_inc/class.DB.config.sacoche_structure.php');
+	require_once($path.'/_inc/fonction_requetes_structure.php');
+	require_once($path.'/_lib/DB/DB.class.php');
+	return $BASE;
+}
+
+/**
  * Auto-chargement des classes (aucune inclusion de classe n'est nécessaire, elles sont chargées par cette fonction suivant les besoins).
  * 
  * @param string   $class_name   nom de la classe

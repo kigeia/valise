@@ -56,7 +56,7 @@ public function DB_recuperer_demandes_autorisees_matiere($matiere_id)
  */
 public function DB_recuperer_item_infos($item_id)
 {
-	$DB_SQL = 'SELECT item_nom , item_cart , ';
+	$DB_SQL = 'SELECT item_nom , item_cart , item_coef, ';
 	$DB_SQL.= 'CONCAT(matiere_ref,".",niveau_ref,".",domaine_ref,theme_ordre,item_ordre) AS item_ref ';
 	$DB_SQL.= 'FROM sacoche_referentiel_item ';
 	$DB_SQL.= 'LEFT JOIN sacoche_referentiel_theme USING (theme_id) ';

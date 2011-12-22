@@ -125,7 +125,6 @@ function close_session()
 function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 {
 	$path = dirname(dirname(__FILE__));
-	require_once($path.'/_inc/config_serveur.php');
 	$BASE = load_sacoche_mysql_config();
 	//connexion ssaml
 	if ($BASE !== false &&  //on ne teste pas la connexion ssaml si la base n'est pas connue

@@ -111,6 +111,22 @@ public function DB_recuperer_arborescence_piliers($liste_pilier_id)
 }
 
 /**
+ * DB_STRUCTURE_recuperer_item_socle
+ *
+ * @param string|int $entree_id
+ * @return array
+ */
+function DB_STRUCTURE_recuperer_item_socle($entree_id=false)
+{
+	$DB_SQL = 'SELECT * FROM sacoche_socle_palier ';
+	$DB_SQL.= 'LEFT JOIN sacoche_socle_pilier USING (palier_id) ';
+	$DB_SQL.= 'LEFT JOIN sacoche_socle_section USING (pilier_id) ';
+	$DB_SQL.= 'LEFT JOIN sacoche_socle_entree USING (section_id) ';
+	$DB_SQL.= 'WHERE sacoche_socle_entree.entree_id=:entree_id ';
+	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , array(':entree_id'=>$entree_id));
+}
+
+/**
  * Retourner les résultats pour 1 élève donné, pour 1 item du socle donné
  *
  * @param string $eleve_id

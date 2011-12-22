@@ -867,7 +867,12 @@ public function DB_tester_utilisateur_identifiant($champ_nom,$champ_valeur,$user
 		$DB_VAR[':user_id'] = $user_id;
 	}
 	$DB_SQL.= 'LIMIT 1'; // utile
-	return DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	$DB_ROW = DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	if (!count($DB_ROW)) {
+		return null;
+	} else {
+		return $DB_ROW[0];
+	}
 }
 
 /**

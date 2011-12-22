@@ -1801,10 +1801,10 @@ function importer_groupe_gepi($period_num,$groupe_gepi)
 	if (count($row)) {
 		//on va faire un update du groupe
 		$sacoche_groupe_id = $row[0];
-		DB_STRUCTURE_modifier_groupe($sacoche_groupe_id,$groupe_gepi['classlist_string'],$groupe_gepi['classlist_string'].' '.$groupe_gepi['name'],0);
+		DB_STRUCTURE_PROFESSEUR::DB_modifier_groupe_par_prof($sacoche_groupe_id,$groupe_gepi['classlist_string'].' '.$groupe_gepi['name'],0,$groupe_gepi['classlist_string']);
 	} else {
 		//on va faire une création de groupe
-		$sacoche_groupe_id = DB_STRUCTURE_ajouter_groupe('groupe',0,$groupe_gepi['classlist_string'],$groupe_gepi['classlist_string'].' '.$groupe_gepi['name'],0,$groupe_gepi['id']);
+		$sacoche_groupe_id = DB_STRUCTURE_PROFESSEUR::DB_ajouter_groupe_par_prof('groupe',$groupe_gepi['classlist_string'].' '.$groupe_gepi['name'],0,$groupe_gepi['classlist_string'],$groupe_gepi['id']);
 	}
 	
 	//on va lier le groupe et les professeur de ce groupe

@@ -154,7 +154,7 @@ function analyse_mdp(mdp)
 function imprimer(contenu)
 {
 	var wp = window.open("","SACochePrint","toolbar=no,location=no,menubar=no,directories=no,status=no,scrollbars=no,resizable=no,copyhistory=no,width=1,height=1,top=0,left=0");
-	wp.document.write('<!DOCTYPE html><html><head><link rel="stylesheet" type="text/css" href="./_css/style.css" /><title>SACoche - Impression</title></head><body onload="window.print();window.close()">'+document.getElementById('info').innerHTML+contenu+'</body></html>');
+	wp.document.write('<!DOCTYPE html><html><head><link rel="stylesheet" type="text/css" href="./_css/style.css" /><title>SACoche - Impression</title></head><body onload="window.print();window.close()">'+document.getElementById('top_info').innerHTML+contenu+'</body></html>');
 	wp.document.close();
 }
 
@@ -339,7 +339,7 @@ function fermer_session()
 				{
 					$('#top_info').html('<span class="button alerte">Session expirée. Vous êtes déconnecté de SACoche mais sans doute pas du SSO !</span> <span class="button connexion"><a href="#" onclick="document.location.reload()">Recharger la page&hellip;</a></span>');
 				}
-				$.fancybox( '<div class="danger">Délai de '+DUREE_AUTORISEE+'min sans activité atteint &rarr; session fermée.<br />Toute validation ultérieure ne sera pas enregistrée.</div>' , {'centerOnScroll':true} );
+				$.fancybox( '<div class="danger">Délai de '+DUREE_AUTORISEE+'min sans activité atteint &rarr; session fermée.<br />Toute action ultérieure ne sera pas enregistrée.</div>' , {'centerOnScroll':true} );
 			}
 		}
 	);
@@ -439,6 +439,108 @@ function arrondir_coins(element,taille)
 }
 
 /**
+ * Ajout de méthodes pour jquery.validate.js
+ */
+
+// Méthode pour vérifier le format du numéro UAI
+function test_uai_format(value)
+{
+	var uai = value.toUpperCase();
+	if(uai.length!=8)
+	{
+		return false;
+	}
+	else
+	{
+		var uai_fin = uai.substring(7,8);
+		if((uai_fin<"A")||(uai_fin>"Z"))
+		{
+			return false;
+		}
+		else
+		{
+			for(i=0;i<7;i++)
+			{
+				var t = uai.substring(i,i+1);
+				if((t<"0")||(t>"9"))
+				{
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+jQuery.validator.addMethod
+(
+	"uai_format", function(value, element)
+	{
+		return this.optional(element) || test_uai_format(value) ;
+	}
+	, "il faut 7 chiffres suivis d'une lettre"
+); 
+
+// Méthode pour vérifier la clef de contrôle du numéro UAI
+function test_uai_clef(value)
+{
+	var uai = value.toUpperCase();
+	var uai_valide = true;
+	var uai_nombre = uai.substring(0,7);
+	var uai_fin = uai.substring(7,8);
+	alphabet = "ABCDEFGHJKLMNPRSTUVWXYZ";
+	reste = uai_nombre-(23*Math.floor(uai_nombre/23));
+	clef = alphabet.substring(reste,reste+1);;
+	return (clef==uai_fin) ? true : false ;
+}
+jQuery.validator.addMethod
+(
+	"uai_clef", function(value, element)
+	{
+		return this.optional(element) || test_uai_clef(value) ;
+	}
+	, "clef de contrôle incompatible"
+); 
+
+// Méthode pour valider les dates de la forme jj/mm/aaaa (trouvé dans le zip du plugin, corrige en plus un bug avec Safari)
+function test_dateITA(value)
+{
+	var re = /^\d{1,2}\/\d{1,2}\/\d{4}$/ ;
+	if( re.test(value))
+	{
+		var adata = value.split('/');
+		var gg = parseInt(adata[0],10);
+		var mm = parseInt(adata[1],10);
+		var aaaa = parseInt(adata[2],10);
+		var xdata = new Date(aaaa,mm-1,gg);
+		if ( ( xdata.getFullYear() == aaaa ) && ( xdata.getMonth () == mm - 1 ) && ( xdata.getDate() == gg ) )
+			return true;
+		else
+			return false;
+	}
+	else
+		return false;
+}
+jQuery.validator.addMethod
+(
+	"dateITA",
+	function(value, element)
+	{
+		return this.optional(element) || test_dateITA(value);
+	}, 
+	"Veuillez entrer une date correcte."
+);
+
+// Ajout d'une méthode pour vérifier le format hexadécimal
+jQuery.validator.addMethod
+(
+	"hexa_format", function(value, element)
+	{
+		return this.optional(element) || ( (/^\#[0-9a-f]{3,6}$/i.test(value)) && (value.length!=5) && (value.length!=6) ) ;
+	}
+	, "format incorrect"
+); 
+
+/**
  * jQuery !
  */
 $(document).ready
@@ -483,12 +585,11 @@ $(document).ready
 		}
 		page_transparente();
 
-
 		/**
-		 * piocher dans un arbre de MATIERES - Réagir aux clics sur les dossiers
+		 * Réagir aux clics pour déployer / replier des arbres (matières, items, socle, users)
 		 */
-		$('#zone_compet li span').siblings('ul').hide('fast');
-		$('#zone_compet li span').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+		$('.arbre_dynamique li span').siblings('ul').hide('fast');
+		$('.arbre_dynamique li span').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -496,7 +597,10 @@ $(document).ready
 			}
 		);
 
-		$('#zone_compet input[name=all_check]').click
+		/**
+		 * Réagir aux clics pour cocher / décocher un ensemble de cases d'un arbre (items)
+		 */
+		$('.arbre_check input[name=all_check]').click
 		(
 			function()
 			{
@@ -505,7 +609,7 @@ $(document).ready
 				return false;
 			}
 		);
-		$('#zone_compet input[name=all_uncheck]').click
+		$('.arbre_check input[name=all_uncheck]').click
 		(
 			function()
 			{
@@ -515,40 +619,30 @@ $(document).ready
 			}
 		);
 
-
 		/**
-		 * consulter un arbre du SOCLE - Réagir aux clics sur les dossiers
+		 * Réagir aux clics pour déployer / contracter l'ensemble d'un arbre à une étape donnée
 		 */
-		$('#zone_paliers li span').siblings('ul').hide('fast');
-		$('#zone_paliers li span').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+		$('a.all_extend').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
-				$(this).siblings('ul').toggle();
-			}
-		);
-
-		/**
-		 * piocher dans un arbre du SOCLE (masqué au départ) - Réagir aux clics sur les dossiers
-		 */
-		$('#zone_socle li span').siblings('ul').hide('fast');
-		$('#zone_socle li span').click
-		(
-			function()
-			{
-				$(this).siblings('ul').toggle();
-			}
-		);
-
-		/**
-		 * piocher dans un arbre d' ELEVES - Réagir aux clics sur les dossiers
-		 */
-		$('#zone_eleve li span').siblings('ul').hide('fast');
-		$('#zone_eleve li span').click
-		(
-			function()
-			{
-				$(this).siblings('ul').toggle();
+				var stade = $(this).attr('href');
+				var id_arbre = $(this).parent().parent().attr('id');
+				$('#'+id_arbre+' ul').css("display","none");
+				switch(stade)
+				{
+					case 'n3' :	// item
+						$('#'+id_arbre+' ul.ul_n3').css("display","block");
+					case 'n2' :	// thème
+						$('#'+id_arbre+' ul.ul_n2').css("display","block");
+					case 'n1' :	// domaine
+						$('#'+id_arbre+' ul.ul_n1').css("display","block");
+					case 'm2' :	// niveau
+						$('#'+id_arbre+' ul.ul_m2').css("display","block");
+					case 'm1' :	// matière
+						$('#'+id_arbre+' ul.ul_m1').css("display","block");
+				}
+				return false;
 			}
 		);
 
@@ -566,11 +660,11 @@ $(document).ready
 		/**
 		 * Clic sur une image-lien pour imprimer un referentiel en consultation
 		 */
-		$('#fancybox-content q.imprimer').live
+		$('#fancybox_contenu q.imprimer').live
 		('click',
 			function()
 			{
-				imprimer(document.getElementById('fancybox-content').innerHTML);
+				imprimer(document.getElementById('fancybox_contenu').innerHTML);
 			}
 		);
 
@@ -593,7 +687,7 @@ $(document).ready
 		('click',
 			function()
 			{
-				id = $(this).parent().attr('lang');
+				id = $(this).parent().attr('id').substring(3); // 'to_' + id
 				$('#'+id).toggle('fast');
 				src = $(this).attr('src');
 				if( src.indexOf("plus") > 0 )
@@ -724,7 +818,7 @@ $(document).ready
 			function(e)
 			{
 				// Récupérer les infos associées
-				infos = $(this).attr("lang");    // 'ids_' + matiere_id + '_' + item_id + '_' + score
+				infos = $(this).attr('id');    // 'demande_' + matiere_id + '_' + item_id + '_' + score
 				tab_infos = infos.split('_');
 				if(tab_infos.length==4)
 				{
@@ -847,9 +941,9 @@ $(document).ready
 		('click',
 			function()
 			{
-				tab = $(this).attr("lang").split('_');
-				m = tab[0];
-				a = tab[1];
+				tab = $(this).attr('id').split('_'); // 'calendrier_' + mois + '_' + année
+				m = tab[1];
+				a = tab[2];
 				reload_calendrier(m,a);
 				return false;
 			}

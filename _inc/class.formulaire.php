@@ -34,6 +34,16 @@ private static $fichier_cookie = '';
 //	Tableaux prédéfinis
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 
+public static $tab_select_tri_objet = array(
+	array('valeur'=>'eleve' , 'texte'=>'élèves en lignes (triés pour un item donné)') ,
+	array('valeur'=>'item'  , 'texte'=>'items en lignes (triés pour un élève donné)')
+);
+
+public static $tab_select_tri_mode = array(
+	array('valeur'=>'score' , 'texte'=>'tri par score d\'acquisition (pour un tri unique)') ,
+	array('valeur'=>'etat'  , 'texte'=>'tri par état d\'acquisition (pour un tri multiple)')
+);
+
 public static $tab_select_orientation = array(
 	array('valeur'=>'portrait'  , 'texte'=>'Portrait (vertical)') ,
 	array('valeur'=>'landscape' , 'texte'=>'Paysage (horizontal)')
@@ -100,18 +110,23 @@ public static $tab_select_cases_size = array(
 	array('valeur'=>15 , 'texte'=>'15 mm')
 );
 
-public static $tab_select_colonne_vide = array(
-	array('valeur'=>0   , 'texte'=>'sans colonne vide supplémentaire') ,
-	array('valeur'=>30  , 'texte'=>'avec une colonne vide de largeur 1cm') ,
-	array('valeur'=>30  , 'texte'=>'avec une colonne vide de largeur 3cm') ,
-	array('valeur'=>50  , 'texte'=>'avec une colonne vide de largeur 5cm') ,
-	array('valeur'=>70  , 'texte'=>'avec une colonne vide de largeur 7cm') ,
-	array('valeur'=>90  , 'texte'=>'avec une colonne vide de largeur 9cm')
+public static $tab_select_remplissage = array(
+	array('valeur'=>'vide'  , 'texte'=>'sans les dernières notes') ,
+	array('valeur'=>'plein' , 'texte'=>'avec les dernières notes')
 );
 
-public static $tab_select_remplissage = array(
-	array('valeur'=>'vide'  , 'texte'=>'sans indication des notes antérieures') ,
-	array('valeur'=>'plein' , 'texte'=>'avec les notes des dernières évaluations')
+public static $tab_select_colonne_bilan = array(
+	array('valeur'=>'non' , 'texte'=>'sans colonne bilan') ,
+	array('valeur'=>'oui' , 'texte'=>'avec colonne bilan')
+);
+
+public static $tab_select_colonne_vide = array(
+	array('valeur'=>0   , 'texte'=>'sans colonne supplémentaire') ,
+	array('valeur'=>30  , 'texte'=>'avec une colonne vide de 1cm') ,
+	array('valeur'=>30  , 'texte'=>'avec une colonne vide de 3cm') ,
+	array('valeur'=>50  , 'texte'=>'avec une colonne vide de 5cm') ,
+	array('valeur'=>70  , 'texte'=>'avec une colonne vide de 7cm') ,
+	array('valeur'=>90  , 'texte'=>'avec une colonne vide de 9cm')
 );
 
 public static $tab_select_cart_contenu = array(
@@ -169,6 +184,7 @@ private function init_tab_choix()
 	$check_aff_lien        = (in_array($_SESSION['USER_PROFIL'],array('parent','eleve'))) ? 1 : 0 ;
 	Formulaire::$tab_choix = array(
 		'matiere_id'=>0 ,
+		'niveau_id'=>0 ,
 		'palier_id'=>0 ,
 		'orientation'=>'portrait' ,
 		'couleur'=>'oui' ,
@@ -182,16 +198,22 @@ private function init_tab_choix()
 		'aff_coef'=>0 ,
 		'aff_socle'=>1 ,
 		'aff_lien'=>$check_aff_lien ,
+		'aff_domaine'=>0 ,
+		'aff_theme'=>0 ,
 		'cases_nb'=>4 ,
 		'cases_largeur'=>5 ,
 		'remplissage'=>'plein' ,
+		'colonne_bilan'=>'oui' ,
 		'colonne_vide'=>0 ,
+		'type_generique'=>0 ,
 		'type_individuel'=>$check_type_individuel ,
 		'type_synthese'=>0 ,
 		'type_bulletin'=>0 ,
 		'aff_bilan_MS'=>$check_bilan_MS ,
 		'aff_bilan_PA'=>$check_bilan_PA ,
 		'aff_conv_sur20'=>$check_conv_sur20 ,
+		'tableau_tri_objet'=>'eleve',
+		'tableau_tri_mode'=>'score',
 		'retroactif'=>'oui' ,
 		'mode_synthese'=>'predefini' ,
 		'aff_socle_PA'=>1 ,
@@ -242,20 +264,20 @@ public function load_choix_memo()
 			$tab_choix_new = compact('orientation','couleur','legende','marge_min','cart_contenu','cart_detail');
 			break;
 		case 'grille_referentiel' :
-			global $matiere_id,$only_socle,$aff_coef,$aff_socle,$aff_lien,$cases_nb,$cases_largeur,$remplissage,$colonne_vide,$orientation,$couleur,$legende,$marge_min;
-			$tab_choix_new = compact('matiere_id','only_socle','aff_coef','aff_socle','aff_lien','cases_nb','cases_largeur','remplissage','colonne_vide','orientation','couleur','legende','marge_min');
+			global $matiere_id,$niveau_id,$type_generique,$type_individuel,$type_synthese,$tableau_tri_objet,$tableau_tri_mode,$only_socle,$aff_coef,$aff_socle,$aff_lien,$cases_nb,$cases_largeur,$remplissage,$colonne_bilan,$colonne_vide,$orientation,$couleur,$legende,$marge_min;
+			$tab_choix_new = compact('matiere_id','niveau_id','type_generique','type_individuel','type_synthese','only_socle','aff_coef','aff_socle','aff_lien','cases_nb','cases_largeur','remplissage','colonne_bilan','colonne_vide','orientation','couleur','legende','marge_min');
 			break;
 		case 'items_matiere' :
-			global $matiere_id,$type_individuel,$type_synthese,$type_bulletin,$aff_bilan_MS,$aff_bilan_PA,$aff_conv_sur20,$retroactif,$only_socle,$aff_coef,$aff_socle,$aff_lien,$cases_nb,$cases_largeur,$orientation,$couleur,$legende,$marge_min,$pages_nb;
-			$tab_choix_new = compact('matiere_id','type_individuel','type_synthese','type_bulletin','aff_bilan_MS','aff_bilan_PA','aff_conv_sur20','retroactif','only_socle','aff_coef','aff_socle','aff_lien','cases_nb','cases_largeur','orientation','couleur','legende','marge_min','pages_nb');
+			global $matiere_id,$type_individuel,$type_synthese,$type_bulletin,$aff_bilan_MS,$aff_bilan_PA,$aff_conv_sur20,$tableau_tri_objet,$tableau_tri_mode,$retroactif,$only_socle,$aff_coef,$aff_socle,$aff_lien,$aff_domaine,$aff_theme,$cases_nb,$cases_largeur,$orientation,$couleur,$legende,$marge_min,$pages_nb;
+			$tab_choix_new = compact('matiere_id','type_individuel','type_synthese','type_bulletin','aff_bilan_MS','aff_bilan_PA','aff_conv_sur20','tableau_tri_objet','tableau_tri_mode','retroactif','only_socle','aff_coef','aff_socle','aff_lien','aff_domaine','aff_theme','cases_nb','cases_largeur','orientation','couleur','legende','marge_min','pages_nb');
 			break;
 		case 'items_selection' :
-			global $type_individuel,$type_synthese,$aff_bilan_MS,$aff_bilan_PA,$aff_conv_sur20,$retroactif,$aff_coef,$aff_socle,$aff_lien,$cases_nb,$cases_largeur,$orientation,$couleur,$legende,$marge_min,$pages_nb;
-			$tab_choix_new = compact('type_individuel','type_synthese','aff_bilan_MS','aff_bilan_PA','aff_conv_sur20','retroactif','aff_coef','aff_socle','aff_lien','cases_nb','cases_largeur','orientation','couleur','legende','marge_min','pages_nb');
+			global $type_individuel,$type_synthese,$aff_bilan_MS,$aff_bilan_PA,$aff_conv_sur20,$tableau_tri_objet,$tableau_tri_mode,$retroactif,$aff_coef,$aff_socle,$aff_lien,$aff_domaine,$aff_theme,$cases_nb,$cases_largeur,$orientation,$couleur,$legende,$marge_min,$pages_nb;
+			$tab_choix_new = compact('type_individuel','type_synthese','aff_bilan_MS','aff_bilan_PA','aff_conv_sur20','tableau_tri_objet','tableau_tri_mode','retroactif','aff_coef','aff_socle','aff_lien','aff_domaine','aff_theme','cases_nb','cases_largeur','orientation','couleur','legende','marge_min','pages_nb');
 			break;
 		case 'items_multimatiere' :
-			global $aff_bilan_MS,$aff_bilan_PA,$aff_conv_sur20,$retroactif,$only_socle,$aff_coef,$aff_socle,$aff_lien,$cases_nb,$cases_largeur,$orientation,$couleur,$legende,$marge_min,$pages_nb;
-			$tab_choix_new = compact('aff_bilan_MS','aff_bilan_PA','aff_conv_sur20','retroactif','only_socle','aff_coef','aff_socle','aff_lien','cases_nb','cases_largeur','orientation','couleur','legende','marge_min','pages_nb');
+			global $aff_bilan_MS,$aff_bilan_PA,$aff_conv_sur20,$retroactif,$only_socle,$aff_coef,$aff_socle,$aff_lien,$aff_domaine,$aff_theme,$cases_nb,$cases_largeur,$orientation,$couleur,$legende,$marge_min,$pages_nb;
+			$tab_choix_new = compact('aff_bilan_MS','aff_bilan_PA','aff_conv_sur20','retroactif','only_socle','aff_coef','aff_socle','aff_lien','aff_domaine','aff_theme','cases_nb','cases_largeur','orientation','couleur','legende','marge_min','pages_nb');
 			break;
 		case 'synthese_matiere' :
 			global $matiere_id,$mode_synthese,$retroactif,$only_socle,$only_niveau,$aff_coef,$aff_socle,$aff_lien,$couleur,$legende;

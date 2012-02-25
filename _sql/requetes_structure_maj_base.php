@@ -1347,6 +1347,437 @@ public function DB_maj_base($version_actuelle)
 		}
 	}
 
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2011-11-20 => 2011-12-24
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2011-11-20')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2011-12-24';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// ajout de 2 paramètres
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ("droit_gerer_referentiel" , "profcoordonnateur")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ("droit_gerer_ressource" , "professeur")' );
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2011-12-24 => 2011-12-30
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2011-12-24')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2011-12-30';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// maj liens
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6D10","http://sacoche.sesamath.net/__ress_html/2354/117.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6D11","http://sacoche.sesamath.net/__ress_html/2354/118.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6D12","http://sacoche.sesamath.net/__ress_html/2354/119.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6D20","http://sacoche.sesamath.net/__ress_html/2354/120.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6D21","http://sacoche.sesamath.net/__ress_html/2354/121.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6D22","http://sacoche.sesamath.net/__ress_html/2354/122.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N10","http://sacoche.sesamath.net/__ress_html/2354/123.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N11","http://sacoche.sesamath.net/__ress_html/2354/124.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N12","http://sacoche.sesamath.net/__ress_html/2354/125.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N13","http://sacoche.sesamath.net/__ress_html/2354/126.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N14","http://sacoche.sesamath.net/__ress_html/2354/127.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N20","http://sacoche.sesamath.net/__ress_html/2354/128.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N21","http://sacoche.sesamath.net/__ress_html/2354/129.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N22","http://sacoche.sesamath.net/__ress_html/2354/130.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N23","http://sacoche.sesamath.net/__ress_html/2354/131.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N24","http://sacoche.sesamath.net/__ress_html/2354/132.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N25","http://sacoche.sesamath.net/__ress_html/2354/133.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N26","http://sacoche.sesamath.net/__ress_html/2354/134.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N27","http://sacoche.sesamath.net/__ress_html/2354/135.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N28","http://sacoche.sesamath.net/__ress_html/2354/136.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N29","http://sacoche.sesamath.net/__ress_html/2354/137.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N30","http://sacoche.sesamath.net/__ress_html/2354/138.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N31","http://sacoche.sesamath.net/__ress_html/2354/139.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N32","http://sacoche.sesamath.net/__ress_html/2354/140.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N33","http://sacoche.sesamath.net/__ress_html/2354/141.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6N34","http://sacoche.sesamath.net/__ress_html/2354/142.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G10","http://sacoche.sesamath.net/__ress_html/2354/143.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G11","")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G12","")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G13","")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G20","http://sacoche.sesamath.net/__ress_html/2354/147.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G21","")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G22","")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G23","http://sacoche.sesamath.net/__ress_html/2354/150.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G30","http://sacoche.sesamath.net/__ress_html/2354/151.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G31","http://sacoche.sesamath.net/__ress_html/2354/152.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G32","http://sacoche.sesamath.net/__ress_html/2354/153.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G33","http://sacoche.sesamath.net/__ress_html/2354/154.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G34","")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G40","http://sacoche.sesamath.net/__ress_html/2354/155.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G41","")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G42","http://sacoche.sesamath.net/__ress_html/2354/157.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G43","http://sacoche.sesamath.net/__ress_html/2354/158.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G50","http://sacoche.sesamath.net/__ress_html/2354/159.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G51","http://sacoche.sesamath.net/__ress_html/2354/160.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G52","http://sacoche.sesamath.net/__ress_html/2354/161.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G53","http://sacoche.sesamath.net/__ress_html/2354/162.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G54","http://sacoche.sesamath.net/__ress_html/2354/163.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G55","http://sacoche.sesamath.net/__ress_html/2354/164.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G60","http://sacoche.sesamath.net/__ress_html/2354/165.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G61","http://sacoche.sesamath.net/__ress_html/2354/166.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6G62","http://sacoche.sesamath.net/__ress_html/2354/167.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M10","http://sacoche.sesamath.net/__ress_html/2354/168.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M11","http://sacoche.sesamath.net/__ress_html/2354/169.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M12","http://sacoche.sesamath.net/__ress_html/2354/170.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M13","")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M20","http://sacoche.sesamath.net/__ress_html/2354/172.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M21","http://sacoche.sesamath.net/__ress_html/2354/173.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M22","http://sacoche.sesamath.net/__ress_html/2354/174.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M23","http://sacoche.sesamath.net/__ress_html/2354/175.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M30","http://sacoche.sesamath.net/__ress_html/2354/176.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M31","http://sacoche.sesamath.net/__ress_html/2354/177.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M32","http://sacoche.sesamath.net/__ress_html/2354/178.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M33","http://sacoche.sesamath.net/__ress_html/2354/179.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M34","http://sacoche.sesamath.net/__ress_html/2354/180.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M35","")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M36","http://sacoche.sesamath.net/__ress_html/2354/182.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M40","http://sacoche.sesamath.net/__ress_html/2354/183.html")' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://college-guitres.com/cahier-de-textes/mathenpoche.php?compet=6M41","http://sacoche.sesamath.net/__ress_html/2354/184.html")' );
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2011-12-30 => 2012-01-04
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2011-12-30')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2012-01-04';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// la validation d'une association de PP aux classes supprimait les associations des propriétaires de groupes de besoin et sans doute aussi des évaluations sur une sélection d'élèves ; problème potentiel probablement depuis 2010-10-29
+			$DB_SQL = 'SELECT groupe_id, user_id, SUM(jointure_pp) as nb_pp ';
+			$DB_SQL.= 'FROM sacoche_jointure_user_groupe ';
+			$DB_SQL.= 'LEFT JOIN sacoche_user USING (user_id) ';
+			$DB_SQL.= 'LEFT JOIN sacoche_groupe USING (groupe_id) ';
+			$DB_SQL.= 'WHERE groupe_type IN ("besoin","eval") AND user_profil="professeur" ';
+			$DB_SQL.= 'GROUP BY groupe_id ';
+			$DB_SQL.= 'HAVING nb_pp=0 ';
+			$DB_TAB = DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL );
+			// Lors de la rectification, si plusieurs profs sont associés aux groupes, il n'est pas dit que l'on tombe sur le bon...
+			$DB_SQL = 'REPLACE INTO sacoche_jointure_user_groupe (user_id,groupe_id,jointure_pp) VALUES(:user_id,:groupe_id,1)';
+			foreach($DB_TAB as $DB_ROW)
+			{
+				$DB_VAR = array(':user_id'=>$DB_ROW['user_id'],':groupe_id'=>$DB_ROW['groupe_id']);
+				DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+			}
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2012-01-04 => 2012-01-13
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2012-01-04')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2012-01-13';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// ajout d'un paramètre
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ("mdp_longueur_mini" , "6")' );
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2012-01-13 => 2012-01-16
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2012-01-13')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2012-01-16';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// modification de la syntaxe de mémorisation des profs associés à un devoir (le caractère "," est préférable à "_" car dans une recherche LIKE ce dernier signifie "un caractère" (même si on peut l'échapper).
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_devoir SET devoir_partage=REPLACE(devoir_partage,"_",",")' );
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2012-01-16 => 2012-01-28
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2012-01-16')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2012-01-28';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// modification d'un champ de "sacoche_parametre"
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_parametre CHANGE parametre_nom parametre_nom VARCHAR( 50 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ""' );
+			// récupération de paramètre
+			$denomination = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , 'SELECT parametre_valeur FROM sacoche_parametre WHERE parametre_nom="denomination"' );
+			// modification de paramètres
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_nom="webmestre_uai" WHERE parametre_nom="uai"' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_nom="webmestre_denomination" WHERE parametre_nom="denomination"' );
+			// ajout de paramètres
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "etablissement_denomination"     , :denomination )' , array(':denomination'=>$denomination) );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "etablissement_adresse1"         , "" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "etablissement_adresse2"         , "" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "etablissement_adresse3"         , "" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "etablissement_telephone"        , "" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "etablissement_fax"              , "" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "etablissement_courriel"         , "" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "mois_bascule_annee_scolaire"    , "8" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "enveloppe_horizontal_gauche"    , "110" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "enveloppe_horizontal_milieu"    , "100" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "enveloppe_horizontal_droite"    , "20" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "enveloppe_vertical_haut"        , "50" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "enveloppe_vertical_milieu"      , "45" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "enveloppe_vertical_bas"         , "20" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_infos_etablissement"   , "adresse,telephone,fax,courriel" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_infos_responsables"    , "non" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_nombre_exemplaires"    , "un" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_marge_gauche"          , "5" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_marge_droite"          , "5" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_marge_haut"            , "5" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_marge_bas"             , "10" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "droit_bulletin_appreciation_generale" , "directeur,profprincipal" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "droit_bulletin_impression_pdf"        , "directeur,aucunprof" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_modele_defaut"                        , "item_synthese" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_item_appreciation_matiere_presence"   , "1" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_item_appreciation_matiere_longueur"   , "150" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_item_appreciation_generale_presence"  , "1" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_item_pourcentage_acquis_presence"     , "0" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_item_pourcentage_acquis_modifiable"   , "1" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_item_pourcentage_acquis_classe"       , "0" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_item_note_moyenne_score_presence"     , "1" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_item_note_moyenne_score_modifiable"   , "1" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_item_note_moyenne_score_classe"       , "1" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_socle_pourcentage_acquis_presence"    , "1" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_socle_etat_validation_presence"       , "0" )' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_parametre VALUES ( "bulletin_socle_appreciation_generale_presence" , "1" )' );
+			// ajouter de deux entrées dans sacoche_jointure_groupe_periode pour paramétrer les bulletins
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_jointure_groupe_periode ADD bulletin_modele     ENUM("item_detail","item_synthese","socle_detail","socle_synthese")   COLLATE utf8_unicode_ci NOT NULL DEFAULT "item_synthese" ' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_jointure_groupe_periode ADD bulletin_etat       ENUM("ferme_vierge","ouvert_profs","ouvert_synthese","ferme_complet") COLLATE utf8_unicode_ci NOT NULL DEFAULT "ferme_vierge" ' );
+			// ajout d'une table pour les bulletins
+			// La supprimer si elle existe : sinon dans le cas d'une restauration de base à une version antérieure (suivie de cette mise à jour), cette ancienne table éventuellement existante ne serait pas réinitialisée.
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'DROP TABLE IF EXISTS sacoche_bulletin' );
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'CREATE TABLE sacoche_bulletin ( periode_id MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0, matiere_id SMALLINT(5) UNSIGNED NOT NULL DEFAULT 0, prof_id MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0, eleve_id MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0, bulletin_note TINYINT(3) UNSIGNED NOT NULL DEFAULT 0, bulletin_pourcentage TINYINT(3) UNSIGNED NOT NULL DEFAULT 0, bulletin_appreciation VARCHAR(250) COLLATE utf8_unicode_ci NOT NULL DEFAULT "", UNIQUE KEY bulletin_key (periode_id,matiere_id,prof_id,eleve_id), KEY periode_id (periode_id), KEY matiere_id (matiere_id), KEY prof_id (prof_id), KEY eleve_id (eleve_id) ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ' );
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2012-01-28 => 2012-02-08
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2012-01-28')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2012-02-08';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// maj liens suite passage https
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel_item SET item_lien=REPLACE(item_lien,"http://sacoche.sesamath.net","https://sacoche.sesamath.net")' );
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2012-02-08 => 2012-02-13
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2012-02-08')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2012-02-13';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// récupération des informations sur les matières
+			$listing_matieres_id = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , 'SELECT parametre_valeur FROM sacoche_parametre WHERE parametre_nom="matieres"' );
+			$DB_TAB_communes     = DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , 'SELECT matiere_id, matiere_nb_demandes, matiere_ordre FROM sacoche_matiere WHERE matiere_id IN('.$listing_matieres_id.')');
+			$DB_TAB_specifiques  = DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , 'SELECT matiere_id, matiere_nb_demandes, matiere_ordre, matiere_ref, matiere_nom FROM sacoche_matiere WHERE matiere_partage=0');
+			// nouvelles tables sacoche_matiere (intégration native de 1900 matières) et sacoche_matiere_famille
+			$requetes = file_get_contents(CHEMIN_SQL_STRUCTURE.'sacoche_matiere.sql');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , $requetes );
+			DB::close(SACOCHE_STRUCTURE_BD_NAME);
+			$requetes = file_get_contents(CHEMIN_SQL_STRUCTURE.'sacoche_matiere_famille.sql');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , $requetes );
+			DB::close(SACOCHE_STRUCTURE_BD_NAME);
+			// incrément des ids pour éviter tout souci
+			$increment = 11000;
+			$tab_tables = array('sacoche_bulletin','sacoche_jointure_user_matiere','sacoche_demande','sacoche_referentiel','sacoche_referentiel_domaine');
+			foreach($tab_tables as $table_nom)
+			{
+				DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE '.$table_nom.' SET matiere_id=matiere_id+'.$increment );
+			}
+			// Nettoyage champ devenu obsolète
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'DELETE FROM sacoche_parametre WHERE parametre_nom="matieres"' );
+			// mise à jour des ids & infos des matières de l'établissement
+			$tab_id_old_to_id_new = array(1=>901,2=>316,3=>328,4=>315,5=>327,6=>50,7=>813,8=>1001,9=>320,10=>332,11=>207,12=>406,13=>201,14=>613,15=>623,16=>629,17=>708,18=>54,19=>51,20=>202,21=>321,22=>333,23=>414,24=>40,25=>41,26=>42,27=>43,28=>46,29=>103,30=>507,31=>2757,32=>326,33=>338,34=>9991,35=>323,36=>335,37=>318,38=>330,39=>399,40=>3128,41=>711,42=>9992,43=>606,90=>9901,91=>9902,92=>9903,93=>9904,94=>9905,95=>9906,96=>9907,97=>9908,99=>9999);
+			foreach($DB_TAB_communes as $DB_ROW)
+			{
+				$id_old_incremente = $DB_ROW['matiere_id']+$increment;
+				$id_new = $tab_id_old_to_id_new[$DB_ROW['matiere_id']];
+				DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_matiere SET matiere_active=1, matiere_nb_demandes='.$DB_ROW['matiere_nb_demandes'].', matiere_ordre='.$DB_ROW['matiere_ordre'].' WHERE matiere_id='.$id_new );
+				foreach($tab_tables as $table_nom)
+				{
+					DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE '.$table_nom.' SET matiere_id='.$id_new.' WHERE matiere_id='.$id_old_incremente );
+				}
+			}
+			foreach($DB_TAB_specifiques as $DB_ROW)
+			{
+				$id_old_incremente = $DB_ROW['matiere_id']+$increment;
+				$matiere_existante_id = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , 'SELECT matiere_id FROM sacoche_matiere WHERE matiere_ref="'.$DB_ROW['matiere_ref'].'"' );
+				if(!$matiere_existante_id)
+				{
+					$id_new = 10000 + $DB_ROW['matiere_id'] - 100;
+					DB::query(SACOCHE_STRUCTURE_BD_NAME , 'INSERT INTO sacoche_matiere VALUES('.$id_new.', 1, 0, 0, '.$DB_ROW['matiere_nb_demandes'].', '.$DB_ROW['matiere_ordre'].', "'.$DB_ROW['matiere_ref'].'", "'.$DB_ROW['matiere_nom'].'")' );
+				}
+				else
+				{
+					$id_new = $matiere_existante_id;
+					DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_matiere SET matiere_active=1, matiere_nb_demandes='.$DB_ROW['matiere_nb_demandes'].', matiere_ordre='.$DB_ROW['matiere_ordre'].' WHERE matiere_id='.$id_new );
+					DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel SET referentiel_partage_etat="non" WHERE matiere_id='.$id_old_incremente );
+				}
+				foreach($tab_tables as $table_nom)
+				{
+					DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE '.$table_nom.' SET matiere_id='.$id_new.' WHERE matiere_id='.$id_old_incremente );
+				}
+			}
+			// Nettoyage des entrées qui resteraient (anciennes matières plus utilisées)
+			foreach($tab_tables as $table_nom)
+			{
+				$DB_TAB_obsoletes = DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , 'SELECT matiere_id FROM '.$table_nom.' WHERE matiere_id>'.$increment.' GROUP BY matiere_id');
+				foreach($DB_TAB_obsoletes as $DB_ROW)
+				{
+					$id_old_decremente = $DB_ROW['matiere_id'] - $increment;
+					$id_new = isset($tab_id_old_to_id_new[$id_old_decremente]) ? $tab_id_old_to_id_new[$id_old_decremente] : 0 ;
+					if($id_new)
+					{
+						DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE '.$table_nom.' SET matiere_id='.$id_new.' WHERE matiere_id='.$DB_ROW['matiere_id'] );
+					}
+					else
+					{
+						DB::query(SACOCHE_STRUCTURE_BD_NAME , 'DELETE FROM '.$table_nom.' WHERE matiere_id='.$DB_ROW['matiere_id'] );
+					}
+				}
+			}
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2012-02-13 => 2012-02-15
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2012-02-13')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2012-02-15';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// Inversion des noms de deux matières
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_matiere SET matiere_ref="P3A", matiere_nom="3 Principaux éléments de mathématiques"  WHERE matiere_id=9903');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_matiere SET matiere_ref="P3B", matiere_nom="3 Culture scientifique et technologique" WHERE matiere_id=9904');
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2012-02-15 => 2012-02-19
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2012-02-15')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2012-02-19';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// récupération des informations sur les niveaux, cycles, paliers
+			$listing_niveaux_id = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , 'SELECT parametre_valeur FROM sacoche_parametre WHERE parametre_nom="niveaux"' );
+			$listing_cycles_id  = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , 'SELECT parametre_valeur FROM sacoche_parametre WHERE parametre_nom="cycles"' );
+			$listing_paliers_id = DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , 'SELECT parametre_valeur FROM sacoche_parametre WHERE parametre_nom="paliers"' );
+			// nouvelles tables sacoche_niveau et sacoche_niveau_famille
+			$requetes = file_get_contents(CHEMIN_SQL_STRUCTURE.'sacoche_niveau.sql');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , $requetes );
+			DB::close(SACOCHE_STRUCTURE_BD_NAME);
+			$requetes = file_get_contents(CHEMIN_SQL_STRUCTURE.'sacoche_niveau_famille.sql');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , $requetes );
+			DB::close(SACOCHE_STRUCTURE_BD_NAME);
+			// ajout champ table sacoche_socle_palier
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_socle_palier ADD palier_actif BOOLEAN NOT NULL DEFAULT 0 AFTER palier_id , ADD INDEX ( palier_actif )' );
+			// Nettoyage champs devenu obsolète
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'DELETE FROM sacoche_parametre WHERE parametre_nom IN ( "niveaux","cycles","paliers" )' );
+			// Mise à jour des champs utilisés
+			if($listing_niveaux_id)
+			{
+				DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_niveau SET niveau_actif=1 WHERE niveau_id IN('.$listing_niveaux_id.')');
+			}
+			if($listing_cycles_id)
+			{
+				DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_niveau SET niveau_actif=1 WHERE niveau_id IN('.$listing_cycles_id.')');
+			}
+			if($listing_paliers_id)
+			{
+				DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_socle_palier SET palier_actif=1 WHERE palier_id IN('.$listing_paliers_id.')');
+			}
+			// modification / suppression de clefs
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_bulletin DROP INDEX bulletin_key , DROP INDEX eleve_id , ADD PRIMARY KEY ( eleve_id , periode_id , matiere_id , prof_id ) ');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_demande DROP INDEX user_id');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_jointure_devoir_item DROP INDEX devoir_item_key , DROP INDEX devoir_id , ADD PRIMARY KEY ( devoir_id , item_id ) ');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_jointure_groupe_periode DROP INDEX groupe_periode_key , DROP INDEX groupe_id , ADD PRIMARY KEY ( groupe_id , periode_id ) ');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_jointure_parent_eleve DROP INDEX parent_eleve_key , DROP INDEX parent_id , ADD PRIMARY KEY ( parent_id , eleve_id ) ');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_jointure_user_entree DROP INDEX validation_entree_key , DROP INDEX user_id , ADD PRIMARY KEY ( user_id , entree_id ) ');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_jointure_user_groupe DROP INDEX user_groupe_key , DROP INDEX user_id , ADD PRIMARY KEY ( user_id , groupe_id ) ');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_jointure_user_matiere DROP INDEX user_matiere_key , DROP INDEX user_id , ADD PRIMARY KEY ( user_id , matiere_id ) ');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_jointure_user_pilier DROP INDEX validation_pilier_key , DROP INDEX user_id , ADD PRIMARY KEY ( user_id , pilier_id ) ');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_referentiel DROP INDEX referentiel_id , DROP INDEX matiere_id , ADD PRIMARY KEY ( matiere_id , niveau_id ) ');
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'ALTER TABLE sacoche_saisie DROP INDEX saisie_key , DROP INDEX devoir_id , ADD PRIMARY KEY ( devoir_id , eleve_id , item_id ) ');
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2012-02-19 => 2012-02-22
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2012-02-19')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2012-02-22';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// La dernière version n'installait pas la table sacoche_socle_palier (virgule mal placée)
+			$DB_TAB = DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , 'SHOW TABLE STATUS LIKE "sacoche_socle_palier"');
+			if(!count($DB_TAB))
+			{
+				$requetes = file_get_contents(CHEMIN_SQL_STRUCTURE.'sacoche_socle_palier.sql');
+				DB::query(SACOCHE_STRUCTURE_BD_NAME , $requetes );
+				DB::close(SACOCHE_STRUCTURE_BD_NAME);
+			}
+		}
+	}
+
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	MAJ 2012-02-22 => 2012-02-23
+	//	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if($version_actuelle=='2012-02-22')
+	{
+		if($version_actuelle==DB_STRUCTURE_MAJ_BASE::DB_version_base())
+		{
+			$version_actuelle = '2012-02-23';
+			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_parametre SET parametre_valeur="'.$version_actuelle.'" WHERE parametre_nom="version_base"' );
+			// Les 2 dernières versions n'installaient pas la table sacoche_jointure_user_pilier (mot ADD en trop)
+			$DB_TAB = DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , 'SHOW TABLE STATUS LIKE "sacoche_jointure_user_pilier"');
+			if(!count($DB_TAB))
+			{
+				$requetes = file_get_contents(CHEMIN_SQL_STRUCTURE.'sacoche_jointure_user_pilier.sql');
+				DB::query(SACOCHE_STRUCTURE_BD_NAME , $requetes );
+				DB::close(SACOCHE_STRUCTURE_BD_NAME);
+			}
+		}
+	}
+
 }
 
 }

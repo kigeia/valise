@@ -32,7 +32,7 @@ $TITRE = "Personnels de direction";
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_directeurs">DOC : Gestion des directeurs</a></span></p>
 
 <form action="#" method="post">
-	<table class="form t9">
+	<table class="form t9 hsort">
 		<thead>
 			<tr>
 				<th>Id. ENT</th>
@@ -73,4 +73,7 @@ $TITRE = "Personnels de direction";
 	</table>
 </form>
 
-<script type="text/javascript">var select_login="<?php echo $_SESSION['MODELE_DIRECTEUR']; ?>";</script>
+<script type="text/javascript">
+	var select_login="<?php echo $_SESSION['MODELE_DIRECTEUR']; ?>";
+	var mdp_longueur_mini=<?php echo $_SESSION['MDP_LONGUEUR_MINI'] ?>;
+</script>

@@ -37,7 +37,7 @@ $TITRE = "Gérer ses groupes de besoin";
 <hr />
 
 <form action="#" method="post">
-	<table class="form">
+	<table class="form hsort">
 		<thead>
 			<tr>
 				<th>Niveau</th>
@@ -120,7 +120,7 @@ if( count($tab_eleve) )
 		echo'<thead><tr>'.$TH[$niveau_id].'</tr></thead>';
 		echo'<tbody><tr>'.$TB[$niveau_id].'</tr></tbody>';
 		echo'<tfoot><tr>'.$TF[$niveau_id].'</tr></tfoot>';
-		echo'</table><p>&nbsp;</p>';
+		echo'</table>';
 	}
 }
 else
@@ -133,9 +133,9 @@ else
 $select_niveau = '<option value=""></option>';
 $tab_niveau_ordre_js = 'var tab_niveau_ordre = new Array();';
 
-if($_SESSION['NIVEAUX'])
+$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement(FALSE /*with_specifiques*/);
+if(count($DB_TAB))
 {
-	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$listing_cycles=false);
 	foreach($DB_TAB as $DB_ROW)
 	{
 		$select_niveau .= '<option value="'.$DB_ROW['niveau_id'].'">'.html($DB_ROW['niveau_nom']).'</option>';

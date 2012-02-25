@@ -166,6 +166,7 @@ $(document).ready
 								$('#ajax_msg').removeAttr("class").html('');
 								$('#ajax_info').html(responseHTML);
 								format_liens('#ajax_info');
+								infobulle();
 								initialiser_compteur();
 							}
 						}
@@ -186,6 +187,23 @@ $(document).ready
 					action: 'ajax.php?page='+PAGE,
 					name: 'userfile',
 					data: {'f_action':'import_sacoche'},
+					autoSubmit: true,
+					responseType: "html",
+					onChange: changer_fichier,
+					onSubmit: verifier_fichier,
+					onComplete: retourner_fichier
+				}
+			);
+		}
+
+		if($('#import_compatible').length)
+		{
+			new AjaxUpload
+			('#import_compatible',
+				{
+					action: 'ajax.php?page='+PAGE,
+					name: 'userfile',
+					data: {'f_action':'import_compatible'},
 					autoSubmit: true,
 					responseType: "html",
 					onChange: changer_fichier,

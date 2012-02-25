@@ -29,98 +29,80 @@ if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');
 $TITRE = "Modifier le contenu des référentiels";
 ?>
 
+<?php
+// Indication des profils ayant accès à cette page
+require_once('./_inc/tableau_profils.php'); // Charge $tab_profil_libelle[$profil][court|long][1|2]
+$tab_profils = array('professeur','profcoordonnateur','aucunprof');
+$texte_profil = $_SESSION['DROIT_GERER_REFERENTIEL'];
+foreach($tab_profils as $profil)
+{
+	$texte_profil = str_replace($profil,$tab_profil_libelle[$profil]['long'][2],$texte_profil);
+}
+?>
+
 <ul class="puce">
+	<li><span class="astuce">Profils autorisés par les administrateurs : <span class="u"><?php echo $texte_profil ?></span>.</span></li>
 	<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=referentiels_socle__referentiel_modifier_contenu">DOC : Modifier le contenu des référentiels.</a></span></li>
 	<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=referentiels_socle__liaison_matiere_socle">DOC : Liaison matières &amp; socle commun.</a></span></li>
 	<li><span class="astuce">Pour mettre à jour un référentiel modifié sur le serveur communautaire, utiliser la page "<a href="./index.php?page=professeur_referentiel&amp;section=gestion">créer / paramétrer les référentiels</a>".</span></li>
+	<li><span class="astuce">Pour ajouter / modifier les ressources de travail associées aux items, utiliser la page "<a href="./index.php?page=professeur_referentiel&amp;section=ressources">associer des ressources aux items</a>".</span></li>
 	<li><span class="danger">Retirer des items supprime les résultats associés de tous les élèves !</span></li>
 </ul>
 
 <hr />
 
 <form action="#" method="post" id="zone_choix_referentiel" onsubmit="return false;">
-
 <?php
-// J'ai séparé en plusieurs requêtes au bout de plusieurs heures sans m'en sortir (entre les matières sans coordonnateurs, sans référentiel, les deux à la fois...).
-// La recherche ne s'effectue que sur les matières et niveaux utilisés, sans débusquer des référentiels résiduels.
-$tab_matiere = array();
-$tab_niveau  = array();
-// On récupère la liste des matières où le professeur est rattaché, et s'il en est coordonnateur
-$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_matieres_professeur_infos_referentiel($_SESSION['MATIERES'],$_SESSION['USER_ID']);
-if(count($DB_TAB))
+// On récupère la liste des référentiels des matières auxquelles le professeur est rattaché, et s'il en est coordonnateur
+$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_matieres_niveaux_referentiels_professeur($_SESSION['USER_ID']);
+if(!count($DB_TAB))
 {
-	foreach($DB_TAB as $DB_ROW)
-	{
-		$tab_matiere[$DB_ROW['matiere_id']] = array( 'nom'=>html($DB_ROW['matiere_nom']) , 'coord'=>$DB_ROW['jointure_coord'] , 'niveau_nb'=>0 );
-	}
-}
-$listing_matieres_id = implode(',',array_keys($tab_matiere));
-
-if(!$listing_matieres_id)
-{
-	echo'<p><span class="danger">Vous n\'êtes rattaché à aucune matière de l\'établissement !</span></p>';
-}
-elseif(!$_SESSION['NIVEAUX']) // normalement impossible
-{
-	echo'<p><span class="danger">Aucun niveau n\'est rattaché à l\'établissement !</span></p>';
-}
-elseif(!$_SESSION['CYCLES']) // normalement impossible
-{
-	echo'<p><span class="danger">Aucun cycle n\'est rattaché à l\'établissement !</span></p>';
+	echo'<ul class="puce">';
+	echo'<li><span class="danger">Aucun référentiel présent parmi les matières qui vous sont rattachées !</span></li>';
+	echo'<li><span class="astuce">Commencer par <a href="./index.php?page=professeur_referentiel&amp;section=gestion">créer ou importer un référentiel</a>.</span></li>';
+	echo'</ul>';
 }
 else
 {
-	// On récupère la liste des niveaux utilisés par l'établissement
-	$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
-	$nb_niveaux = count($DB_TAB);
+	// On récupère les données
+	$tab_matiere = array();
 	foreach($DB_TAB as $DB_ROW)
 	{
-		$tab_niveau[$DB_ROW['niveau_id']] = html($DB_ROW['niveau_nom']);
-	}
-	// On récupère la liste des référentiels par matière avec indication du nombre de niveau
-	$tab_partage = array('oui'=>'<img title="Référentiel partagé sur le serveur communautaire (MAJ le ◄DATE►)." alt="" src="./_img/etat/partage_oui.gif" />','non'=>'<img title="Référentiel non partagé avec la communauté (choix du ◄DATE►)." alt="" src="./_img/etat/partage_non.gif" />','bof'=>'<img title="Référentiel dont le partage est sans intérêt (pas novateur)." alt="" src="./_img/etat/partage_non.gif" />','hs'=>'<img title="Référentiel dont le partage est sans objet (matière spécifique)." alt="" src="./_img/etat/partage_non.gif" />');
-	$DB_TAB = DB_STRUCTURE_REFERENTIEL::DB_lister_referentiels_infos_groupement_matieres($listing_matieres_id,$_SESSION['NIVEAUX'],$_SESSION['CYCLES']);
-	if(count($DB_TAB))
-	{
-		foreach($DB_TAB as $DB_ROW)
+		if(!isset($tab_matiere[$DB_ROW['matiere_id']]))
 		{
-			$tab_matiere[$DB_ROW['matiere_id']]['niveau_nb'] = $DB_ROW['niveau_nb'];
-		}
-	}
-	// On construit et affiche le tableau résultant
-	$affichage = '<table class="vm_nug"><thead><tr><th>Matière</th><th>Référentiel</th><th class="nu"></th></tr></thead><tbody>'."\r\n";
-	foreach($tab_matiere as $matiere_id => $tab)
-	{
-		$matiere_nom   = $tab['nom'];
-		$matiere_coord = $tab['coord'];
-		$affichage .= '<tr><td>'.$matiere_nom.'</td>';
-		$id = 'm1_'.$matiere_id;
-		if($tab_matiere[$matiere_id]['niveau_nb']>0)
-		{
-			$x = ($tab_matiere[$matiere_id]['niveau_nb'])>1 ? 'x' : '';
-			$affichage .= '<td class="v">Référentiel présent sur '.$tab_matiere[$matiere_id]['niveau_nb'].' niveau'.$x.'.</td>';
-			$affichage .= ($matiere_coord) ? '<td class="nu" id="'.$id.'"><q class="modifier" title="Modifier les référentiels de cette matière."></q></td>' : '<td class="nu"><q class="modifier_non" title="Action réservée aux coordonnateurs."></q></td>' ;
-
+			$matiere_droit = ( (($_SESSION['DROIT_GERER_REFERENTIEL']=='profcoordonnateur')&&($DB_ROW['jointure_coord'])) || ($_SESSION['DROIT_GERER_REFERENTIEL']=='professeur') ) ? TRUE : FALSE ;
+			$icone_action  = ($matiere_droit) ? '<q class="modifier" title="Modifier les référentiels de cette matière."></q>' : '<q class="modifier_non" title="Accès restreint : '.$texte_profil.'."></q>' ;
+			$tab_matiere[$DB_ROW['matiere_id']] = array( 
+				'matiere_nom' => html($DB_ROW['matiere_nom']) ,
+				'matiere_ref' => clean_fichier($DB_ROW['matiere_ref']) ,
+				'matiere_col' => '<td class="nu" id="td_'.$DB_ROW['matiere_id'].'">'.$icone_action.'</td>' ,
+				'niveau_nb'=>1
+			);
 		}
 		else
 		{
-			$affichage .= '<td class="r">Absence de référentiel.</td><td class="nu"></td>';
+			$tab_matiere[$DB_ROW['matiere_id']]['niveau_nb']++;
 		}
-		$affichage .= '</tr>'."\r\n";
+	}
+	// On construit et affiche le tableau résultant
+	$affichage = '<table class="vm_nug"><thead><tr><th>Matière</th><th>Niveau(x)</th><th class="nu"></th></tr></thead><tbody>'."\r\n";
+	foreach($tab_matiere as $matiere_id => $tab)
+	{
+		$x = ($tab_matiere[$matiere_id]['niveau_nb'])>1 ? 'x' : '';
+		$affichage .= '<tr><td>'.$tab['matiere_nom'].'</td><td>'.$tab_matiere[$matiere_id]['niveau_nb'].' niveau'.$x.'</td>'.$tab['matiere_col'].'</tr>'."\r\n";
 	}
 	$affichage .= '</tbody></table>'."\r\n";
 	echo $affichage;
 }
 ?>
-
 </form>
 
-<form action="#" method="post" id="zone_compet" onsubmit="return false;">
+<form action="#" method="post" id="zone_elaboration_referentiel" onsubmit="return false;" class="arbre_dynamique">
 </form>
 
-<div id="zone_socle" class="hide">
+<div id="zone_socle" class="arbre_dynamique hide">
 	<h2>Relation au socle commun</h2>
-	<form>
+	<form action="#" method="post">
 		<p>
 			<label class="tab">Item disciplinaire :</label><span class="f_nom i"></span><br />
 			<label class="tab">Socle commun :</label>Cocher ci-dessous (<span class="astuce">cliquer sur un intitulé pour déployer son contenu</span>).<br />
@@ -129,9 +111,9 @@ else
 		<ul class="ul_n1 p"><li class="li_n3"><input id="socle_0" name="f_socle" type="radio" value="0" /><label for="socle_0">Hors-socle.</label></li></ul>
 		<?php
 		// Affichage de la liste des items du socle pour chaque palier
-		if($_SESSION['PALIERS'])
+		$DB_TAB = DB_STRUCTURE_COMMUN::DB_recuperer_arborescence_palier();
+		if(count($DB_TAB))
 		{
-			$DB_TAB = DB_STRUCTURE_COMMUN::DB_recuperer_arborescence_palier($_SESSION['PALIERS']);
 			echo afficher_arborescence_socle_from_SQL($DB_TAB,$dynamique=true,$reference=false,$aff_input=true,$ids=false);
 		}
 		else
@@ -141,3 +123,4 @@ else
 		?>
 	</form>
 </div>
+

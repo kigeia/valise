@@ -51,6 +51,26 @@ public function DB_recuperer_item_popularite($listing_demande_id,$listing_user_i
 }
 
 /**
+ * Retourner les niveaux et matières des référentiels auxquels un professeur a accès.
+ *
+ * @param int  $user_id
+ * @return array
+ */
+public function DB_lister_matieres_niveaux_referentiels_professeur($user_id)
+{
+	$DB_SQL = 'SELECT matiere_id, matiere_ref, matiere_nom, niveau_id, niveau_nom, jointure_coord ';
+	$DB_SQL.= 'FROM sacoche_referentiel ';
+	$DB_SQL.= 'LEFT JOIN sacoche_jointure_user_matiere USING (matiere_id) ';
+	$DB_SQL.= 'LEFT JOIN sacoche_matiere USING (matiere_id) ';
+	$DB_SQL.= 'LEFT JOIN sacoche_niveau USING (niveau_id) ';
+	$DB_SQL.= 'WHERE user_id=:user_id AND matiere_active=1 AND niveau_actif=1 ';
+	$DB_SQL.= 'ORDER BY matiere_nom ASC, niveau_ordre ASC';
+	$DB_VAR = array(':user_id'=>$user_id);
+	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+}
+
+
+/**
  * DB_STRUCTURE_recuperer_devoir_gepi
  *
  * @param int    $prof_id
@@ -77,46 +97,41 @@ function DB_STRUCTURE_recuperer_devoir_gepi($gepi_cn_devoir_id)
 	return DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
 
+
+
 /**
- * DB_STRUCTURE_recuperer_devoir
+ * Retourner les niveaux et matières des référentiels auxquels un professeur a accès.
  *
- * @param int    $devoir_id
+ * @param int  $user_id
  * @return array
  */
-function DB_STRUCTURE_recuperer_devoir($devoir_id)
+public function DB_lister_matieres_niveaux_referentiels_professeur($user_id)
 {
-	// DB::query(SACOCHE_STRUCTURE_BD_NAME , 'SET group_concat_max_len = ...'); // Pour lever si besoin une limitation de GROUP_CONCAT (group_concat_max_len est par défaut limité à une chaine de 1024 caractères).
-	// Il faut ajouter dans la requête des "DISTINCT" sinon la liaison avec "sacoche_jointure_user_groupe" duplique tout x le nb d'élèves associés pour une évaluation sur une sélection d'élèves.
-	$DB_SQL = 'SELECT devoir_id, devoir_date, devoir_visible_date, devoir_info,gepi_cn_devoirs_id, groupe_id, groupe_type, groupe_nom, ';
-	$DB_SQL.= 'GROUP_CONCAT(DISTINCT item_id SEPARATOR "_") AS items_listing, COUNT(DISTINCT item_id) AS items_nombre ';
-	$DB_SQL .= ', '.'GROUP_CONCAT(DISTINCT user_id SEPARATOR "_") AS users_listing, COUNT(DISTINCT user_id) AS users_nombre ';
-	$DB_SQL.= 'FROM sacoche_devoir ';
-	$DB_SQL.= 'LEFT JOIN sacoche_jointure_devoir_item USING (devoir_id) ';
-	$DB_SQL.= 'LEFT JOIN sacoche_groupe USING (groupe_id) ';
-	$DB_SQL.= 'LEFT JOIN sacoche_jointure_user_groupe USING (groupe_id) ';
-	$DB_SQL.= 'WHERE devoir_id=:devoir_id ';
-	$DB_SQL.= 'GROUP BY devoir_id ';
-	$DB_SQL.= 'ORDER BY devoir_date DESC, groupe_nom ASC';
-	$DB_VAR = array(':devoir_id'=>$devoir_id);
-	return DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	$DB_SQL = 'SELECT matiere_id, matiere_ref, matiere_nom, niveau_id, niveau_nom, jointure_coord ';
+	$DB_SQL.= 'FROM sacoche_referentiel ';
+	$DB_SQL.= 'LEFT JOIN sacoche_jointure_user_matiere USING (matiere_id) ';
+	$DB_SQL.= 'LEFT JOIN sacoche_matiere USING (matiere_id) ';
+	$DB_SQL.= 'LEFT JOIN sacoche_niveau USING (niveau_id) ';
+	$DB_SQL.= 'WHERE user_id=:user_id AND matiere_active=1 AND niveau_actif=1 ';
+	$DB_SQL.= 'ORDER BY matiere_nom ASC, niveau_ordre ASC';
+	$DB_VAR = array(':user_id'=>$user_id);
+	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
-
 
 /**
  * lister_matieres_professeur_infos_referentiel
  *
- * @param string $listing_matieres   id des matières de l'établissement séparées par des virgules
  * @param int $user_id
  * @return array|string
  */
-public function DB_lister_matieres_professeur_infos_referentiel($listing_matieres,$user_id)
+public function DB_lister_matieres_professeur_infos_referentiel($user_id)
 {
-	$DB_SQL = 'SELECT matiere_id, matiere_nom, matiere_partage, matiere_nb_demandes, jointure_coord ';
+	$DB_SQL = 'SELECT matiere_id, matiere_nom, matiere_nb_demandes, jointure_coord ';
 	$DB_SQL.= 'FROM sacoche_jointure_user_matiere ';
 	$DB_SQL.= 'LEFT JOIN sacoche_matiere USING (matiere_id) ';
-	$DB_SQL.= 'WHERE (matiere_id IN('.$listing_matieres.') OR matiere_partage=:partage) AND user_id=:user_id '; // Test matiere car un prof peut être encore relié à des matières décochées par l'admin.
+	$DB_SQL.= 'WHERE user_id=:user_id AND matiere_active=1 ';
 	$DB_SQL.= 'ORDER BY matiere_nom ASC';
-	$DB_VAR = array(':user_id'=>$user_id,':partage'=>0);
+	$DB_VAR = array(':user_id'=>$user_id);
 	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
 
@@ -295,6 +310,30 @@ public function DB_lister_demandes_prof($matiere_id,$listing_user_id)
 }
 
 /**
+ * Lister les élèves ayant déjà fait une évaluation de nom donné avec un prof donné à partir d'une date donnée.
+ * Seules les évaluations sur des sélections d'élèves sont prises en compte.
+ *
+ * @param int    $prof_id
+ * @param string $devoir_info
+ * @param string $date_debut_mysql
+ * @return array
+ */
+public function DB_lister_eleves_devoirs($prof_id,$devoir_info,$date_debut_mysql)
+{
+	$DB_SQL = 'SELECT user_id, devoir_date ';
+	$DB_SQL.= 'FROM sacoche_devoir ';
+	$DB_SQL.= 'LEFT JOIN sacoche_groupe USING (groupe_id) ';
+	$DB_SQL.= 'LEFT JOIN sacoche_jointure_user_groupe USING (groupe_id) ';
+	$DB_SQL.= 'WHERE ( prof_id=:prof_id OR devoir_partage LIKE :prof_id_like ) ';
+	$DB_SQL.= 'AND devoir_info=:devoir_info ';
+	$DB_SQL.= 'AND devoir_date>="'.$date_debut_mysql.'" ';
+	$DB_SQL.= 'AND groupe_type=:type4 ';
+	$DB_SQL.= 'GROUP BY user_id ';
+	$DB_VAR = array(':prof_id'=>$prof_id,':prof_id_like'=>'%,'.$prof_id.',%',':devoir_info'=>$devoir_info,':type4'=>'eval');
+	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+}
+
+/**
  * lister_devoirs_prof
  *
  * @param int    $prof_id
@@ -327,7 +366,7 @@ public function DB_lister_devoirs_prof($prof_id,$groupe_id,$date_debut_mysql,$da
 	$DB_SQL.= 'AND devoir_date>="'.$date_debut_mysql.'" AND devoir_date<="'.$date_fin_mysql.'" ' ;
 	$DB_SQL.= 'GROUP BY devoir_id ';
 	$DB_SQL.= 'ORDER BY devoir_date DESC, groupe_nom ASC';
-	$DB_VAR = array(':prof_id'=>$prof_id,':prof_id_like'=>'%_'.$prof_id.'_%',':type4'=>'eval');
+	$DB_VAR = array(':prof_id'=>$prof_id,':prof_id_like'=>'%,'.$prof_id.',%',':type4'=>'eval');
 	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
 
@@ -356,12 +395,14 @@ public function DB_lister_devoirs_prof_groupe_sans_infos_last($prof_id,$groupe_i
  * lister_items_devoir
  * Retourner les items d'un devoir
  *
- * @param int  $devoir_id
+ * @param int   $devoir_id
+ * @param bool  $with_lien (FALSE par défaut)
  * @return array
  */
-public function DB_lister_items_devoir($devoir_id)
+public function DB_lister_items_devoir($devoir_id,$with_lien=FALSE)
 {
 	$DB_SQL = 'SELECT item_id, item_nom, entree_id, ';
+	$DB_SQL.= ($with_lien) ? 'item_lien, ' : '' ;
 	$DB_SQL.= 'CONCAT(matiere_ref,".",niveau_ref,".",domaine_ref,theme_ordre,item_ordre) AS item_ref ';
 	$DB_SQL.= 'FROM sacoche_jointure_devoir_item ';
 	$DB_SQL.= 'LEFT JOIN sacoche_referentiel_item USING (item_id) ';
@@ -476,12 +517,12 @@ public function DB_ajouter_liaison_professeur_responsable($user_id,$groupe_id)
  * @param string $date_mysql
  * @param string $info
  * @param string $date_visible_mysql
- * @param string $listing_id_profs   id des profs avec qui on partage l'éval (séparés par des _) ; facultatif car non transmis si éval sur des élèves sélectionnés
+ * @param string $tab_id_profs   tableau des id des profs avec qui l'évaluation est partagée ; facultatif car non transmis si éval sur des élèves sélectionnés
  * @return int
  */
-public function DB_ajouter_devoir($prof_id,$groupe_id,$date_mysql,$info,$date_visible_mysql,$listing_id_profs='')
+public function DB_ajouter_devoir($prof_id,$groupe_id,$date_mysql,$info,$date_visible_mysql,$tab_id_profs=array())
 {
-	$listing_id_profs = ($listing_id_profs) ? '_'.$listing_id_profs.'_' : $listing_id_profs ;
+	$listing_id_profs = count($tab_id_profs) ? ','.implode(',',$tab_id_profs).',' : '' ;
 	$DB_SQL = 'INSERT INTO sacoche_devoir(prof_id,groupe_id,devoir_date,devoir_info,devoir_visible_date,devoir_partage) ';
 	$DB_SQL.= 'VALUES(:prof_id,:groupe_id,:date,:info,:visible_date,:devoir_partage)';
 	$DB_VAR = array(':prof_id'=>$prof_id,':groupe_id'=>$groupe_id,':date'=>$date_mysql,':info'=>$info,':visible_date'=>$date_visible_mysql,':devoir_partage'=>$listing_id_profs);
@@ -520,12 +561,12 @@ public function DB_ajouter_saisie($prof_id,$eleve_id,$devoir_id,$item_id,$item_d
  * @param int    $niveau_id
  * @return void
  */
-public function DB_modifier_groupe_par_prof($groupe_id,$groupe_nom,$niveau_id,$groupe_ref = null)
+public function DB_modifier_groupe_par_prof($groupe_id,$groupe_nom,$niveau_id)
 {
 	$DB_SQL = 'UPDATE sacoche_groupe ';
-	$DB_SQL.= 'SET groupe_ref=:groupe_ref,groupe_nom=:groupe_nom,niveau_id=:niveau_id,groupe_ref=:groupe_ref ';
+	$DB_SQL.= 'SET groupe_nom=:groupe_nom,niveau_id=:niveau_id ';
 	$DB_SQL.= 'WHERE groupe_id=:groupe_id ';
-	$DB_VAR = array(':groupe_id'=>$groupe_id,':groupe_nom'=>$groupe_nom,':niveau_id'=>$niveau_id,':groupe_ref'=>$groupe_ref);
+	$DB_VAR = array(':groupe_id'=>$groupe_id,':groupe_nom'=>$groupe_nom,':niveau_id'=>$niveau_id);
 	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
 
@@ -577,13 +618,13 @@ public function DB_modifier_saisie($eleve_id,$devoir_id,$item_id,$saisie_note,$s
  * @param string $date_mysql
  * @param string $info
  * @param string $date_visible_mysql
- * @param array  $tab_items          tableau des id des items
- * @param string $listing_id_profs   id des profs avec qui on partage l'éval (séparés par des _) ; facultatif car non transmis si éval sur des élèves sélectionnés
+ * @param array  $tab_items      tableau des id des items
+ * @param string $tab_id_profs   tableau des id des profs avec qui l'évaluation est partagée ; facultatif car non transmis si éval sur des élèves sélectionnés
  * @return void
  */
-public function DB_modifier_devoir($devoir_id,$prof_id,$date_mysql,$info,$date_visible_mysql,$tab_items,$listing_id_profs='')
+public function DB_modifier_devoir($devoir_id,$prof_id,$date_mysql,$info,$date_visible_mysql,$tab_items,$tab_id_profs=array())
 {
-	$listing_id_profs = ($listing_id_profs) ? '_'.$listing_id_profs.'_' : $listing_id_profs ;
+	$listing_id_profs = count($tab_id_profs) ? ','.implode(',',$tab_id_profs).',' : '' ;
 	// sacoche_devoir (maj)
 	$DB_SQL = 'UPDATE sacoche_devoir ';
 	$DB_SQL.= 'SET devoir_date=:date, devoir_info=:devoir_info, devoir_visible_date=:visible_date, devoir_partage=:devoir_partage ';

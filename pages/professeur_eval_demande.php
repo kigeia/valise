@@ -30,7 +30,7 @@ $TITRE = "Demandes d'évaluations";
 
 // Lister le nb de demandes d'évaluations autorisées suivant les matières
 $infobulle = '';
-$DB_TAB = DB_STRUCTURE_COMMUN::DB_OPT_matieres_professeur($_SESSION['MATIERES'],$_SESSION['USER_ID']);
+$DB_TAB = DB_STRUCTURE_COMMUN::DB_OPT_matieres_professeur($_SESSION['USER_ID']);
 if(!is_array($DB_TAB))
 {
 	$infobulle .= $DB_TAB;
@@ -54,8 +54,8 @@ else
 
 <?php
 // Fabrication des éléments select du formulaire
-$select_matiere = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_matieres_professeur($_SESSION['MATIERES'],$_SESSION['USER_ID']) , $select_nom='f_matiere' , $option_first='non' , $selection=false , $optgroup='non');
-$select_groupe  = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_groupes_professeur($_SESSION['USER_ID'])                        , $select_nom='f_groupe'  , $option_first='oui' , $selection=false , $optgroup='oui');
+$select_matiere = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_matieres_professeur($_SESSION['USER_ID']) , $select_nom='f_matiere' , $option_first='non' , $selection=false , $optgroup='non');
+$select_groupe  = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_groupes_professeur($_SESSION['USER_ID'])  , $select_nom='f_groupe'  , $option_first='oui' , $selection=false , $optgroup='oui');
 ?>
 
 <form action="#" method="post" id="form0"><fieldset>
@@ -70,7 +70,7 @@ $select_groupe  = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_groupe
 		<thead><tr><th>élève(s) sans demande</th></tr></thead>
 		<tbody><tr id="tr_sans"><td class="nu"></td></tr></tbody>
 	</table>
-	<table id="table_demandes" class="form">
+	<table id="table_demandes" class="form hsort">
 		<thead>
 			<tr>
 				<th class="nu"><input id="all_check" type="image" alt="Tout cocher." src="./_img/all_check.gif" title="Tout cocher." /> <input id="all_uncheck" type="image" alt="Tout décocher." src="./_img/all_uncheck.gif" title="Tout décocher." /></th>

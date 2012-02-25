@@ -162,7 +162,7 @@ if( $step==10 )
 		else
 		{
 			$annee_scolaire  = (date('n')>7) ? date('Y') : date('Y')-1 ;
-			$nom_fichier_extrait = 'sts_emp_'.$_SESSION['UAI'].'_'.$annee_scolaire.'.xml';
+			$nom_fichier_extrait = 'sts_emp_'.$_SESSION['WEBMESTRE_UAI'].'_'.$annee_scolaire.'.xml';
 		}
 		if($zip->extractTo($dossier_import,$nom_fichier_extrait)!==true)
 		{
@@ -956,7 +956,7 @@ if( $step==31 )
 	{
 		$select_niveau = '<option value=""></option>';
 		$tab_niveau_ref = array();
-		$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$listing_paliers=false);
+		$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement(FALSE /*with_specifiques*/);
 		foreach($DB_TAB as $DB_ROW)
 		{
 			$select_niveau .= '<option value="'.$DB_ROW['niveau_id'].'">'.html($DB_ROW['niveau_nom']).'</option>';
@@ -1159,7 +1159,7 @@ if( $step==41 )
 	{
 		$select_niveau = '<option value=""></option>';
 		$tab_niveau_ref = array();
-		$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement($_SESSION['NIVEAUX'],$listing_paliers=false);
+		$DB_TAB = DB_STRUCTURE_COMMUN::DB_lister_niveaux_etablissement(FALSE /*with_specifiques*/);
 		foreach($DB_TAB as $DB_ROW)
 		{
 			$select_niveau .= '<option value="'.$DB_ROW['niveau_id'].'">'.html($DB_ROW['niveau_nom']).'</option>';
@@ -1654,11 +1654,11 @@ if( $step==52 )
 		foreach($tab_mod as $id_base)
 		{
 			// Il peut théoriquement subsister un conflit de sconet_id pour des users ayant même reference, et réciproquement...
-			$tab_champs = ($is_profil_eleve) ? array( 'sconet_id' , 'sconet_num' , 'reference' , 'classe' , 'nom' , 'prenom' , 'statut' ) : array( 'sconet_id' , 'reference' , 'profil' , 'nom' , 'prenom' , 'statut' ) ;
+			$tab_champs = ($is_profil_eleve) ? array( 'sconet_id' , 'sconet_num' , 'reference' , 'classe' , 'nom' , 'prenom' ) : array( 'sconet_id' , 'reference' , 'profil' , 'nom' , 'prenom' ) ;
 			$DB_VAR  = array();
 			foreach($tab_champs as $champ_ref)
 			{
-				if($tab_memo_analyse['modif'][$id_base][$champ_ref] !== false)
+				if($tab_memo_analyse['modif'][$id_base][$champ_ref] !== FALSE)
 				{
 					$DB_VAR[':'.$champ_ref] = $tab_memo_analyse['modif'][$id_base][$champ_ref];
 				}
@@ -1667,6 +1667,10 @@ if( $step==52 )
 			if( count($DB_VAR) )
 			{
 				DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_user( $id_base , $DB_VAR );
+			}
+			if($tab_memo_analyse['modif'][$id_base]['statut'] !== FALSE)
+			{
+				DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_user_statut( $id_base , $tab_memo_analyse['modif'][$id_base]['statut'] );
 			}
 			$nb_mod++;
 		}
@@ -1929,14 +1933,14 @@ if( $step==61 )
 		// En deux requêtes sinon on ne récupère pas les matieres sans utilisateurs affectés.
 		$tab_base_matiere = array();
 		$tab_matiere_ref_TO_id_base = array();
-		$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_matieres_etablissement( $_SESSION['MATIERES'] , FALSE /*with_transversal*/ , TRUE /*order_by_name*/ );
+		$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_matieres_etablissement( TRUE /*order_by_name*/ );
 		foreach($DB_TAB as $DB_ROW)
 		{
 			$tab_base_matiere[$DB_ROW['matiere_id']] = $DB_ROW['matiere_nom'];
 			$tab_matiere_ref_TO_id_base[$DB_ROW['matiere_ref']] = $DB_ROW['matiere_id'];
 		}
 		$tab_base_affectation = array();
-		$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_jointure_professeurs_matieres( FALSE /*with_identite*/ , TRUE /*with_transversal*/ );
+		$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_jointure_professeurs_matieres();
 		foreach($DB_TAB as $DB_ROW)
 		{
 			$tab_base_affectation[$DB_ROW['user_id'].'_'.$DB_ROW['matiere_id']] = TRUE;

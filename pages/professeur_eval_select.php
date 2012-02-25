@@ -33,6 +33,9 @@ $TITRE = "Évaluer des élèves sélectionnés";
 // Dates par défaut de début et de fin
 $date_debut  = date("d/m/Y",mktime(0,0,0,date("m")-2,date("d"),date("Y"))); // 2 mois avant
 $date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1 mois après
+// Date de début d'année scolaire
+$annee = ($_SESSION['MOIS_BASCULE_ANNEE_SCOLAIRE']<date("n")) ? date("Y") : date("Y")-1 ;
+$date_start = '01/'.sprintf("%02u",$_SESSION['MOIS_BASCULE_ANNEE_SCOLAIRE']).'/'.$annee;
 ?>
 
 <ul class="puce">
@@ -51,7 +54,7 @@ $date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1
 
 <form action="#" method="post" id="form1" class="hide">
 	<hr />
-	<table class="form">
+	<table class="form hsort">
 		<thead>
 			<tr>
 				<th>Date devoir</th>
@@ -69,9 +72,15 @@ $date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1
 	</table>
 </form>
 
-<script type="text/javascript">var input_date="<?php echo date("d/m/Y") ?>";</script>
+<script type="text/javascript">
+	var input_date="<?php echo date("d/m/Y") ?>";
+	var tab_items = new Array();
+	var tab_profs = new Array();
+	var tab_eleves = new Array();
+</script>
 
-<form action="#" method="post" id="zone_compet" class="hide">
+<form action="#" method="post" id="zone_compet" class="arbre_dynamique arbre_check hide">
+	<div>Tout déployer / contracter : <a href="m1" class="all_extend"><img alt="m1" src="./_img/deploy_m1.gif" /></a> <a href="m2" class="all_extend"><img alt="m2" src="./_img/deploy_m2.gif" /></a> <a href="n1" class="all_extend"><img alt="n1" src="./_img/deploy_n1.gif" /></a> <a href="n2" class="all_extend"><img alt="n2" src="./_img/deploy_n2.gif" /></a> <a href="n3" class="all_extend"><img alt="n3" src="./_img/deploy_n3.gif" /></a></div>
 	<p>Cocher ci-dessous (<span class="astuce">cliquer sur un intitulé pour déployer son contenu</span>) :</p>
 	<?php
 	// Affichage de la liste des items pour toutes les matières d'un professeur, sur tous les niveaux
@@ -110,7 +119,8 @@ $date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1
 	<div style="clear:both"><button id="valider_profs" type="button" class="valider">Valider la sélection</button>&nbsp;&nbsp;&nbsp;<button id="annuler_profs" type="button" class="annuler">Annuler / Retour</button></div>
 </form>
 
-<form action="#" method="post" id="zone_eleve" class="hide">
+<form action="#" method="post" id="zone_eleve" class="arbre_dynamique hide">
+	<div><button id="indiquer_eleves_deja" type="button" class="eclair">Indiquer les élèves associés à une évaluation de même nom</button> depuis le <input id="f_date_deja" name="f_date_deja" size="9" type="text" value="<?php echo $date_start ?>" /><q class="date_calendrier" title="Cliquez sur cette image pour importer une date depuis un calendrier !"></q><label id="msg_indiquer_eleves_deja"></label></div>
 	<p>Cocher ci-dessous (<span class="astuce">cliquer sur un intitulé pour déployer son contenu</span>) :</p>
 	<?php
 	$tab_regroupements = array();
@@ -146,12 +156,12 @@ $date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1
 	foreach($tab_regroupements as $groupe_id => $tab_groupe)
 	{
 		echo'<ul class="ul_m1">'."\r\n";
-		echo'	<li class="li_m1"><span>'.html($tab_groupe['nom']).'</span>'."\r\n";
+		echo'	<li class="li_m1"><span class="deja">'.html($tab_groupe['nom']).'</span><span id="groupe_'.$groupe_id.'" class="gradient_pourcent"></span>'."\r\n";
 		echo'		<ul class="ul_n3">'."\r\n";
 		foreach($tab_groupe['eleve'] as $eleve_id => $eleve_nom)
 		{
-			// C'est plus compliqué que pour les items car un élève peut appartenir à une classe et plusieurs groupes => id du groupe mélé à l'id et id de l'élève dans l'attribut "lang"
-			echo'			<li class="li_n3"><input id="id_'.$eleve_id.'_'.$groupe_id.'" lang="'.$eleve_id.'" name="f_eleves[]" type="checkbox" value="'.$eleve_id.'" /><label for="id_'.$eleve_id.'_'.$groupe_id.'"> '.html($eleve_nom).'</label></li>'."\r\n";
+			// C'est plus compliqué que pour les items car un élève peut appartenir à une classe et plusieurs groupes => id du groupe mélé à l'id
+			echo'			<li class="li_n3"><input id="id_'.$eleve_id.'_'.$groupe_id.'" name="f_eleves[]" type="checkbox" value="'.$eleve_id.'" /><label for="id_'.$eleve_id.'_'.$groupe_id.'"> '.html($eleve_nom).'</label><span></span></li>'."\r\n";
 		}
 		echo'		</ul>'."\r\n";
 		echo'	</li>'."\r\n";
@@ -168,8 +178,8 @@ $date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1
 	</div>
 </form>
 
-<!-- Sans "javascript:return false" une soumission incontrôlée s'effectue quand on presse "entrée" dans le cas d'un seul élève évalué sur un seul item. -->
-<form action="javascript:return false" method="post" id="zone_saisir" class="hide">
+<!-- Sans onsubmit="return false" une soumission incontrôlée s'effectue quand on presse "entrée" dans le cas d'un seul élève évalué sur un seul item. -->
+<form action="#" method="post" id="zone_saisir" class="hide" onsubmit="return false">
 	<p class="hc"><b id="titre_saisir"></b><br /><label id="msg_saisir"></label></p>
 	<table id="table_saisir" class="scor_eval">
 		<tbody><tr><td></td></tr></tbody>
@@ -190,7 +200,7 @@ $date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1
 		<label for="f_defaut_DISP"><input type="radio" id="f_defaut_DISP" name="f_defaut" value="DISP" /><img alt="DISP" src="./_img/note/commun/h/DISP.gif" /></label> dans toutes les cellules vides.<label id="msg_report">&nbsp;</label>
 	</p>
 	<div>
-		<a lang="zone_saisir_deport" href="#"><img src="./_img/toggle_plus.gif" alt="" title="Voir / masquer la saisie déportée." class="toggle" /></a> Saisie déportée
+		<a id="to_zone_saisir_deport" href="#"><img src="./_img/toggle_plus.gif" alt="" title="Voir / masquer la saisie déportée." class="toggle" /></a> Saisie déportée
 		<div id="zone_saisir_deport" class="hide">
 			<input type="hidden" name="filename" id="filename" value="<?php echo './__tmp/export/saisie_'.$_SESSION['BASE'].'_'.$_SESSION['USER_ID'].'_'; ?>" />
 			<ul class="puce">
@@ -209,7 +219,7 @@ $date_fin    = date("d/m/Y",mktime(0,0,0,date("m")+1,date("d"),date("Y"))); // 1
 		<tbody><tr><td></td></tr></tbody>
 	</table>
 	<p>
-		<a lang="zone_voir_deport" href="#"><img src="./_img/toggle_plus.gif" alt="" title="Voir / masquer la saisie déportée." class="toggle" /></a> Saisie déportée &amp; archivage
+		<a id="to_zone_voir_deport" href="#"><img src="./_img/toggle_plus.gif" alt="" title="Voir / masquer la saisie déportée." class="toggle" /></a> Saisie déportée &amp; archivage
 		<div id="zone_voir_deport" class="hide">
 			<ul class="puce">
 				<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_professeur__evaluations_saisie_deportee">DOC : Saisie déportée.</a></span></li>

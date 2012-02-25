@@ -28,19 +28,18 @@
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 if(($_SESSION['SESAMATH_ID']==ID_DEMO)&&($_POST['action']!='Voir')){exit('Action désactivée pour la démo...');}
 
-$action      = (isset($_POST['action']))   ? clean_texte($_POST['action'])    : '';
-$contexte    = (isset($_POST['contexte'])) ? clean_texte($_POST['contexte'])  : '';	// n1 ou n2 ou n3
-$matiere_id  = (isset($_POST['matiere']))  ? clean_entier($_POST['matiere'])  : 0;
-$element_id  = (isset($_POST['element']))  ? clean_entier($_POST['element'])  : 0;
-$element2_id = (isset($_POST['element2'])) ? clean_entier($_POST['element2']) : 0;
-$parent_id   = (isset($_POST['parent']))   ? clean_entier($_POST['parent'])   : 0;
-$ordre       = (isset($_POST['ordre']))    ? clean_entier($_POST['ordre'])    : -1;
-$ref         = (isset($_POST['ref']))      ? clean_texte($_POST['ref'])       : '';
-$nom         = (isset($_POST['nom']))      ? clean_texte($_POST['nom'])       : '';
-$coef        = (isset($_POST['coef']))     ? clean_entier($_POST['coef'])     : -1;
-$cart        = (isset($_POST['cart']))     ? clean_entier($_POST['cart'])     : -1;
-$lien        = (isset($_POST['lien']))     ? clean_texte($_POST['lien'])      : '';
-$socle_id    = (isset($_POST['socle']))    ? clean_entier($_POST['socle'])    : -1;
+$action      = (isset($_POST['action']))     ? clean_texte($_POST['action'])     : '';
+$contexte    = (isset($_POST['contexte']))   ? clean_texte($_POST['contexte'])   : '';	// n1 ou n2 ou n3
+$matiere_id  = (isset($_POST['matiere']))    ? clean_entier($_POST['matiere'])   : 0;
+$element_id  = (isset($_POST['element']))    ? clean_entier($_POST['element'])   : 0;
+$element2_id = (isset($_POST['element2']))   ? clean_entier($_POST['element2'])  : 0;
+$parent_id   = (isset($_POST['parent']))     ? clean_entier($_POST['parent'])    : 0;
+$ordre       = (isset($_POST['ordre']))      ? clean_entier($_POST['ordre'])     : -1;
+$ref         = (isset($_POST['ref']))        ? clean_texte($_POST['ref'])        : '';
+$nom         = (isset($_POST['nom']))        ? clean_texte($_POST['nom'])        : '';
+$coef        = (isset($_POST['coef']))       ? clean_entier($_POST['coef'])      : -1;
+$cart        = (isset($_POST['cart']))       ? clean_entier($_POST['cart'])      : -1;
+$socle_id    = (isset($_POST['socle']))      ? clean_entier($_POST['socle'])     : -1;
 
 $tab_id = (isset($_POST['tab_id'])) ? array_map('clean_entier',explode(',',$_POST['tab_id'])) : array() ;
 $tab_id = array_filter($tab_id,'positif');
@@ -169,7 +168,7 @@ if( ($action=='add') && (in_array($contexte,array('n1','n2','n3'))) && $matiere_
 	{
 		case 'n1' : $element_id = DB_STRUCTURE_REFERENTIEL::DB_ajouter_referentiel_domaine($matiere_id,$parent_id /*niveau*/,$ordre,$ref,$nom); break;
 		case 'n2' : $element_id = DB_STRUCTURE_REFERENTIEL::DB_ajouter_referentiel_theme($parent_id /*domaine*/,$ordre,$nom); break;
-		case 'n3' : $element_id = DB_STRUCTURE_REFERENTIEL::DB_ajouter_referentiel_item($parent_id /*theme*/,$socle_id,$ordre,$nom,$coef,$cart,$lien); break;
+		case 'n3' : $element_id = DB_STRUCTURE_REFERENTIEL::DB_ajouter_referentiel_item($parent_id /*theme*/,$socle_id,$ordre,$nom,$coef,$cart); break;
 	}
 	// id des éléments suivants à renuméroter
 	if(count($tab_id)) // id des éléments suivants à renuméroter
@@ -189,7 +188,7 @@ if( ($action=='edit') && (in_array($contexte,array('n1','n2','n3'))) && $element
 	{
 		case 'n1' : $test_modif = DB_STRUCTURE_REFERENTIEL::DB_modifier_referentiel_domaine($element_id /*domaine*/,$ref,$nom); break;
 		case 'n2' : $test_modif = DB_STRUCTURE_REFERENTIEL::DB_modifier_referentiel_theme($element_id /*theme*/,$nom); break;
-		case 'n3' : $test_modif = DB_STRUCTURE_REFERENTIEL::DB_modifier_referentiel_item($element_id /*item*/,$socle_id,$nom,$coef,$cart,$lien); break;
+		case 'n3' : $test_modif = DB_STRUCTURE_REFERENTIEL::DB_modifier_referentiel_item($element_id /*item*/,$socle_id,$nom,$coef,$cart); break;
 	}
 	$message = ($test_modif) ? 'ok' : 'Contenu inchangé ou élément non trouvé !';
 	exit($message);

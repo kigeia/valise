@@ -40,14 +40,14 @@ $select_f_groupes = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_regr
 
 <p><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_eleves">DOC : Gestion des élèves</a></span></p>
 
-<form action="./index.php?page=<?php echo $PAGE ?>" method="post" id="form0">
+<form action="./index.php?page=administrateur_eleve&amp;section=gestion" method="post" id="form0">
 	<div>Restreindre l'affichage : <?php echo $select_f_groupes ?> <button id="actualiser" type="submit" class="actualiser">Actualiser.</button></div>
 </form>
 
 <hr />
 
 <form action="#" method="post" id="form1">
-	<table class="form t9">
+	<table class="form t9 hsort">
 		<thead>
 			<tr>
 				<th>Id. ENT</th>
@@ -99,4 +99,7 @@ $select_f_groupes = Formulaire::afficher_select(DB_STRUCTURE_COMMUN::DB_OPT_regr
 	</table>
 </form>
 
-<script type="text/javascript">var select_login="<?php echo $_SESSION['MODELE_ELEVE']; ?>";</script>
+<script type="text/javascript">
+	var select_login="<?php echo $_SESSION['MODELE_ELEVE']; ?>";
+	var mdp_longueur_mini=<?php echo $_SESSION['MDP_LONGUEUR_MINI'] ?>;
+</script>

@@ -26,7 +26,7 @@
  */
 
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
-$TITRE = "Réglages relevés &amp; bilans";
+$TITRE = "Paramétrage relevés &amp; bilans";
 ?>
 
 <div><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_administrateur__gestion_releves_bilans">DOC : Réglages relevés &amp; bilans</a></span></div>
@@ -39,19 +39,19 @@ $TITRE = "Réglages relevés &amp; bilans";
 
 <?php
 // liste des matières
-$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_matieres_etablissement( $_SESSION['MATIERES'] , TRUE /*with_transversal*/ , FALSE /*order_by_name*/ );
+$DB_TAB = DB_STRUCTURE_ADMINISTRATEUR::DB_lister_matieres_etablissement( FALSE /*order_by_name*/ );
 if(!count($DB_TAB))
 {
 	echo'<p class="danger">Aucune matière enregistrée ou associée à l\'établissement !</p>'; // impossible vu qu'il y a au moins la matière transversale...
 }
 else
 {
-	$tab_div = array();
+	echo'<ul id="sortable">';
 	foreach($DB_TAB as $DB_ROW)
 	{
-		$tab_div[] = '<em id="m_'.$DB_ROW['matiere_id'].'">'.html($DB_ROW['matiere_nom']).'</em>';
+		echo'<li id="m_'.$DB_ROW['matiere_id'].'">'.html($DB_ROW['matiere_nom']).'</li>';
 	}
-	echo implode('<div class="ti"><input type="image" alt="Ordonner" src="./_img/action_ordonner.png" /></div>',$tab_div);
+	echo'</ul>';
 	echo'<p><span class="tab"></span><button id="Enregistrer_ordre" type="button" class="valider">Enregistrer cet ordre</button><label id="ajax_msg_ordre">&nbsp;</label></p>';
 }
 ?>

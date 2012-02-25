@@ -65,6 +65,7 @@ $tab_droits['professeur_groupe_professeur']            = $tab_droits_profil_prof
 $tab_droits['professeur_referentiel']                  = $tab_droits_profil_professeur;
 $tab_droits['professeur_referentiel_gestion']          = $tab_droits_profil_professeur;
 $tab_droits['professeur_referentiel_edition']          = $tab_droits_profil_professeur;
+$tab_droits['professeur_referentiel_ressources']       = $tab_droits_profil_professeur;
 // Profil directeur
 $tab_droits['consultation_statistiques']               = $tab_droits_profil_directeur;
 $tab_droits['validation_socle_fichier']                = $tab_droits_profil_directeur;
@@ -74,6 +75,7 @@ $tab_droits['administrateur_administrateur']           = $tab_droits_profil_admi
 $tab_droits['administrateur_algorithme_gestion']       = $tab_droits_profil_administrateur;
 $tab_droits['administrateur_autorisations']            = $tab_droits_profil_administrateur;
 $tab_droits['administrateur_blocage']                  = $tab_droits_profil_administrateur;
+$tab_droits['administrateur_bulletins']                = $tab_droits_profil_administrateur;
 $tab_droits['administrateur_classe']                   = $tab_droits_profil_administrateur;
 $tab_droits['administrateur_classe_gestion']           = $tab_droits_profil_administrateur;
 $tab_droits['administrateur_codes_couleurs']           = $tab_droits_profil_administrateur;
@@ -135,7 +137,10 @@ $tab_droits['_maj_select_eval']                        = array( 'public'=>0 , 'e
 $tab_droits['_maj_select_parents']                     = array( 'public'=>0 , 'eleve'=>0 , 'parent'=>0 , 'professeur'=>0 , 'directeur'=>0 , 'administrateur'=>1 , 'webmestre'=>0 );
 $tab_droits['_maj_select_piliers']                     = array( 'public'=>0 , 'eleve'=>1 , 'parent'=>1 , 'professeur'=>1 , 'directeur'=>1 , 'administrateur'=>0 , 'webmestre'=>0 );
 $tab_droits['_maj_select_matieres']                    = array( 'public'=>0 , 'eleve'=>0 , 'parent'=>0 , 'professeur'=>0 , 'directeur'=>1 , 'administrateur'=>0 , 'webmestre'=>0 );
+$tab_droits['_maj_select_matieres_famille']            = array( 'public'=>0 , 'eleve'=>0 , 'parent'=>0 , 'professeur'=>1 , 'directeur'=>0 , 'administrateur'=>0 , 'webmestre'=>0 );
 $tab_droits['_maj_select_matieres_prof']               = array( 'public'=>0 , 'eleve'=>0 , 'parent'=>0 , 'professeur'=>1 , 'directeur'=>0 , 'administrateur'=>0 , 'webmestre'=>0 );
+$tab_droits['_maj_select_niveaux']                     = array( 'public'=>0 , 'eleve'=>1 , 'parent'=>1 , 'professeur'=>1 , 'directeur'=>1 , 'administrateur'=>0 , 'webmestre'=>0 );
+$tab_droits['_maj_select_niveaux_famille']             = array( 'public'=>0 , 'eleve'=>0 , 'parent'=>0 , 'professeur'=>1 , 'directeur'=>0 , 'administrateur'=>0 , 'webmestre'=>0 );
 $tab_droits['_maj_select_professeurs']                 = array( 'public'=>0 , 'eleve'=>0 , 'parent'=>0 , 'professeur'=>0 , 'directeur'=>0 , 'administrateur'=>1 , 'webmestre'=>0 );
 $tab_droits['_maj_select_professeurs_directeurs']      = array( 'public'=>0 , 'eleve'=>0 , 'parent'=>0 , 'professeur'=>0 , 'directeur'=>0 , 'administrateur'=>1 , 'webmestre'=>0 );
 $tab_droits['administrateur_eleve_langue']             = array( 'public'=>0 , 'eleve'=>0 , 'parent'=>0 , 'professeur'=>0 , 'directeur'=>1 , 'administrateur'=>1 , 'webmestre'=>0 );

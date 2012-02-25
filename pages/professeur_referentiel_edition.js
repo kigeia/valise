@@ -27,6 +27,7 @@
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Permettre l'utilisation de caractères spéciaux
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+
 var tab_entite_nom = new Array('&sup2;','&sup3;','&times;','&divide;','&minus;','&pi;','&rarr;','&radic;','&infin;','&asymp;','&ne;','&le;','&ge;');
 var tab_entite_val = new Array('²'     ,'³'     ,'×'      ,'÷'       ,'–'      ,'π'   ,'→'     ,'√'      ,'∞'      ,'≈'      ,'≠'   ,'≤'   ,'≥'   );
 var imax = tab_entite_nom.length;
@@ -43,6 +44,7 @@ function entity_convert(string)
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Pour mémoriser les liens des ressources avant que le tooltip ne bouffe les title.
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+
 var tab_ressources = new Array();
 
 // jQuery !
@@ -72,22 +74,23 @@ $(document).ready
 		images[2] += '<q class="n2_del" lang="del" title="Supprimer ce thème ainsi que tout son contenu (et renuméroter)."></q>';
 		images[2] += '<q class="n3_add" lang="add" title="Ajouter un item au début de ce thème (et renuméroter)."></q>';
 		images[3]  = '';
-		images[3] += '<q class="n3_edit" lang="edit" title="Renommer, coefficienter, autoriser, lier cet item."></q>';
+		images[3] += '<q class="n3_edit" lang="edit" title="Renommer, coefficienter, autoriser cet item."></q>';
 		images[3] += '<q class="n3_add" lang="add" title="Ajouter un item à la suite (et renuméroter)."></q>';
 		images[3] += '<q class="n3_move" lang="move" title="Déplacer cet item (et renuméroter)."></q>';
 		images[3] += '<q class="n3_fus" lang="fus" title="Fusionner avec un autre item (et renuméroter)."></q>';
 		images[3] += '<q class="n3_del" lang="del" title="Supprimer cet item (et renuméroter)."></q>';
 
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-//	Charger le form zone_compet en ajax
+//	Charger le form zone_elaboration_referentiel en ajax
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.modifier').click
+
+		$('#zone_choix_referentiel q.modifier').click
 		(
 			function()
 			{
 				id = $(this).parent().attr('id');
+				matiere_id  = id.substring(3);
 				matiere_nom = $(this).parent().prev().prev().text();
-				matiere_id = id.substring(3);
 				afficher_masquer_images_action('hide');
 				new_label = '<label for="'+id+'" class="loader">Demande envoyée...</label>';
 				$(this).after(new_label);
@@ -114,9 +117,9 @@ $(document).ready
 							else
 							{
 								$('#zone_choix_referentiel').hide();
-								$('#zone_compet').html('<span class="tab"></span><button id="fermer_zone_compet" type="button" class="retourner">Retour à la liste des matières</button>'+'<h2>'+matiere_nom+'</h2>'+responseHTML);
+								$('#zone_elaboration_referentiel').html('<p><span class="tab"></span>Tout déployer / contracter : <a href="m2" class="all_extend"><img alt="m2" src="./_img/deploy_m2.gif" /></a> <a href="n1" class="all_extend"><img alt="n1" src="./_img/deploy_n1.gif" /></a> <a href="n2" class="all_extend"><img alt="n2" src="./_img/deploy_n2.gif" /></a> <a href="n3" class="all_extend"><img alt="n3" src="./_img/deploy_n3.gif" /></a><br /><span class="tab"></span><button id="fermer_zone_elaboration_referentiel" type="button" class="retourner">Retour à la liste des matières</button></p>'+'<h2>'+matiere_nom+'</h2>'+responseHTML);
 								// Récupérer le contenu des title des ressources avant que le tooltip ne les enlève
-								$('#zone_compet li.li_n3').each
+								$('#zone_elaboration_referentiel li.li_n3').each
 								(
 									function()
 									{
@@ -128,6 +131,7 @@ $(document).ready
 							}
 							$('label[for='+id+']').remove();
 							afficher_masquer_images_action('show');
+							infobulle();
 						}
 					}
 				);
@@ -137,11 +141,12 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur le bouton pour fermer la zone compet
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('#fermer_zone_compet').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#fermer_zone_elaboration_referentiel').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
-				$('#zone_compet').html("&nbsp;");
+				$('#zone_elaboration_referentiel').html("&nbsp;");
 				afficher_masquer_images_action('show'); // au cas où on serait en train d'éditer qq chose
 				$('#zone_choix_referentiel').show('fast');
 				return(false);
@@ -151,7 +156,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour Ajouter un domaine, ou un thème, ou un item
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q[lang=add]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q[lang=add]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -171,9 +177,12 @@ $(document).ready
 						texte = 'ce thème';
 						break;
 					case 'n3' :	// item
-						new_li += '<i>Nom</i> <input id="f_nom" name="f_nom" size="125" maxlength="256" type="text" value="" /> <img alt="" src="./_img/bulle_aide.png" title="Indiquer un nom d\'item." /><br />';
-						new_li += '<i>Socle</i> <input id="f_intitule" name="f_intitule" size="125" maxlength="256" type="text" value="Hors-socle." readonly /><input id="f_socle" name="f_socle" type="hidden" value="0" /><q class="choisir_compet" title="Sélectionner un item du socle commun."></q> <img alt="" src="./_img/bulle_aide.png" title="Appartenance éventuelle au socle commun." /><br />';
-						new_li += '<i>Coef.</i> <input id="f_coef" name="f_coef" type="text" value="1" size="1" maxlength="2" /> <img alt="" src="./_img/bulle_aide.png" title="Coefficient facultatif (entier entre 0 et 20)." /> - <input id="f_cart1" name="f_cart" type="radio" value="1" checked /><label for="f_cart1"><img src="./_img/etat/cart_oui.png" title="Demande possible." /></label> <input id="f_cart0" name="f_cart" type="radio" value="0" /><label for="f_cart0"><img src="./_img/etat/cart_non.png" title="Demande interdite." /></label> - <i>Lien</i> <input id="f_lien" name="f_lien" type="text" value="" size="100" /> <img alt="" src="./_img/bulle_aide.png" title="Lien (facultatif) vers une ressource internet (entraînement, remédiation&hellip;).." />';
+						new_li += '<i class="tab"><img alt="" src="./_img/bulle_aide.png" title="Indiquer un nom d\'item." /> Nom</i><input id="f_nom" name="f_nom" size="125" maxlength="256" type="text" value="" /><br />';
+						new_li += '<i class="tab"><img alt="" src="./_img/bulle_aide.png" title="Appartenance éventuelle au socle commun." /> Socle</i><input id="f_intitule" name="f_intitule" size="90" maxlength="256" type="text" value="Hors-socle." readonly /><input id="f_socle" name="f_socle" type="hidden" value="0" /><q class="choisir_compet" title="Sélectionner un item du socle commun."></q><br />';
+						new_li += '<i class="tab"><img alt="" src="./_img/bulle_aide.png" title="Coefficient facultatif (entier entre 0 et 20)." /> Coef.</i><input id="f_coef" name="f_coef" type="text" value="1" size="1" maxlength="2" class="sep" />';
+						new_li += '<i>Demande</i> <input id="f_cart1" name="f_cart" type="radio" value="1" checked /><label for="f_cart1"><img src="./_img/etat/cart_oui.png" title="Demande possible." /></label> <input id="f_cart0" name="f_cart" type="radio" value="0" /><label for="f_cart0" class="sep"><img src="./_img/etat/cart_non.png" title="Demande interdite." /></label>';
+						new_li += 'Lien <img alt="" src="./_img/bulle_aide.png" title="Utiliser la page &#34;Associer des ressources aux items&#34; pour affecter à l\'item un lien vers des ressources (entraînement, remédiation&hellip;)." class="sep" />';
+						new_li += '<i>Action</i> ';
 						texte = 'cet item';
 						break;
 					default :
@@ -207,7 +216,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour Éditer un domaine, ou un thème, ou un item
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q[lang=edit]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q[lang=edit]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -237,7 +247,7 @@ $(document).ready
 						nom = $(this).parent().children('b').text();
 						// On récupère le coefficient
 						adresse = $(this).parent().children('b').children('img:eq(0)').attr('src');
-						coef = parseInt( adresse.substr(adresse.length-6,2) );
+						coef = parseInt( adresse.substr(adresse.length-6,2) , 10 );
 						// On récupère l'autorisation de demande
 						adresse = $(this).parent().children('b').children('img:eq(1)').attr('src');
 						cart = adresse.substr(adresse.length-7,3);
@@ -246,12 +256,13 @@ $(document).ready
 						// On récupère le socle
 						socle_id  = $(this).parent().children('b').children('img:eq(2)').attr('lang').substring(3);
 						socle_txt = $('label[for=socle_'+socle_id+']').text();
-						// On récupère le lien
-						item_id = $(this).parent().attr('id').substring(3);
-						lien = tab_ressources[item_id];
-						new_div += '<i>Nom</i> <input id="f_nom" name="f_nom" size="'+Math.min(10+nom.length,128)+'" maxlength="256" type="text" value="'+escapeQuote(nom)+'" /> <img alt="" src="./_img/bulle_aide.png" title="Indiquer un nom d\'item." /><br />';
-						new_div += '<i>Socle</i> <input id="f_intitule" name="f_intitule" size="110" maxlength="256" type="text" value="'+socle_txt+'" readonly /><input id="f_socle" name="f_socle" type="hidden" value="'+socle_id+'" /><q class="choisir_compet" title="Sélectionner un item du socle commun."></q> <img alt="" src="./_img/bulle_aide.png" title="Appartenance éventuelle au socle commun." /><br />';
-						new_div += '<i>Coef.</i> <input id="f_coef" name="f_coef" type="text" value="'+coef+'" size="1" maxlength="2" /> <img alt="" src="./_img/bulle_aide.png" title="Coefficient facultatif (entier entre 0 et 20)." /> - <input id="f_cart1" name="f_cart" type="radio" value="1"'+check1+' /><label for="f_cart1"><img src="./_img/etat/cart_oui.png" title="Demande possible." /></label> <input id="f_cart0" name="f_cart" type="radio" value="0"'+check0+' /><label for="f_cart0"><img src="./_img/etat/cart_non.png" title="Demande interdite." /></label> - <i>Lien</i> <input id="f_lien" name="f_lien" type="text" value="'+lien+'" size="90" /> <img alt="" src="./_img/bulle_aide.png" title="Lien (facultatif) vers une ressource internet (entraînement, remédiation&hellip;)." />';
+						// On assemble
+						new_div += '<i class="tab"><img alt="" src="./_img/bulle_aide.png" title="Indiquer un nom d\'item." /> Nom</i><input id="f_nom" name="f_nom" size="'+Math.min(10+nom.length,128)+'" maxlength="256" type="text" value="'+escapeQuote(nom)+'" /><br />';
+						new_div += '<i class="tab"><img alt="" src="./_img/bulle_aide.png" title="Appartenance éventuelle au socle commun." /> Socle</i><input id="f_intitule" name="f_intitule" size="90" maxlength="256" type="text" value="'+socle_txt+'" readonly /><input id="f_socle" name="f_socle" type="hidden" value="'+socle_id+'" /><q class="choisir_compet" title="Sélectionner un item du socle commun."></q><br />';
+						new_div += '<i class="tab"><img alt="" src="./_img/bulle_aide.png" title="Coefficient facultatif (entier entre 0 et 20)." /> Coef.</i><input id="f_coef" name="f_coef" type="text" value="'+coef+'" size="1" maxlength="2" class="sep" />';
+						new_div += '<i>Demande</i> <input id="f_cart1" name="f_cart" type="radio" value="1"'+check1+' /><label for="f_cart1"><img src="./_img/etat/cart_oui.png" title="Demande possible." /></label> <input id="f_cart0" name="f_cart" type="radio" value="0"'+check0+' /><label for="f_cart0" class="sep"><img src="./_img/etat/cart_non.png" title="Demande interdite." /></label>';
+						new_div += 'Lien <img alt="" src="./_img/bulle_aide.png" title="Utiliser la page &#34;Associer des ressources aux items&#34; pour affecter à l\'item un lien vers des ressources (entraînement, remédiation&hellip;)." class="sep" />';
+						new_div += '<i>Action</i>';
 						texte = 'cet item';
 						break;
 					default :
@@ -283,7 +294,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour Supprimer un domaine (avec son contenu), ou un thème (avec son contenu), ou un item
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q[lang=del]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q[lang=del]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -302,7 +314,7 @@ $(document).ready
 						texte = 'ce thème';
 						break;
 					case 'n3' :	// item
-						alerte = 'Tout les résultats associés seront perdus et les items suivants seront renumérotés !';
+						alerte = 'Tous les résultats associés seront perdus et les items suivants seront renumérotés !';
 						texte = 'cet item';
 						break;
 					default :
@@ -328,14 +340,15 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour Fusionner deux items
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q[lang=fus]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q[lang=fus]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
 				afficher_masquer_images_action('hide');
 				// On ajoute les boutons à cocher
 				id = $(this).parent().attr('id');
-				$('#zone_compet li.li_n3').each( function(){ if($(this).attr('id')!=id){$(this).children('b').after('<q class="n3_fus2" lang="fus2" title="Valider l\'absorption de l\'item choisi en 1er par celui-ci."></q>');} } );
+				$('#zone_elaboration_referentiel li.li_n3').each( function(){ if($(this).attr('id')!=id){$(this).children('b').after('<q class="n3_fus2" lang="fus2" title="Valider l\'absorption de l\'item choisi en 1er par celui-ci."></q>');} } );
 				new_img = '<q class="annuler" lang="fusionner" title="Annuler la fusion de cet item."></q><label id="ajax_msg">&nbsp;</label>';
 				// On insère le formulaire dans la page
 				$(this).after(new_img);
@@ -346,7 +359,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour Déplacer un domaine (avec son contenu), ou un thème (avec son contenu), ou un item
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q[lang=move]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q[lang=move]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -358,16 +372,16 @@ $(document).ready
 				switch(contexte)
 				{
 					case 'n1' :	// domaine
-						$('#zone_compet li.li_m2').each( function(){ $(this).children('span').after('<q class="n1_move2" lang="move2" title="Valider le déplacement du domaine au début de ce niveau."></q>'); } );
-						$('#zone_compet li.li_n1').each( function(){ if($(this).attr('id')!=id){$(this).children('span').after('<q class="n1_move2" lang="move2" title="Valider le déplacement du domaine à la suite de celui-ci."></q>');} } );
+						$('#zone_elaboration_referentiel li.li_m2').each( function(){ $(this).children('span').after('<q class="n1_move2" lang="move2" title="Valider le déplacement du domaine au début de ce niveau."></q>'); } );
+						$('#zone_elaboration_referentiel li.li_n1').each( function(){ if($(this).attr('id')!=id){$(this).children('span').after('<q class="n1_move2" lang="move2" title="Valider le déplacement du domaine à la suite de celui-ci."></q>');} } );
 						break;
 					case 'n2' :	// thème
-						$('#zone_compet li.li_n1').each( function(){ $(this).children('span').after('<q class="n2_move2" lang="move2" title="Valider le déplacement du thème au début de ce domaine (et renuméroter)."></q>'); } );
-						$('#zone_compet li.li_n2').each( function(){ if($(this).attr('id')!=id){$(this).children('span').after('<q class="n2_move2" lang="move2" title="Valider le déplacement du thème à la suite de celui-ci."></q>');} } );
+						$('#zone_elaboration_referentiel li.li_n1').each( function(){ $(this).children('span').after('<q class="n2_move2" lang="move2" title="Valider le déplacement du thème au début de ce domaine (et renuméroter)."></q>'); } );
+						$('#zone_elaboration_referentiel li.li_n2').each( function(){ if($(this).attr('id')!=id){$(this).children('span').after('<q class="n2_move2" lang="move2" title="Valider le déplacement du thème à la suite de celui-ci."></q>');} } );
 						break;
 					case 'n3' :	// item
-						$('#zone_compet li.li_n2').each( function(){ $(this).children('span').after('<q class="n3_move2" lang="move2" title="Valider le déplacement de l\'item au début de ce thème (et renuméroter)."></q>'); } );
-						$('#zone_compet li.li_n3').each( function(){ if($(this).attr('id')!=id){$(this).children('b').after('<q class="n3_move2" lang="move2" title="Valider le déplacement de l\'item à la suite de celui-ci."></q>');} } );
+						$('#zone_elaboration_referentiel li.li_n2').each( function(){ $(this).children('span').after('<q class="n3_move2" lang="move2" title="Valider le déplacement de l\'item au début de ce thème (et renuméroter)."></q>'); } );
+						$('#zone_elaboration_referentiel li.li_n3').each( function(){ if($(this).attr('id')!=id){$(this).children('b').after('<q class="n3_move2" lang="move2" title="Valider le déplacement de l\'item à la suite de celui-ci."></q>');} } );
 						break;
 				}
 				// On créé le formulaire à valider
@@ -395,7 +409,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour afficher les items du socle
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.choisir_compet').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q.choisir_compet').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -403,7 +418,7 @@ $(document).ready
 				item_nom = escapeHtml( entity_convert( $('#f_nom').val() ) );
 				$('#zone_socle span.f_nom').html(item_nom);
 				// récupérer la relation au socle commun et la cocher
-				socle_id = $(this).prev().val();
+				socle_id = $('#f_socle').val();
 				// 1. Décocher tout
 				$("#zone_socle input[type=radio]").each
 				(
@@ -418,9 +433,9 @@ $(document).ready
 					if($('#socle_'+socle_id).length)
 					{
 						$('#socle_'+socle_id).prop('checked',true);
-						$('#socle_'+socle_id).parent().parent().css("display","block");	// les items
-						$('#socle_'+socle_id).parent().parent().parent().parent().css("display","block");	// le section
-						$('#socle_'+socle_id).parent().parent().parent().parent().parent().parent().css("display","block");	// le pilier
+						$('#socle_'+socle_id).closest('ul.ul_n3').css("display","block");	// les items
+						$('#socle_'+socle_id).closest('ul.ul_n2').css("display","block");	// la section
+						$('#socle_'+socle_id).closest('ul.ul_n1').css("display","block");	// le pilier
 					}
 				}
 				else
@@ -439,6 +454,7 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur le bouton pour confirmer la relation au socle d'un item
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+
 		$('#choisir_socle_valider').click
 		(
 			function()
@@ -466,6 +482,7 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur le bouton pour Annuler le choix dans le socle
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+
 		$('#choisir_socle_annuler').click
 		(
 			function()
@@ -478,7 +495,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour confirmer l'ajout d'un domaine, ou d'un thème, ou d'un item
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.valider[lang=ajouter]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q.valider[lang=ajouter]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -513,13 +531,12 @@ $(document).ready
 					$('#f_nom').focus();
 					return false;
 				}
-				// On récupère le coefficient, l'autorisation de demande, le lien au socle et le lien de remédiation de l'élément (item uniquement)
+				// On récupère le coefficient, l'autorisation de demande, le lien au socle et le lien de ressources de l'élément (item uniquement)
 				if(contexte=='n3')
 				{
-					coef  = parseInt( $('#f_coef').val() );
+					coef  = parseInt( $('#f_coef').val() , 10 );
 					cart  = $("input[name=f_cart]:checked").val();
 					socle = $('#f_socle').val();
-					lien  = $('#f_lien').val();
 					if( (isNaN(coef)) || (coef<0) || (coef>20) )
 					{
 						$('#ajax_msg').removeAttr("class").addClass("erreur").html("Le coefficient doit être un nombre entier entre 0 et 20 !");
@@ -537,7 +554,6 @@ $(document).ready
 					coef  = 1;
 					cart  = 0;
 					socle = 0;
-					lien  = '';
 				}
 				// On récupère l'id de l'élément parent concerné (niveau ou domaine ou theme)
 				parent_id = $(this).parent().parent().parent().attr('id').substring(3);
@@ -564,7 +580,7 @@ $(document).ready
 					{
 						type : 'POST',
 						url : 'ajax.php?page='+PAGE,
-						data : 'action=add&contexte='+contexte+'&matiere='+matiere_id+'&parent='+parent_id+'&ordre='+ordre+'&tab_id='+tab_id+'&ref='+ref+'&coef='+coef+'&cart='+cart+'&socle='+socle+'&nom='+encodeURIComponent(nom)+'&lien='+encodeURIComponent(lien),
+						data : 'action=add&contexte='+contexte+'&matiere='+matiere_id+'&parent='+parent_id+'&ordre='+ordre+'&tab_id='+tab_id+'&ref='+ref+'&coef='+coef+'&cart='+cart+'&socle='+socle+'&nom='+encodeURIComponent(nom),
 						dataType : "html",
 						error : function(msg,string)
 						{
@@ -592,12 +608,12 @@ $(document).ready
 										socle_image = (socle>0) ? 'oui' : 'non' ;
 										socle_title = $('#f_intitule').val();
 										socle_texte = '<img src="./_img/etat/socle_'+socle_image+'.png" alt="" title="'+socle_title+'" lang="id_'+socle+'" />';
-										lien_image  = (lien=='') ? 'non' : 'oui' ;
-										lien_title  = (lien=='') ? 'Absence de ressource.' : escapeHtml(lien) ;
+										lien_image  = 'non';
+										lien_title  = 'Absence de ressource.';
 										lien_texte  = '<img src="./_img/etat/link_'+lien_image+'.png" alt="" title="'+lien_title+'" />';
 										texte = '<b>' + coef_texte + cart_texte + socle_texte + lien_texte + escapeHtml(nom) + '</b>' + images[contexte.charAt(1)];
 										element_id = responseHTML.substring(3);
-										tab_ressources[element_id] = (lien=='') ? '' : lien_title ;
+										tab_ressources[element_id] = '';
 										break;
 									default :
 										texte = '???';
@@ -619,7 +635,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour confirmer l'édition d'un domaine, ou d'un thème, ou d'un item
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.valider[lang=editer]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q.valider[lang=editer]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -654,13 +671,12 @@ $(document).ready
 					$('#f_nom').focus();
 					return false;
 				}
-				// On récupère le coefficient, le lien au socle et le lien de remédiation de l'élément (item uniquement)
+				// On récupère le coefficient, le lien au socle (item uniquement)
 				if(contexte=='n3')
 				{
-					coef  = parseInt( $('#f_coef').val() );
+					coef  = parseInt( $('#f_coef').val() , 10 );
 					cart  = $("input[name=f_cart]:checked").val();
 					socle = $('#f_socle').val();
-					lien  = $('#f_lien').val();
 					if( (isNaN(coef)) || (coef<0) || (coef>20) )
 					{
 						$('#ajax_msg').removeAttr("class").addClass("erreur").html("Le coefficient doit être un nombre entier entre 0 et 20 !");
@@ -678,7 +694,6 @@ $(document).ready
 					coef  = 1;
 					cart  = 0;
 					socle = 0;
-					lien  = '';
 				}
 				// On récupère l'id de l'élément concerné (domaine ou theme ou item)
 				element_id = $(this).parent().parent().attr('id').substring(3);
@@ -689,7 +704,7 @@ $(document).ready
 					{
 						type : 'POST',
 						url : 'ajax.php?page='+PAGE,
-						data : 'action=edit&contexte='+contexte+'&element='+element_id+'&ref='+ref+'&coef='+coef+'&cart='+cart+'&socle='+socle+'&nom='+encodeURIComponent(nom)+'&lien='+encodeURIComponent(lien),
+						data : 'action=edit&contexte='+contexte+'&element='+element_id+'&ref='+ref+'&coef='+coef+'&cart='+cart+'&socle='+socle+'&nom='+encodeURIComponent(nom),
 						dataType : "html",
 						error : function(msg,string)
 						{
@@ -711,11 +726,10 @@ $(document).ready
 									socle_image = (socle>0) ? 'oui' : 'non' ;
 									socle_title = $('#f_intitule').val();
 									socle_texte = '<img src="./_img/etat/socle_'+socle_image+'.png" alt="" title="'+socle_title+'" lang="id_'+socle_id+'" />';
-									lien_image  = (lien=='') ? 'non' : 'oui' ;
-									lien_title  = (lien=='') ? 'Absence de ressource.' : escapeHtml(lien) ;
+									lien_image  = (tab_ressources[element_id]) ? 'oui' : 'non' ;
+									lien_title  = (tab_ressources[element_id]) ? tab_ressources[element_id] : 'Absence de ressource.' ;
 									lien_texte  = '<img src="./_img/etat/link_'+lien_image+'.png" alt="" title="'+lien_title+'" />';
 									$('#ajax_msg').parent().parent().children('b').html(coef_texte+cart_texte+socle_texte+lien_texte+texte).show();
-									tab_ressources[element_id] = (lien=='') ? '' : lien_title ;
 									infobulle();
 								}
 								else
@@ -738,7 +752,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour confirmer la suppression d'un domaine (avec son contenu), ou d'un thème (avec son contenu), ou d'un item
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.valider[lang=supprimer]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q.valider[lang=supprimer]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -788,7 +803,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour confirmer la fusion d'un item avec un second qui l'absorbe
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q[lang=fus2]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q[lang=fus2]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -845,7 +861,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour confirmer le déplacement d'un domaine, ou d'un thème, ou d'un item
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q[lang=move2]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q[lang=move2]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -963,7 +980,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour Annuler un ajout
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.annuler[lang=ajouter]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q.annuler[lang=ajouter]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -975,7 +993,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour Annuler un renommage
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.annuler[lang=editer]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q.annuler[lang=editer]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -988,7 +1007,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour Annuler une suppression
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.annuler[lang=supprimer]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q.annuler[lang=supprimer]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -1001,7 +1021,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour Annuler une fusion
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.annuler[lang=fusionner]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q.annuler[lang=fusionner]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -1015,7 +1036,8 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Clic sur l'image pour Annuler un déplacement
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
-		$('q.annuler[lang=deplacer]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
+
+		$('#zone_elaboration_referentiel q.annuler[lang=deplacer]').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('click',
 			function()
 			{
@@ -1029,17 +1051,20 @@ $(document).ready
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
 //	Intercepter la touche entrée ou escape pour valider ou annuler les modifications
 //	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+
 		$('input').live // live est utilisé pour prendre en compte les nouveaux éléments créés
 		('keyup',
 			function(e)
 			{
 				if(e.which==13)	// touche entrée
 				{
-					if(objet=='choisir_compet') {$('#choisir_socle_annuler').click();} else {$('#zone_compet q.valider').click();}
+					if(objet=='choisir_compet') {$('#choisir_socle_valider').click();}
+					else {$('#zone_elaboration_referentiel q.valider').click();}
 				}
 				else if(e.which==27)	// touche escape
 				{
-					if(objet=='choisir_compet') {$('#choisir_socle_annuler').click();} else {$('#zone_compet q.annuler').click();}
+					if(objet=='choisir_compet') {$('#choisir_socle_annuler').click();}
+					else {$('#zone_elaboration_referentiel q.annuler').click();}
 				}
 				return false;
 			}

@@ -101,54 +101,80 @@ public function DB_recuperer_referentiels_themes()
 }
 
 /**
- * lister_matieres_partagees_SACoche
+ * DB_lister_matieres_famille
  *
- * @param void
+ * @param int   famille_id
  * @return array
  */
-public function DB_lister_matieres_partagees_SACoche()
+public function DB_lister_matieres_famille($famille_id)
 {
-	$DB_SQL = 'SELECT * ';
+	$DB_SQL = 'SELECT matiere_id, matiere_ref, matiere_nom, matiere_active ';
 	$DB_SQL.= 'FROM sacoche_matiere ';
-	$DB_SQL.= 'WHERE matiere_partage=:partage ';
+	$DB_SQL.= ($famille_id==ID_FAMILLE_MATIERE_USUELLE) ? 'WHERE matiere_usuelle=1 ' : 'WHERE matiere_famille_id='.$famille_id.' ' ;
 	$DB_SQL.= 'ORDER BY matiere_nom ASC';
-	$DB_VAR = array(':partage'=>1);
+	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , NULL);
+}
+
+/**
+ * DB_lister_matiere_motclef
+ *
+ * @param string   findme
+ * @return array
+ */
+public function DB_lister_matiere_motclef($findme)
+{
+	$DB_SQL = 'SELECT matiere_id, matiere_ref, matiere_nom, matiere_active, matiere_famille_nom, ';
+	$DB_SQL.= 'MATCH(matiere_nom) AGAINST(:matiere_nom) AS score ';
+	$DB_SQL.= 'FROM sacoche_matiere ';
+	$DB_SQL.= 'LEFT JOIN sacoche_matiere_famille USING (matiere_famille_id) ';
+	$DB_SQL.= 'WHERE matiere_id<='.ID_MATIERE_PARTAGEE_MAX.' AND MATCH(matiere_nom) AGAINST(:matiere_nom)';
+	$DB_VAR = array(':matiere_nom'=>$findme);
 	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
 
 /**
- * lister_matieres_specifiques
+ * DB_lister_matieres
  *
- * @param void
+ * @param bool   is_specifique
  * @return array
  */
-public function DB_lister_matieres_specifiques()
+public function DB_lister_matieres($is_specifique)
 {
-	$DB_SQL = 'SELECT * ';
+	$DB_SQL = 'SELECT matiere_id, matiere_ref, matiere_nom ';
 	$DB_SQL.= 'FROM sacoche_matiere ';
-	$DB_SQL.= 'WHERE matiere_partage=:partage ';
+	$DB_SQL.= ($is_specifique) ? 'WHERE matiere_id>'.ID_MATIERE_PARTAGEE_MAX.' ' : 'WHERE matiere_active=1 AND matiere_id<='.ID_MATIERE_PARTAGEE_MAX.' ' ;
 	$DB_SQL.= 'ORDER BY matiere_nom ASC';
-	$DB_VAR = array(':partage'=>0);
-	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , NULL);
 }
 
 /**
  * lister_matieres_etablissement
  *
- * @param string $listing_matieres   id des matières communes choisies séparés par des virgules
- * @param bool   $with_transversal   avec ou non la matière tranversale
  * @param bool   $order_by_name      si FALSE, prendre le champ matiere_ordre
  * @return array
  */
-public function DB_lister_matieres_etablissement($listing_matieres,$with_transversal,$order_by_name)
+public function DB_lister_matieres_etablissement($order_by_name)
 {
-	$where_trans = ($with_transversal) ? '' : 'AND matiere_transversal=0 ' ;
-	$order_champ = ($order_by_name)    ? '' : 'matiere_ordre ASC, ' ;
-	$DB_SQL = 'SELECT * ';
+	$DB_SQL = 'SELECT matiere_id, matiere_nb_demandes, matiere_ordre, matiere_ref, matiere_nom ';
 	$DB_SQL.= 'FROM sacoche_matiere ';
-	$DB_SQL.= ($listing_matieres) ? 'WHERE (matiere_id IN('.$listing_matieres.') OR matiere_partage=:partage) '.$where_trans : 'WHERE matiere_partage=:partage '.$where_trans;
-	$DB_SQL.= 'ORDER BY '.$order_champ.'matiere_nom ASC';
-	$DB_VAR = array(':partage'=>0);
+	$DB_SQL.= 'WHERE matiere_active=1 ';
+	$DB_SQL.= ($order_by_name) ? 'ORDER BY matiere_nom ASC' : 'ORDER BY matiere_ordre ASC, matiere_nom ASC' ;
+	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , NULL);
+}
+
+/**
+ * DB_lister_niveaux_famille
+ *
+ * @param int   famille_id
+ * @return array
+ */
+public function DB_lister_niveaux_famille($famille_id)
+{
+	$DB_SQL = 'SELECT niveau_id, niveau_ref, niveau_nom, niveau_actif ';
+	$DB_SQL.= 'FROM sacoche_niveau ';
+	$DB_SQL.= 'WHERE niveau_famille_id=:famille_id ' ;
+	$DB_SQL.= 'ORDER BY niveau_ordre ASC';
+	$DB_VAR = array(':famille_id'=>$famille_id);
 	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
 
@@ -163,37 +189,6 @@ public function DB_lister_paliers_SACoche()
 	$DB_SQL = 'SELECT * ';
 	$DB_SQL.= 'FROM sacoche_socle_palier ';
 	$DB_SQL.= 'ORDER BY palier_ordre ASC';
-	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , NULL);
-}
-
-/**
- * lister_niveaux_SACoche
- * Sans les niveaux de type 'cycles'.
- *
- * @param void
- * @return array
- */
-public function DB_lister_niveaux_SACoche()
-{
-	$DB_SQL = 'SELECT * ';
-	$DB_SQL.= 'FROM sacoche_niveau ';
-	$DB_SQL.= 'WHERE niveau_cycle=0 ';
-	$DB_SQL.= 'ORDER BY niveau_ordre ASC';
-	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , NULL);
-}
-
-/**
- * lister_cycles_SACoche
- *
- * @param void
- * @return array
- */
-public function DB_lister_cycles_SACoche()
-{
-	$DB_SQL = 'SELECT * ';
-	$DB_SQL.= 'FROM sacoche_niveau ';
-	$DB_SQL.= 'WHERE niveau_cycle=1 ';
-	$DB_SQL.= 'ORDER BY niveau_ordre ASC';
 	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , NULL);
 }
 
@@ -311,25 +306,6 @@ public function DB_lister_classes_et_groupes_avec_niveaux()
 }
 
 /**
- * lister_classes_avec_professeurs
- *
- * @param void
- * @return array
- */
-public function DB_lister_classes_avec_professeurs()
-{
-	$DB_SQL = 'SELECT * ';
-	$DB_SQL.= 'FROM sacoche_groupe ';
-	$DB_SQL.= 'LEFT JOIN sacoche_niveau USING (niveau_id) ';
-	$DB_SQL.= 'LEFT JOIN sacoche_jointure_user_groupe USING (groupe_id) ';
-	$DB_SQL.= 'LEFT JOIN sacoche_user USING (user_id) ';
-	$DB_SQL.= 'WHERE groupe_type=:type AND user_statut=:statut ';
-	$DB_SQL.= 'ORDER BY niveau_ordre ASC, groupe_ref ASC, user_nom ASC, user_prenom ASC';
-	$DB_VAR = array(':type'=>'classe',':statut'=>1);
-	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
-}
-
-/**
  * lister_users_cibles
  *
  * @param string   $listing_user_id   id des utilisateurs séparés par des virgules
@@ -386,19 +362,18 @@ public function DB_lister_adresses_parents()
 /**
  * lister_professeurs_par_matiere
  *
- * @param string   $listing_matieres_id   id des matières séparés par des virgules
+ * @param void
  * @return array
  */
-public function DB_lister_professeurs_par_matiere($listing_matieres_id)
+public function DB_lister_professeurs_par_matiere()
 {
 	$DB_SQL = 'SELECT matiere_id, matiere_nom, jointure_coord, user_id, user_nom, user_prenom ';
 	$DB_SQL.= 'FROM sacoche_matiere ';
 	$DB_SQL.= 'LEFT JOIN sacoche_jointure_user_matiere USING (matiere_id) ';
 	$DB_SQL.= 'LEFT JOIN sacoche_user USING (user_id) ';
-	$DB_SQL.= 'WHERE user_statut=:statut ';
-	$DB_SQL.= 'AND (matiere_id IN('.$listing_matieres_id.') OR matiere_partage=:partage) '; // Test matiere car un prof peut être encore relié à des matières décochées par l'admin.
-	$DB_SQL.= 'ORDER BY matiere_transversal DESC, matiere_nom ASC, user_nom ASC, user_prenom ASC';
-	$DB_VAR = array(':statut'=>1,':partage'=>0);
+	$DB_SQL.= 'WHERE matiere_active=1 AND user_statut=:statut ';
+	$DB_SQL.= 'ORDER BY matiere_nom ASC, user_nom ASC, user_prenom ASC';
+	$DB_VAR = array(':statut'=>1);
 	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
 
@@ -463,36 +438,18 @@ public function DB_lister_parents_actifs_avec_infos_for_eleve($eleve_id)
 /**
  * lister_jointure_professeurs_matieres
  *
- * @param bool $with_identite
- * @param bool $with_transversal
- * @return array
- */
-public function DB_lister_jointure_professeurs_matieres($with_identite,$with_transversal)
-{
-	$DB_SQL = 'SELECT user_id, matiere_id';
-	$DB_SQL.= ($with_identite) ? ',user_nom , user_prenom ' : ' ' ;
-	$DB_SQL.= 'FROM sacoche_jointure_user_matiere ';
-	$DB_SQL.= 'LEFT JOIN sacoche_user USING (user_id) ';
-	$DB_SQL.= 'WHERE user_statut=:statut ';
-	$DB_SQL.= ($with_transversal) ? '' : 'AND matiere_id!='.ID_MATIERE_TRANSVERSALE.' ' ;
-	$DB_SQL.= ($with_identite) ? 'ORDER BY user_nom ASC, user_prenom ASC ' : '' ;
-	$DB_VAR = array(':statut'=>1);
-	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
-}
-
-/**
- * lister_jointure_professeurs_coordonnateurs
- *
  * @param void
  * @return array
  */
-public function DB_lister_jointure_professeurs_coordonnateurs()
+public function DB_lister_jointure_professeurs_matieres()
 {
-	$DB_SQL = 'SELECT user_id, matiere_id ';
+	$DB_SQL = 'SELECT user_id, matiere_id, jointure_coord ';
 	$DB_SQL.= 'FROM sacoche_jointure_user_matiere ';
 	$DB_SQL.= 'LEFT JOIN sacoche_user USING (user_id) ';
-	$DB_SQL.= 'WHERE jointure_coord=:coord AND user_statut=:statut ';
-	$DB_VAR = array(':coord'=>1,':statut'=>1);
+	$DB_SQL.= 'LEFT JOIN sacoche_matiere USING (matiere_id) ';
+	$DB_SQL.= 'WHERE user_statut=:statut ';
+	$DB_SQL.= 'ORDER BY matiere_nom ASC, user_nom ASC, user_prenom ASC ';
+	$DB_VAR = array(':statut'=>1);
 	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
 
@@ -507,8 +464,9 @@ public function DB_lister_jointure_professeurs_principaux()
 	$DB_SQL = 'SELECT user_id, groupe_id ';
 	$DB_SQL.= 'FROM sacoche_jointure_user_groupe ';
 	$DB_SQL.= 'LEFT JOIN sacoche_user USING (user_id) ';
-	$DB_SQL.= 'WHERE jointure_pp=:pp AND user_statut=:statut ';
-	$DB_VAR = array(':pp'=>1,':statut'=>1);
+	$DB_SQL.= 'LEFT JOIN sacoche_groupe USING (groupe_id) ';
+	$DB_SQL.= 'WHERE jointure_pp=:pp AND user_statut=:statut AND groupe_type=:type '; // groupe_type pour éviter les groupes de besoin
+	$DB_VAR = array(':pp'=>1,':statut'=>1,':type'=>'classe');
 	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
 
@@ -521,7 +479,7 @@ public function DB_lister_jointure_professeurs_principaux()
  */
 public function DB_lister_jointure_professeurs_groupes($listing_profs_id,$listing_groupes_id)
 {
-	$DB_SQL = 'SELECT groupe_id,user_id FROM sacoche_jointure_user_groupe ';
+	$DB_SQL = 'SELECT groupe_id,user_id,jointure_pp FROM sacoche_jointure_user_groupe ';
 	$DB_SQL.= 'LEFT JOIN sacoche_user USING (user_id) ';
 	$DB_SQL.= 'LEFT JOIN sacoche_groupe USING (groupe_id) ';
 	$DB_SQL.= 'LEFT JOIN sacoche_niveau USING (niveau_id) ';
@@ -701,10 +659,9 @@ public function DB_lister_referentiels()
 	$DB_SQL.= 'FROM sacoche_referentiel ';
 	$DB_SQL.= 'LEFT JOIN sacoche_matiere USING (matiere_id) ';
 	$DB_SQL.= 'LEFT JOIN sacoche_niveau USING (niveau_id) ';
-	$DB_SQL.= 'WHERE (matiere_id IN('.$_SESSION['MATIERES'].') OR matiere_partage=:partage) AND niveau_id IN('.$_SESSION['CYCLES'].','.$_SESSION['NIVEAUX'].') '; // Test matiere pour éviter des matières décochées par l'admin.
+	$DB_SQL.= 'WHERE matiere_active=1 AND niveau_actif=1 ';
 	$DB_SQL.= 'ORDER BY matiere_nom ASC, niveau_ordre ASC ';
-	$DB_VAR = array(':partage'=>0);
-	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , NULL);
 }
 
 /**
@@ -914,9 +871,9 @@ public function DB_rechercher_login_disponible($login)
  */
 public function DB_ajouter_matiere_specifique($matiere_ref,$matiere_nom)
 {
-	$DB_SQL = 'INSERT INTO sacoche_matiere(matiere_partage,matiere_transversal,matiere_nb_demandes,matiere_ref,matiere_nom) ';
-	$DB_SQL.= 'VALUES(:matiere_partage,:matiere_transversal,:matiere_nb_demandes,:matiere_ref,:matiere_nom)';
-	$DB_VAR = array(':matiere_partage'=>0,':matiere_transversal'=>0,':matiere_nb_demandes'=>0,':matiere_ref'=>$matiere_ref,':matiere_nom'=>$matiere_nom);
+	$DB_SQL = 'INSERT INTO sacoche_matiere(matiere_active,matiere_usuelle,matiere_famille_id,matiere_nb_demandes,matiere_ordre,matiere_ref,matiere_nom) ';
+	$DB_SQL.= 'VALUES(:matiere_active,:matiere_usuelle,:matiere_famille_id,:matiere_nb_demandes,:matiere_ordre,:matiere_ref,:matiere_nom)';
+	$DB_VAR = array(':matiere_active'=>1,':matiere_usuelle'=>1,':matiere_famille_id'=>0,':matiere_nb_demandes'=>0,':matiere_ordre'=>255,':matiere_ref'=>$matiere_ref,':matiere_nom'=>$matiere_nom);
 	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 	return DB::getLastOid(SACOCHE_STRUCTURE_BD_NAME);
 }
@@ -1085,6 +1042,64 @@ public function DB_modifier_user_langue($listing_user_id,$langue)
 	$DB_SQL.= 'WHERE user_id IN('.$listing_user_id.') ';
 	$DB_VAR = array(':langue'=>$langue);
 	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+}
+
+/**
+ * modifier_palier
+ *
+ * @param int    $palier_id
+ * @param int    $palier_actif   (0/1)
+ * @return void
+ */
+public function DB_modifier_palier($palier_id,$palier_actif)
+{
+	$DB_SQL = 'UPDATE sacoche_socle_palier ';
+	$DB_SQL.= 'SET palier_actif=:palier_actif ';
+	$DB_SQL.= 'WHERE palier_id=:palier_id ';
+	$DB_VAR = array(':palier_id'=>$palier_id,':palier_actif'=>$palier_actif);
+	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+}
+
+/**
+ * modifier_niveau
+ *
+ * @param int    $niveau_id
+ * @param int    $niveau_actif   (0/1)
+ * @return void
+ */
+public function DB_modifier_niveau($niveau_id,$niveau_actif)
+{
+	$DB_SQL = 'UPDATE sacoche_niveau ';
+	$DB_SQL.= 'SET niveau_actif=:niveau_actif ';
+	$DB_SQL.= 'WHERE niveau_id=:niveau_id ';
+	$DB_VAR = array(':niveau_id'=>$niveau_id,':niveau_actif'=>$niveau_actif);
+	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	// On laisse les référentiels en sommeil, au cas où...
+}
+
+/**
+ * modifier_matiere_partagee
+ *
+ * @param int    $matiere_id
+ * @param int    $matiere_active   (0/1)
+ * @return void
+ */
+public function DB_modifier_matiere_partagee($matiere_id,$matiere_active)
+{
+	$DB_SQL = 'UPDATE sacoche_matiere ';
+	$DB_SQL.= 'SET matiere_active=:matiere_active ';
+	$DB_SQL.= 'WHERE matiere_id=:matiere_id ';
+	$DB_VAR = array(':matiere_id'=>$matiere_id,':matiere_active'=>$matiere_active);
+	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	if(!$matiere_active)
+	{
+		// On supprime aussi les jointures avec les enseignants.
+		// Mais on laisse les référentiels en sommeil, au cas où...
+		$DB_SQL = 'DELETE FROM sacoche_jointure_user_matiere ';
+		$DB_SQL.= 'WHERE matiere_id=:matiere_id ';
+		$DB_VAR = array(':matiere_id'=>$matiere_id);
+		DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	}
 }
 
 /**
@@ -1267,22 +1282,36 @@ public function DB_modifier_liaison_groupe_periode($groupe_id,$periode_id,$etat,
 {
 	if($etat)
 	{
-		// Ajouter / modifier une liaison
-		$DB_SQL = 'REPLACE INTO sacoche_jointure_groupe_periode (groupe_id,periode_id,jointure_date_debut,jointure_date_fin) ';
-		$DB_SQL.= 'VALUES(:groupe_id,:periode_id,:date_debut,:date_fin)';
-		$DB_VAR = array(':groupe_id'=>$groupe_id,':periode_id'=>$periode_id,':date_debut'=>$date_debut_mysql,':date_fin'=>$date_fin_mysql);
+		// Ajouter / modifier une liaison : tester si la liaison existe, sinon comme REPLACE = DELETE + INSERT ça fait perdre les infos des bulletins
+		$DB_SQL = 'SELECT 1 ';
+		$DB_SQL.= 'FROM sacoche_jointure_groupe_periode ';
+		$DB_SQL.= 'WHERE groupe_id=:groupe_id AND periode_id=:periode_id ';
+		$DB_VAR = array(':groupe_id'=>$groupe_id,':periode_id'=>$periode_id);
+		if( DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR) )
+		{
+			$DB_SQL = 'UPDATE sacoche_jointure_groupe_periode ';
+			$DB_SQL.= 'SET jointure_date_debut=:date_debut , jointure_date_fin=:date_fin ';
+			$DB_SQL.= 'WHERE groupe_id=:groupe_id AND periode_id=:periode_id ';
+			$DB_VAR = array(':groupe_id'=>$groupe_id,':periode_id'=>$periode_id,':date_debut'=>$date_debut_mysql,':date_fin'=>$date_fin_mysql);
+		}
+		else
+		{
+			$DB_SQL = 'INSERT INTO sacoche_jointure_groupe_periode (groupe_id,periode_id,jointure_date_debut,jointure_date_fin,bulletin_modele,bulletin_etat) ';
+			$DB_SQL.= 'VALUES(:groupe_id,:periode_id,:date_debut,:date_fin,:bulletin_modele,:bulletin_etat)';
+			$DB_VAR = array(':groupe_id'=>$groupe_id,':periode_id'=>$periode_id,':date_debut'=>$date_debut_mysql,':date_fin'=>$date_fin_mysql,':bulletin_modele'=>$_SESSION['BULLETIN']['MODELE_DEFAUT'],':bulletin_etat'=>'ferme_vierge');
+		}
 	}
 	else
 	{
 		if( ($groupe_id===TRUE) && ($periode_id===TRUE) )
 		{
-			// Retirer toutes les liaisons
+			// Retirer toutes les liaisons ; on ne supprime pas les données des bulletins éventuels associés, par précaution en cas de fausse manoeuvre, et surtout car ils peuvent être accessibles depuis un autre groupe...
 			$DB_SQL = 'DELETE FROM sacoche_jointure_groupe_periode ';
 			$DB_VAR = NULL;
 		}
 		else
 		{
-			// Retirer une liaison
+			// Retirer une liaison ; on ne supprime pas les données des bulletins éventuels associés, par précaution en cas de fausse manoeuvre, et surtout car ils peuvent être accessibles depuis un autre groupe...
 			$DB_SQL = 'DELETE FROM sacoche_jointure_groupe_periode ';
 			$DB_SQL.= 'WHERE groupe_id=:groupe_id AND periode_id=:periode_id ';
 			$DB_VAR = array(':groupe_id'=>$groupe_id,':periode_id'=>$periode_id);
@@ -1364,7 +1393,7 @@ public function DB_supprimer_referentiels_matiere($matiere_id)
 public function DB_supprimer_groupe_par_admin($groupe_id,$groupe_type,$with_devoir=TRUE)
 {
 	// Il faut aussi supprimer les jointures avec les utilisateurs
-	// Il faut aussi supprimer les jointures avec les périodes
+	// Il faut aussi supprimer les jointures avec les périodes, mais pas les bulletins (peuvent être accessibles depuis un autre groupe...)
 	$jointure_periode_delete = ( ($groupe_type=='classe') || ($groupe_type=='groupe') ) ? ', sacoche_jointure_groupe_periode ' : '' ;
 	$jointure_periode_join   = ( ($groupe_type=='classe') || ($groupe_type=='groupe') ) ? 'LEFT JOIN sacoche_jointure_groupe_periode USING (groupe_id) ' : '' ;
 	// Il faut aussi supprimer les évaluations portant sur le groupe
@@ -1416,6 +1445,17 @@ public function DB_supprimer_saisies_REQ()
 }
 
 /**
+ * DB_supprimer_bulletins
+ *
+ * @param void
+ * @return void
+ */
+public function DB_supprimer_bulletins()
+{
+	DB::query(SACOCHE_STRUCTURE_BD_NAME , 'TRUNCATE sacoche_bulletin' , NULL);
+}
+
+/**
  * supprimer_saisies
  *
  * @param void
@@ -1463,6 +1503,11 @@ public function DB_supprimer_periode($periode_id)
 	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 	// Il faut aussi supprimer les jointures avec les classes
 	$DB_SQL = 'DELETE FROM sacoche_jointure_groupe_periode ';
+	$DB_SQL.= 'WHERE periode_id=:periode_id ';
+	$DB_VAR = array(':periode_id'=>$periode_id);
+	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	// Il faut aussi supprimer les jointures avec les bulletins
+	$DB_SQL = 'DELETE FROM sacoche_bulletin ';
 	$DB_SQL.= 'WHERE periode_id=:periode_id ';
 	$DB_VAR = array(':periode_id'=>$periode_id);
 	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
@@ -1564,6 +1609,36 @@ public function DB_optimiser_tables_structure()
 			DB::query(SACOCHE_STRUCTURE_BD_NAME , 'OPTIMIZE TABLE '.$DB_ROW['Name']);
 		}
 	}
+}
+
+/**
+ * Déplacer les référentiels d'une matière vers une autre, après vérification que c'est possible (matière de destination vierge de données)
+ *
+ * @param int   $matiere_id_avant
+ * @param int   $matiere_id_apres
+ * @return bool
+ */
+public function DB_deplacer_referentiel_matiere($matiere_id_avant,$matiere_id_apres)
+{
+	$tab_tables = array('sacoche_bulletin','sacoche_jointure_user_matiere','sacoche_demande','sacoche_referentiel','sacoche_referentiel_domaine');
+	$nb_pbs = 0;
+	foreach($tab_tables as $table_nom)
+	{
+		$nb_pbs += DB::queryOne(SACOCHE_STRUCTURE_BD_NAME , 'SELECT COUNT(*) AS nombre FROM '.$table_nom.' WHERE matiere_id='.$matiere_id_apres );
+	}
+	if($nb_pbs)
+	{
+		return FALSE;
+	}
+	foreach($tab_tables as $table_nom)
+	{
+		DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE '.$table_nom.' SET matiere_id='.$matiere_id_apres.' WHERE matiere_id='.$matiere_id_avant );
+	}
+	if( ($matiere_id_avant>ID_MATIERE_PARTAGEE_MAX) && ($matiere_id_apres<=ID_MATIERE_PARTAGEE_MAX) )
+	{
+		DB::query(SACOCHE_STRUCTURE_BD_NAME , 'UPDATE sacoche_referentiel SET referentiel_partage_etat="non" WHERE matiere_id='.$matiere_id_apres.' AND referentiel_partage_etat="hs"' );
+	}
+	return TRUE;
 }
 
 /**
@@ -1744,6 +1819,16 @@ public function DB_corriger_anomalies()
 	$message = (!$nb_modifs) ? 'rien à signaler' : ( ($nb_modifs>1) ? $nb_modifs.' anomalies supprimées' : '1 anomalie supprimée' ) ;
 	$classe  = (!$nb_modifs) ? 'valide' : 'alerte' ;
 	$tab_bilan[] = '<label class="'.$classe.'">Jointures période/groupe : '.$message.'.</label>';
+	// Recherche d'anomalies : jointures période/bulletin associées à une période supprimée... (on ne s'occupe volontairmeent pas de vérifier la jointure période/groupe)
+	$DB_SQL = 'DELETE sacoche_bulletin ';
+	$DB_SQL.= 'FROM sacoche_bulletin ';
+	$DB_SQL.= 'LEFT JOIN sacoche_periode USING (periode_id) ';
+	$DB_SQL.= 'WHERE (sacoche_periode.periode_id IS NULL) ';
+	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , NULL);
+	$nb_modifs = DB::rowCount(SACOCHE_STRUCTURE_BD_NAME);
+	$message = (!$nb_modifs) ? 'rien à signaler' : ( ($nb_modifs>1) ? $nb_modifs.' anomalies supprimées' : '1 anomalie supprimée' ) ;
+	$classe  = (!$nb_modifs) ? 'valide' : 'alerte' ;
+	$tab_bilan[] = '<label class="'.$classe.'">Jointures période/bulletin : '.$message.'.</label>';
 	// Recherche d'anomalies : jointures user/groupe associées à un user ou un groupe supprimé...
 	$DB_SQL = 'DELETE sacoche_jointure_user_groupe ';
 	$DB_SQL.= 'FROM sacoche_jointure_user_groupe ';

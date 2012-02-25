@@ -94,6 +94,8 @@ if(count($tab_id_classe_groupe))
 	// ]]>
 	var input_date="<?php echo date("d/m/Y") ?>";
 	var date_mysql="<?php echo date("Y-m-d") ?>";
+	var tab_items = new Array();
+	var tab_profs = new Array();
 	<?php echo $tab_niveau_js ?> 
 	<?php echo $tab_groupe_js ?> 
 	<?php echo $tab_groupe_periode_js ?> 
@@ -124,7 +126,7 @@ if(count($tab_id_classe_groupe))
 
 <form action="#" method="post" id="form1" name="form1" class="hide">
 	<hr />
-	<table class="form">
+	<table class="form hsort">
 		<thead>
 			<tr>
 				<th>Date devoir</th>
@@ -231,7 +233,8 @@ if(count($tab_id_classe_groupe))
 	</table>
 </form>
 
-<form action="#" method="post" id="zone_compet" class="hide">
+<form action="#" method="post" id="zone_compet" class="arbre_dynamique arbre_check hide">
+	<div>Tout déployer / contracter : <a href="m1" class="all_extend"><img alt="m1" src="./_img/deploy_m1.gif" /></a> <a href="m2" class="all_extend"><img alt="m2" src="./_img/deploy_m2.gif" /></a> <a href="n1" class="all_extend"><img alt="n1" src="./_img/deploy_n1.gif" /></a> <a href="n2" class="all_extend"><img alt="n2" src="./_img/deploy_n2.gif" /></a> <a href="n3" class="all_extend"><img alt="n3" src="./_img/deploy_n3.gif" /></a></div>
 	<p>Cocher ci-dessous (<span class="astuce">cliquer sur un intitulé pour déployer son contenu</span>) :</p>
 	<?php
 	// Affichage de la liste des items pour toutes les matières d'un professeur, sur tous les niveaux
@@ -276,8 +279,8 @@ if(count($tab_id_classe_groupe))
 	</div>
 </form>
 
-<!-- Sans "javascript:return false" une soumission incontrôlée s'effectue quand on presse "entrée" dans le cas d'un seul élève évalué sur un seul item. -->
-<form action="javascript:return false" method="post" id="zone_saisir" class="hide">
+<!-- Sans onsubmit="return false" une soumission incontrôlée s'effectue quand on presse "entrée" dans le cas d'un seul élève évalué sur un seul item. -->
+<form action="#" method="post" id="zone_saisir" class="hide" onsubmit="return false">
 	<p class="hc"><b id="titre_saisir"></b><br /><label id="msg_saisir"></label></p>
 	<table id="table_saisir" class="scor_eval">
 		<tbody><tr><td></td></tr></tbody>
@@ -298,7 +301,7 @@ if(count($tab_id_classe_groupe))
 		<label for="f_defaut_DISP"><input type="radio" id="f_defaut_DISP" name="f_defaut" value="DISP" /><img alt="DISP" src="./_img/note/commun/h/DISP.gif" /></label> dans toutes les cellules vides.<label id="msg_report">&nbsp;</label>
 	</p>
 	<div>
-		<a lang="zone_saisir_deport" href="#"><img src="./_img/toggle_plus.gif" alt="" title="Voir / masquer la saisie déportée." class="toggle" /></a> Saisie déportée
+		<a id="to_zone_saisir_deport" href="#"><img src="./_img/toggle_plus.gif" alt="" title="Voir / masquer la saisie déportée." class="toggle" /></a> Saisie déportée
 		<div id="zone_saisir_deport" class="hide">
 			<input type="hidden" name="filename" id="filename" value="<?php echo './__tmp/export/saisie_'.$_SESSION['BASE'].'_'.$_SESSION['USER_ID'].'_'; ?>" />
 			<ul class="puce">
@@ -317,7 +320,7 @@ if(count($tab_id_classe_groupe))
 		<tbody><tr><td></td></tr></tbody>
 	</table>
 	<p>
-		<a lang="zone_voir_deport" href="#"><img src="./_img/toggle_plus.gif" alt="" title="Voir / masquer la saisie déportée." class="toggle" /></a> Saisie déportée &amp; archivage
+		<a id="to_zone_voir_deport" href="#"><img src="./_img/toggle_plus.gif" alt="" title="Voir / masquer la saisie déportée." class="toggle" /></a> Saisie déportée &amp; archivage
 		<div id="zone_voir_deport" class="hide">
 			<ul class="puce">
 				<li><span class="manuel"><a class="pop_up" href="<?php echo SERVEUR_DOCUMENTAIRE ?>?fichier=support_professeur__evaluations_saisie_deportee">DOC : Saisie déportée.</a></span></li>

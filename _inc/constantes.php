@@ -33,7 +33,7 @@
 // VERSION_PROG : version des fichiers installés, à comparer avec la dernière version disponible sur le serveur communautaire ; pour une conversion en entier : list($annee,$mois,$jour) = explode('-',substr(VERSION_PROG,0,10); $indice_version = (date('Y')-2011)*365 + date('z',mktime(0,0,0,$mois,$jour,$annee));
 // VERSION_BASE : version de la base associée, à comparer avec la version de la base actuellement installée
 define('VERSION_PROG', @file_get_contents('VERSION.txt') );	// Ne pas mettre de chemin ! Dans un fichier texte pour permettre un appel au serveur communautaire sans lui faire utiliser PHP.
-define('VERSION_BASE','2011-11-20');
+define('VERSION_BASE','2012-02-23');
 
 // Quelques chemins, avec le séparateur final
 define('CHEMIN_SACOCHE'       , realpath(dirname(dirname(__FILE__))).DIRECTORY_SEPARATOR);
@@ -48,10 +48,10 @@ define('CHEMIN_SQL_STRUCTURE' , CHEMIN_SACOCHE.DOSSIER_SQL_STRUCTURE);
 define('CHEMIN_SQL_WEBMESTRE' , CHEMIN_SACOCHE.DOSSIER_SQL_WEBMESTRE);
 define('FPDF_FONTPATH'        , CHEMIN_SACOCHE.DOSSIER_FONT); // Pour FPDF (répertoire où se situent les polices)
 
-define('ID_DEMO'                  ,9999);          // id de l'établissement de démonstration (pour $_SESSION['SESAMATH_ID']) ; 0 pose des pbs, et il faut prendre un id disponible dans la base d'établissements de Sésamath
-define('ID_MATIERE_TRANSVERSALE'  ,99);            // id de la matière transversale dans la table "sacoche_matiere"
-define('LISTING_ID_NIVEAUX_CYCLES','.1.2.3.4.5.'); // listing des id des cycles dans la table "sacoche_niveau"
-define('LISTING_ID_PALIERS'       ,'.1.2.3.');     // listing des id des paliers dans la table "sacoche_socle_palier"
+define('ID_DEMO'                   ,9999); // id de l'établissement de démonstration (pour $_SESSION['SESAMATH_ID']) ; 0 pose des pbs, et il fallait prendre un id disponible dans la base d'établissements de Sésamath
+define('ID_MATIERE_PARTAGEE_MAX'   ,9999); // id de la matière transversale dans la table "sacoche_matiere" ; c'est l'id maximal des matières partagées (les id des matières spécifiques sont supérieurs)
+define('ID_NIVEAU_MAX'             ,1000); // Un id de niveau supérieur correspond à un id de famille qui a été incrémenté de cette constante
+define('ID_FAMILLE_MATIERE_USUELLE',  99);
 
 // CHARSET : "iso-8859-1" ou "utf-8" suivant l'encodage utilisé ; présence aussi d'un "AddDefaultCharset ..." dans le fichier .htaccess
 // Cependant, tout le site ayant été prévu et conçu en UTF-8, changer le CHARSET semble assez hasardeux pour ne pas dire risqué...
@@ -71,16 +71,17 @@ define('SERVEUR_ADRESSE',$chemin);
 $serveur = (gethostbyname($_SERVER['HTTP_HOST'])=='127.0.0.1') ? 'LOCAL' : ( (strpos($_SERVER['HTTP_HOST'],'.devsesamath.net')) ? 'DEV' : 'PROD' ) ;
 define('SERVEUR_TYPE',$serveur); // PROD | DEV | LOCAL
 
-define('SERVEUR_PROJET'        ,'http://sacoche.sesamath.net');            // URL du projet SACoche
-define('SERVEUR_SSL'           ,'https://ssl.sesamath.net');               // URL du serveur Sésamath sécurisé
-define('SERVEUR_COMMUNAUTAIRE' ,SERVEUR_PROJET.'/appel_externe.php');      // URL du fichier chargé d'effectuer la liaison entre les installations de SACoche et le serveur communautaire concernant les référentiels.
-define('SERVEUR_DOCUMENTAIRE'  ,SERVEUR_PROJET.'/appel_doc.php');          // URL du fichier chargé d'afficher les documentations
-define('SERVEUR_VERSION'       ,SERVEUR_PROJET.'/sacoche/VERSION.txt');    // URL du fichier chargé de renvoyer le numéro de la dernière version disponible
-define('SERVEUR_TELECHARGEMENT',SERVEUR_PROJET.'/telechargement.php');     // URL du fichier renvoyant le ZIP de la dernière archive de SACoche disponible
-define('SERVEUR_RSS'           ,SERVEUR_PROJET.'/_rss/rss.xml');           // URL du fichier comportant le flux RSS
-define('SERVEUR_CONTACT'       ,SERVEUR_PROJET.'/?fichier=contact');       // URL de la page "Où échanger autour de SACoche ?"
-define('SERVEUR_GUIDE_ADMIN'   ,SERVEUR_PROJET.'/?fichier=guide_admin');   // URL de la documentation "Guide d'un administrateur de SACoche"
-define('SERVEUR_LPC_SIGNATURE' ,SERVEUR_SSL.'/sacoche/lpc_signature.php'); // URL du fichier chargé de signer un XML à importer dans LPC
+define('SERVEUR_PROJET'        ,'https://sacoche.sesamath.net');         // URL du projet SACoche (en https depuis le 08/02/2012)
+define('SERVEUR_SSL'           ,'https://sacoche.sesamath.net');         // URL du serveur Sésamath sécurisé (idem serveur projet SACoche depuis le 08/02/2012)
+define('SERVEUR_COMMUNAUTAIRE' ,SERVEUR_PROJET.'/appel_externe.php');    // URL du fichier chargé d'effectuer la liaison entre les installations de SACoche et le serveur communautaire concernant les référentiels.
+define('SERVEUR_DOCUMENTAIRE'  ,SERVEUR_PROJET.'/appel_doc.php');        // URL du fichier chargé d'afficher les documentations
+define('SERVEUR_VERSION'       ,SERVEUR_PROJET.'/sacoche/VERSION.txt');  // URL du fichier chargé de renvoyer le numéro de la dernière version disponible
+define('SERVEUR_TELECHARGEMENT',SERVEUR_PROJET.'/telechargement.php');   // URL du fichier renvoyant le ZIP de la dernière archive de SACoche disponible
+define('SERVEUR_RSS'           ,SERVEUR_PROJET.'/_rss/rss.xml');         // URL du fichier comportant le flux RSS
+define('SERVEUR_CNIL'          ,SERVEUR_PROJET.'/?fichier=cnil');        // URL de la page "CNIL (données personnelles)"
+define('SERVEUR_CONTACT'       ,SERVEUR_PROJET.'/?fichier=contact');     // URL de la page "Où échanger autour de SACoche ?"
+define('SERVEUR_GUIDE_ADMIN'   ,SERVEUR_PROJET.'/?fichier=guide_admin'); // URL de la documentation "Guide d'un administrateur de SACoche"
+define('SERVEUR_LPC_SIGNATURE' ,SERVEUR_SSL.'/appel_externe.php');       // URL du fichier chargé de signer un XML à importer dans LPC
 
 define('COOKIE_STRUCTURE','SACoche-etablissement');  // nom du cookie servant à retenir l'établissement sélectionné, afin de ne pas à avoir à le sélectionner de nouveau, et à pouvoir le retrouver si perte d'une session et tentative de reconnexion SSO.
 define('COOKIE_AUTHMODE' ,'SACoche-mode-connexion'); // nom du cookie servant à retenir le dernier mode de connexion utilisé par un user connecté, afin de pouvoir le retrouver si perte d'une session et tentative de reconnexion SSO.

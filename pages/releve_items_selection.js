@@ -54,7 +54,15 @@ $(document).ready
 		(
 			function()
 			{
-				$("#options_individuel").toggle("slow");
+				$("#options_individuel").toggle();
+			}
+		);
+
+		$('#f_type_synthese').click
+		(
+			function()
+			{
+				$("#options_synthese").toggle();
 			}
 		);
 
@@ -116,6 +124,7 @@ $(document).ready
 					{
 						$("#f_periode option[value="+id_periode+"]").prop('selected',true);
 						view_dates_perso();
+						break;
 					}
 				}
 			}
@@ -255,10 +264,10 @@ $(document).ready
 					if($('#'+id).length)
 					{
 						$('#'+id).prop('checked',true);
-						$('#'+id).parent().parent().css("display","block");	// les items
-						$('#'+id).parent().parent().parent().parent().css("display","block");	// le thème
-						$('#'+id).parent().parent().parent().parent().parent().parent().css("display","block");	// le domaine
-						$('#'+id).parent().parent().parent().parent().parent().parent().parent().parent().css("display","block");	// le niveau
+						$('#'+id).closest('ul.ul_n3').css("display","block");	// les items
+						$('#'+id).closest('ul.ul_n2').css("display","block");	// le thème
+						$('#'+id).closest('ul.ul_n1').css("display","block");	// le domaine
+						$('#'+id).closest('ul.ul_m2').css("display","block");	// le niveau
 					}
 				}
 			}
@@ -296,10 +305,10 @@ $(document).ready
 						nombre++;
 					}
 				);
-				liste = liste.substring(0,liste.length-1);
-				s = (nombre>1) ? 's' : '';
-				$('#f_compet_liste').val(liste);
-				$('#f_compet_nombre').val(nombre+' item'+s);
+				var compet_liste  = liste.substring(0,liste.length-1);
+				var compet_nombre = (nombre==0) ? 'aucun' : ( (nombre>1) ? nombre+' items' : nombre+' item' ) ;
+				$('#f_compet_liste').val(compet_liste);
+				$('#f_compet_nombre').val(compet_nombre);
 				$('#annuler_compet').click();
 			}
 		);
@@ -311,82 +320,65 @@ $(document).ready
 		// Le formulaire qui va être analysé et traité en AJAX
 		var formulaire = $("#form_select");
 
-		// Ajout d'une méthode pour valider les dates de la forme jj/mm/aaaa (trouvé dans le zip du plugin, corrige en plus un bug avec Safari)
-		jQuery.validator.addMethod
-		(
-			"dateITA",
-			function(value, element)
-			{
-				var check = false;
-				var re = /^\d{1,2}\/\d{1,2}\/\d{4}$/ ;
-				if( re.test(value))
-				{
-					var adata = value.split('/');
-					var gg = parseInt(adata[0],10);
-					var mm = parseInt(adata[1],10);
-					var aaaa = parseInt(adata[2],10);
-					var xdata = new Date(aaaa,mm-1,gg);
-					if ( ( xdata.getFullYear() == aaaa ) && ( xdata.getMonth () == mm - 1 ) && ( xdata.getDate() == gg ) )
-						check = true;
-					else
-						check = false;
-				}
-				else
-					check = false;
-				return this.optional(element) || check;
-			}, 
-			"Veuillez entrer une date correcte."
-		);
-
 		// Vérifier la validité du formulaire (avec jquery.validate.js)
 		var validation = formulaire.validate
 		(
 			{
 				rules :
 				{
-					f_orientation  : { required:true },
-					f_marge_min    : { required:true },
-					f_pages_nb     : { required:true },
-					f_couleur      : { required:true },
-					f_legende      : { required:true },
- 					f_cases_nb     : { required:true },
-					f_cases_larg   : { required:true },
-					'f_type[]'     : { required:true },
-					f_coef         : { required:false },
-					f_socle        : { required:false },
-					f_lien         : { required:false },
-					f_bilan_MS     : { required:false },
-					f_bilan_PA     : { required:false },
-					f_conv_sur20   : { required:false },
-					f_periode      : { required:true },
-					f_date_debut   : { required:function(){return $("#f_periode").val()==0;} , dateITA:true },
-					f_date_fin     : { required:function(){return $("#f_periode").val()==0;} , dateITA:true },
-					f_compet_liste : { required:true },
-					f_groupe       : { required:true },
-					'f_eleve[]'    : { required:true }
+					'f_type[]'      : { required:true },
+					f_bilan_MS      : { required:false },
+					f_bilan_PA      : { required:false },
+					f_conv_sur20    : { required:false },
+					f_tri_objet     : { required:true },
+					f_tri_mode      : { required:true },
+					f_compet_nombre : { accept:'item|items' },
+					f_groupe        : { required:true },
+					'f_eleve[]'     : { required:true },
+					f_periode       : { required:true },
+					f_date_debut    : { required:function(){return $("#f_periode").val()==0;} , dateITA:true },
+					f_date_fin      : { required:function(){return $("#f_periode").val()==0;} , dateITA:true },
+					f_retroactif    : { required:true },
+					f_coef          : { required:false },
+					f_socle         : { required:false },
+					f_lien          : { required:false },
+					f_domaine       : { required:false },
+					f_theme         : { required:false },
+					f_orientation   : { required:true },
+					f_couleur       : { required:true },
+					f_legende       : { required:true },
+					f_marge_min     : { required:true },
+					f_pages_nb      : { required:true },
+ 					f_cases_nb      : { required:true },
+					f_cases_larg    : { required:true }
 				},
 				messages :
 				{
-					f_orientation  : { required:"orientation manquante" },
-					f_marge_min    : { required:"marge mini manquante" },
-					f_pages_nb     : { required:"choix manquant" },
-					f_couleur      : { required:"couleur manquante" },
-					f_legende      : { required:"légende manquante" },
-					f_cases_nb     : { required:"nombre manquant" },
-					f_cases_larg   : { required:"largeur manquante" },
-					'f_type[]'     : { required:"type(s) manquant(s)" },
-					f_coef         : { },
-					f_socle        : { },
-					f_lien         : { },
-					f_bilan_MS     : { },
-					f_bilan_PA     : { },
-					f_conv_sur20   : { },
-					f_periode      : { required:"période manquante" },
-					f_date_debut   : { required:"date manquante" , dateITA:"format JJ/MM/AAAA non respecté" },
-					f_date_fin     : { required:"date manquante" , dateITA:"format JJ/MM/AAAA non respecté" },
-					f_compet_liste : { required:"item(s) manquant(s)" },
-					f_groupe       : { required:"groupe manquant" },
-					'f_eleve[]'    : { required:"élève(s) manquant(s)" }
+					'f_type[]'      : { required:"type(s) manquant(s)" },
+					f_bilan_MS      : { },
+					f_bilan_PA      : { },
+					f_conv_sur20    : { },
+					f_tri_objet     : { required:"choix manquant" },
+					f_tri_mode      : { required:"choix manquant" },
+					f_compet_nombre : { accept:"item(s) manquant(s)" },
+					f_groupe        : { required:"groupe manquant" },
+					'f_eleve[]'     : { required:"élève(s) manquant(s)" },
+					f_periode       : { required:"période manquante" },
+					f_date_debut    : { required:"date manquante" , dateITA:"format JJ/MM/AAAA non respecté" },
+					f_date_fin      : { required:"date manquante" , dateITA:"format JJ/MM/AAAA non respecté" },
+					f_retroactif    : { required:"choix manquant" },
+					f_coef          : { },
+					f_socle         : { },
+					f_lien          : { },
+					f_domaine       : { },
+					f_theme         : { },
+					f_orientation   : { required:"orientation manquante" },
+					f_couleur       : { required:"couleur manquante" },
+					f_legende       : { required:"légende manquante" },
+					f_marge_min     : { required:"marge mini manquante" },
+					f_pages_nb      : { required:"choix manquant" },
+					f_cases_nb      : { required:"nombre manquant" },
+					f_cases_larg    : { required:"largeur manquante" }
 				},
 				errorElement : "label",
 				errorClass : "erreur",

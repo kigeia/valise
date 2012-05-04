@@ -152,7 +152,17 @@ if(count($tab_id_classe_groupe))
 					$date_visible = ($DB_ROW_DEVOIR['devoir_date']==$DB_ROW_DEVOIR['devoir_visible_date']) ? 'identique' : convert_date_mysql_to_french($DB_ROW_DEVOIR['devoir_visible_date']);
 					$ref = $DB_ROW_DEVOIR['devoir_id'].'_'.strtoupper($DB_ROW_DEVOIR['groupe_type']{0}).$DB_ROW_DEVOIR['groupe_id'];
 					$s = ($DB_ROW_DEVOIR['items_nombre']>1) ? 's' : '';
-					// Afficher une ligne du tableau
+                                        if(!$DB_ROW['devoir_partage'])
+                                        {
+                                                $profs_liste  = '';
+                                                $profs_nombre = 'moi seul';
+                                        }
+                                        else
+                                        {
+                                                $profs_liste  = str_replace(',','_',mb_substr($DB_ROW['devoir_partage'],1,-1));
+                                                $profs_nombre = (mb_substr_count($DB_ROW['devoir_partage'],',')-1).' profs';
+                                        }
+                                        $proprio = ($DB_ROW['prof_id']==$_SESSION['USER_ID']) ? TRUE : FALSE ;
 					// Afficher une ligne du tableau
 					echo'<tr id='.$DB_ROW_DEVOIR['devoir_id'].'>';
 					echo	'<td><i>'.html($DB_ROW_DEVOIR['devoir_date']).'</i>'.html($date_affich).'</td>';
@@ -160,15 +170,17 @@ if(count($tab_id_classe_groupe))
 					echo	'<td>'.html($DB_ROW_DEVOIR['groupe_nom']).'</td>';
 					echo	'<td>'.html($DB_ROW_DEVOIR['devoir_info']).'</td>';
 					echo	'<td lang="'.html($DB_ROW_DEVOIR['items_listing']).'">'.html($DB_ROW_DEVOIR['items_nombre']).' item'.$s.'</td>';
+                                        echo	'<td>'.$profs_nombre.'</td>';
 					echo	'<td class="nu" lang="'.$ref.'">';
-					echo		'<q class="modifier" title="Modifier cette évaluation (date, description, ...)."></q>';
-					echo		'<q class="ordonner" title="Réordonner les items de cette évaluation."></q>';
-					echo		'<q class="dupliquer" title="Dupliquer cette évaluation."></q>';
-					echo		'<q class="supprimer" title="Supprimer cette évaluation."></q>';
-					echo		'<q class="imprimer" title="Imprimer un cartouche pour cette évaluation."></q>';
-					echo		'<q class="saisir" title="Saisir les acquisitions des élèves à cette évaluation."></q>';
-					echo		'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
-					echo		'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
+                                        echo	'<td class="nu" id="devoir_'.$ref.'">';
+                                        echo		($proprio) ? '<q class="modifier" title="Modifier cette évaluation (date, description, ...)."></q>' : '<q class="modifier_non" title="Non modifiable (évaluation d\'un collègue)."></q>' ;
+                                        echo		($proprio) ? '<q class="ordonner" title="Réordonner les items de cette évaluation."></q>' : '<q class="ordonner_non" title="Non réordonnable (évaluation d\'un collègue)."></q>' ;
+                                        echo		'<q class="dupliquer" title="Dupliquer cette évaluation."></q>';
+                                        echo		($proprio) ? '<q class="supprimer" title="Supprimer cette évaluation."></q>' : '<q class="supprimer_non" title="Non supprimable (évaluation d\'un collègue)."></q>' ;
+                                        echo		'<q class="imprimer" title="Imprimer un cartouche pour cette évaluation."></q>';
+                                        echo		'<q class="saisir" title="Saisir les acquisitions des élèves à cette évaluation."></q>';
+                                        echo		'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
+                                        echo		'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
 					if ($DB_ROW_DEVOIR['gepi_cn_devoirs_id'] != 0) {
 						$DB_TAB = DB_STRUCTURE_PUBLIC::DB_lister_parametres('"gepi_url","gepi_rne","integration_gepi"');
 						foreach($DB_TAB as $DB_ROW)
@@ -226,6 +238,7 @@ if(count($tab_id_classe_groupe))
 					echo  '<td>'.$gepi_current_group['classlist_string'].' '.$gepi_current_group['name'].'</td>';
 					echo  '<td><input id="f_info" name="f_info" size="20" type="text" value="'.$gepi_cn_devoirs_array['nom_court'].'" /></td>';
 					echo  '<td><input id="f_compet_nombre" name="f_compet_nombre" size="10" type="text" value="0 item" readonly /><input id="f_compet_liste" name="f_compet_liste" type="hidden" value="" /><q class="choisir_compet" title="Voir ou choisir les items."></q></td>';
+                                        echo '<td><input id="f_prof_nombre" name="f_prof_nombre" size="10" type="text" value="moi seul" readonly /><input id="f_prof_liste" name="f_prof_liste" type="hidden" value="" /><q class="choisir_prof" title="Voir ou choisir les collègues."></q></td>';
 					echo  '<td class="nu"><input id="f_action" name="f_action" type="hidden" value="ajouter" /><q class="valider" title="Valider l\'ajout de cette évaluation."></q><q class="annuler" title="Annuler l\'ajout de cette évaluation."></q> <label id="ajax_msg">&nbsp;</label></td>';
 					echo '</tr>';
 				}

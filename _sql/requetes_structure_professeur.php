@@ -505,12 +505,12 @@ public function DB_ajouter_liaison_professeur_responsable($user_id,$groupe_id)
  * @param string $tab_id_profs   tableau des id des profs avec qui l'évaluation est partagée ; facultatif car non transmis si éval sur des élèves sélectionnés
  * @return int
  */
-public function DB_ajouter_devoir($prof_id,$groupe_id,$date_mysql,$info,$date_visible_mysql,$tab_id_profs=array())
+public function DB_ajouter_devoir($prof_id,$groupe_id,$date_mysql,$info,$date_visible_mysql,$tab_id_profs=array(),$gepi_cn_devoirs_id = 'NULL')
 {
 	$listing_id_profs = count($tab_id_profs) ? ','.implode(',',$tab_id_profs).',' : '' ;
-	$DB_SQL = 'INSERT INTO sacoche_devoir(prof_id,groupe_id,devoir_date,devoir_info,devoir_visible_date,devoir_partage) ';
-	$DB_SQL.= 'VALUES(:prof_id,:groupe_id,:date,:info,:visible_date,:devoir_partage)';
-	$DB_VAR = array(':prof_id'=>$prof_id,':groupe_id'=>$groupe_id,':date'=>$date_mysql,':info'=>$info,':visible_date'=>$date_visible_mysql,':devoir_partage'=>$listing_id_profs);
+	$DB_SQL = 'INSERT INTO sacoche_devoir(prof_id,groupe_id,devoir_date,devoir_info,devoir_visible_date,devoir_partage,gepi_cn_devoirs_id) ';
+	$DB_SQL.= 'VALUES(:prof_id,:groupe_id,:date,:info,:visible_date,:devoir_partage,:gepi_cn_devoirs_id)';
+	$DB_VAR = array(':prof_id'=>$prof_id,':groupe_id'=>$groupe_id,':date'=>$date_mysql,':info'=>$info,':visible_date'=>$date_visible_mysql,':devoir_partage'=>$listing_id_profs,':gepi_cn_devoirs_id'=>$gepi_cn_devoirs_id);
 	DB::query(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 	return DB::getLastOid(SACOCHE_STRUCTURE_BD_NAME);
 }

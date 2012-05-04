@@ -261,7 +261,7 @@ if( (($action=='ajouter')||(($action=='dupliquer')&&($devoir_id))) && $date && $
 		}
 	}
 	// Insérer l'enregistrement de l'évaluation
-	$devoir_id2 = DB_STRUCTURE_PROFESSEUR::DB_ajouter_devoir($_SESSION['USER_ID'],$groupe_id,$date_mysql,$info,$date_visible_mysql,$tab_profs);
+	$devoir_id2 = DB_STRUCTURE_PROFESSEUR::DB_ajouter_devoir($_SESSION['USER_ID'],$groupe_id,$date_mysql,$info,$date_visible_mysql,$tab_profs,$gepi_cn_devoirs_id);
 	// Insérer les enregistrements des items de l'évaluation
 	DB_STRUCTURE_PROFESSEUR::DB_modifier_liaison_devoir_item($devoir_id2,$tab_items,'dupliquer',$devoir_id);
 	// Afficher le retour

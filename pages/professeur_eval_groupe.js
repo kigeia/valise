@@ -1764,7 +1764,7 @@ $(document).ready
 		// N'afficher les formulaire qu'une fois le js bien chargé.
 		$('#form0 , #form1').show('fast');
 		// Et charger par défaut les dernières évaluations du prof.
-		formulaire0.submit();
+		//formulaire0.submit();
 
 	}
 );

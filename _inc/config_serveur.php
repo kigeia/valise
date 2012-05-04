@@ -151,7 +151,6 @@ function load_sacoche_mysql_config($BASE = null) {
 	}
 	
 	require_once($path.'/_inc/class.DB.config.sacoche_structure.php');
-	require_once($path.'/_inc/fonction_requetes_structure.php');
 	require_once($path.'/_lib/DB/DB.class.php');
 	return $BASE;
 }

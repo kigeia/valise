@@ -738,7 +738,7 @@ function tester_authentification_user($BASE,$login,$password,$mode_connection)
 	// Récupérer les données associées à l'utilisateur.
 	require_once(dirname(__FILE__).'/fonction_requetes_structure.php');
 	require_once(dirname(__FILE__).'/../_lib/DB/DB.class.php');
-	$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur($mode_connection,$login);
+	$DB_ROW = DB_STRUCTURE_PUBLIC::DB_recuperer_donnees_utilisateur($mode_connection,$login);
 	// Si login non trouvé...
 	if(!count($DB_ROW))
 	{
@@ -1871,19 +1871,46 @@ function importer_groupe_gepi($period_num,$groupe_gepi)
 	
 	//on va lier le groupe et les professeur de ce groupe
 	foreach ($groupe_gepi['profs']['list'] as $prof_gepi_login) {
-		$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id('gepi',$prof_gepi_login);
+		$DB_ROW = DB_STRUCTURE_PUBLIC::DB_recuperer_donnees_utilisateur('gepi',$prof_gepi_login);
 		if (count($DB_ROW)) {
-			DB_STRUCTURE_modifier_liaison_user_groupe($DB_ROW['user_id'],'professeur',$sacoche_groupe_id,'groupe',true);
+			DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_liaison_user_groupe_par_admin($DB_ROW['user_id'],'professeur',$sacoche_groupe_id,'groupe',true);
 		}
 	}
 
 	//on va importer les élèves de ce groupe
 	foreach ($groupe_gepi['eleves'][$period_num]['users'] as $eleve_tableau) {
 		$eleve_id = importer_eleve_gepi($eleve_tableau);
-		DB_STRUCTURE_modifier_liaison_user_groupe($eleve_id,'eleve',$sacoche_groupe_id,'groupe',true);
+		DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_liaison_user_groupe_par_admin($eleve_id,'eleve',$sacoche_groupe_id,'groupe',true);
 	}
 	
 	return $sacoche_groupe_id;
+}
+
+/**
+ * DB_STRUCTURE_tester_utilisateur_SconetId (parmi tout le personnel de l'établissement de même profil, sauf éventuellement l'utilisateur concerné)
+ *
+ * @param int    $user_sconet_id
+ * @param string $user_profil
+ * @param int    $user_id       inutile si recherche pour un ajout, mais id à éviter si recherche pour une modification
+ * @return int $user_id ou null si non trouvé
+ */
+function DB_STRUCTURE_tester_utilisateur_SconetId($user_sconet_id,$user_profil,$user_id=false)
+{
+	$DB_SQL = 'SELECT user_id FROM sacoche_user ';
+	$DB_SQL.= 'WHERE user_sconet_id=:user_sconet_id AND user_profil=:user_profil ';
+	$DB_VAR = array(':user_sconet_id'=>$user_sconet_id,':user_profil'=>$user_profil);
+	if($user_id)
+	{
+		$DB_SQL.= 'AND user_id!=:user_id ';
+		$DB_VAR[':user_id'] = $user_id;
+	}
+	$DB_SQL.= 'LIMIT 1';
+	$DB_ROW = DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+	if (!count($DB_ROW)) {
+		return null;
+	} else {
+		return $DB_ROW['user_id'];
+	}
 }
 
 /**
@@ -1906,9 +1933,9 @@ function importer_eleve_gepi($eleve_tableau)
 		$DB_VAR[':nom'] = $eleve_tableau['nom'];
 		$DB_VAR[':prenom'] = $eleve_tableau['prenom'];
 		$DB_VAR[':id_gepi'] = $eleve_tableau['login'];
-		DB_STRUCTURE_modifier_utilisateur($user_id,$DB_VAR);
+		DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_user($user_id,$DB_VAR);
 	} else {
-		$user_id = DB_STRUCTURE_ajouter_utilisateur(
+		$user_id = DB_STRUCTURE_COMMUN::DB_ajouter_utilisateur(
 			$eleve_tableau['sconet_id'],
 			$eleve_tableau['elenoet'],
 			'',

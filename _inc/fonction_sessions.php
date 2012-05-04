@@ -132,9 +132,8 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 		(!$TAB_PROFILS_AUTORISES['public'] || ($PAGE == 'public_accueil' && false === strpos($_SERVER['REQUEST_URI'],'ajax.php')))) { 
 		//si le return est false on ne passe pas dans cette branche car on est certainement en procédure d'instalation
 		setcookie(COOKIE_STRUCTURE,$BASE,time()+60*60*24*365,'');
-		require_once($path.'/_inc/fonction_requetes_structure.php');
 		require_once($path.'/_inc/fonction_divers.php');
-		$DB_TAB = DB_STRUCTURE_lister_parametres('"connexion_mode","connexion_nom","auth_simpleSAML_source"');
+		$DB_TAB = DB_STRUCTURE_PUBLIC::DB_lister_parametres('"connexion_mode","connexion_nom","auth_simpleSAML_source"');
 		foreach($DB_TAB as $DB_ROW)
 		{
 			${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
@@ -193,17 +192,18 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 					if ($attr['USER_ID'][0] == 0) {
 						enregistrer_informations_session_webmestre();
 					} else {
-						$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id('normal',$attr['USER_ID'][0]);
+						$DB_ROW = DB_STRUCTURE_PUBLIC::DB_lister_parametres('normal',$attr['USER_ID'][0]);
 						require_once(dirname(__FILE__).'/fonction_divers.php');
 						enregistrer_session_user($BASE,$DB_ROW);
 					}
 				} else {
 					//si on a pas d'attribut USER_ID c'est qu'on a une authentification externe. On va rechercher sur l'attribut USER_ID_ENT
-					$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur_id('gepi',$attr['USER_ID_ENT'][0]);
+					$DB_ROW = DB_STRUCTURE_PUBLIC::DB_recuperer_donnees_utilisateur('gepi',$attr['USER_ID_ENT'][0]);
 					$user_id = -1;
 					if(!count($DB_ROW)) {
 						//l'utilisateur n'est pas dans la base on va l'importer
 						//mais avant, on vérifie qu'il n'y pas déja un utilisateur avec ce même login
+                                            //echo 'on est la';die;
 						$login = $attr['USER_ID_ENT'][0];
 						$DB_SQL = 'SELECT sacoche_user.* FROM sacoche_user WHERE user_login=:login ';
 						$DB_VAR = array(':login'=>$login);
@@ -216,7 +216,7 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 							$sconet_id = $attr['USER_SCONET_ID'][0];
 						}
 						
-						$user_id = DB_STRUCTURE_ajouter_utilisateur(
+						$user_id = DB_STRUCTURE_COMMUN::DB_ajouter_utilisateur(
 							$sconet_id, //sconet_id
 							'', //sconet_num
 							'', //reference
@@ -240,7 +240,7 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 					if (isset($attr['USER_NOM'])) $DB_VAR[':nom'] = $attr['USER_NOM'][0];
 					if (isset($attr['USER_PRENOM'])) $DB_VAR[':prenom'] = $attr['USER_PRENOM'][0];
 					if (isset($attr['USER_ID_GEPI'])) $DB_VAR[':id_gepi'] = $attr['USER_ID_GEPI'][0];
-					if (!empty($DB_VAR)) DB_STRUCTURE_modifier_utilisateur($user_id,$DB_VAR);
+					if (!empty($DB_VAR)) DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_user($user_id,$DB_VAR);
 					//on met à jour les matières
 					if (isset($attr['matieres'])) {
 						// Récupérer la liste des matiere_id
@@ -250,7 +250,7 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 							$DB_VAR = array(':matiere_ref'=>$matiere_ref);
 							$DB_ROW = DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 							if(count($DB_ROW)) {
-								DB_STRUCTURE_modifier_liaison_professeur_matiere($user_id,$DB_ROW['matiere_id'],true);
+								DB_STRUCTURE_ADMINISTRATEUR::DB_modifier_liaison_professeur_matiere($user_id,$DB_ROW['matiere_id'],true);
 							}
 						}
 					}	
@@ -264,8 +264,8 @@ function gestion_session($TAB_PROFILS_AUTORISES,$PAGE = null)
 						}
 					}
 					
-					$DB_ROW = DB_STRUCTURE_recuperer_donnees_utilisateur('gepi',$attr['USER_ID_GEPI'][0]);
-					DB_STRUCTURE_modifier_date('connexion',$DB_ROW['user_id']);
+					$DB_ROW = DB_STRUCTURE_PUBLIC::DB_recuperer_donnees_utilisateur('gepi',$attr['USER_ID_GEPI'][0]);
+					DB_STRUCTURE_PUBLIC::DB_modifier_date('connexion',$DB_ROW['user_id']);
 					$result = enregistrer_session_user($BASE,$DB_ROW);
 					if ($result != null) {
 						echo 'il y a une erreur car normalement on vient d enregistrer le profil mais il ne semble pas être dans la base : '.$result;

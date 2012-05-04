@@ -73,7 +73,7 @@ class SimpleSAML_Auth_SacocheSimple extends SimpleSAML_Auth_Simple {
 		}
 
 		if (!isset($params['core:organization'])) {//organization (rne) pour l'authentification
-			$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_rne"');
+			$DB_TAB = DB_STRUCTURE_PUBLIC::DB_lister_parametres('"gepi_rne"');
 			if ($DB_TAB) {
 				$params['core:organization'] = $DB_TAB['parametre_valeur'];
 			} elseif (isset($_REQUEST['organization'])) {

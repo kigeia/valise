@@ -51,7 +51,7 @@ foreach($tab_connexion_info['cas'] as $connexion_nom => $tab_info)
 }
 
 
-$DB_TAB = DB_STRUCTURE_lister_parametres('"auth_simpleSAML_source","gepi_url","gepi_rne","gepi_certificat_empreinte","integration_gepi"');
+$DB_TAB = DB_STRUCTURE_PUBLIC::DB_lister_parametres('"auth_simpleSAML_source","gepi_url","gepi_rne","gepi_certificat_empreinte","integration_gepi"');
 foreach($DB_TAB as $DB_ROW)
 {
 	${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];

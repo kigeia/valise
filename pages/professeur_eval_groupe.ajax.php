@@ -170,7 +170,7 @@ if( ($action=='Afficher_evaluations') && $devoir_id != '' || ($aff_classe_txt &&
 		echo		'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
 		echo		'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
 		if ($DB_ROW['gepi_cn_devoirs_id'] != 0) {
-			$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url","gepi_rne", "integration_gepi"');
+			$DB_TAB = DB_STRUCTURE_PUBLIC::DB_lister_parametres('"gepi_url","gepi_rne", "integration_gepi"');
 			foreach($DB_TAB as $DB_ROW_PARAM)
 			{
 				${$DB_ROW_PARAM['parametre_nom']} = $DB_ROW_PARAM['parametre_valeur'];
@@ -184,7 +184,7 @@ if( ($action=='Afficher_evaluations') && $devoir_id != '' || ($aff_classe_txt &&
 				$output_array = array();
 				$tab_modele_bon = array('RR','R','V','VV');	// les notes prises en compte dans le calcul du score
 				//print_r($_SESSION['CALCUL_VALEUR']);die;
-				$DB_TAB = DB_STRUCTURE_lister_saisies_devoir($DB_ROW['devoir_id'],$with_REQ=true);
+				$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_saisies_devoir($DB_ROW['devoir_id'],$with_REQ=true);
 				foreach($DB_TAB as $DB_ROW_SASIE)
 				{
 					$id_gepi = $DB_ROW_SASIE['user_id_gepi'];
@@ -294,7 +294,7 @@ if( (($action=='ajouter')||(($action=='dupliquer')&&($devoir_id))) && $date && $
 	echo	'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
 	echo	'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
 	if ($gepi_cn_devoirs_id != null) {
-		$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url","gepi_rne", "integration_gepi"');
+		$DB_TAB = DB_STRUCTURE_PUBLIC::DB_lister_parametres('"gepi_url","gepi_rne", "integration_gepi"');
 		foreach($DB_TAB as $DB_ROW_PARAM)
 		{
 			${$DB_ROW_PARAM['parametre_nom']} = $DB_ROW_PARAM['parametre_valeur'];
@@ -308,7 +308,7 @@ if( (($action=='ajouter')||(($action=='dupliquer')&&($devoir_id))) && $date && $
 			$output_array = array();
 			$tab_modele_bon = array('RR','R','V','VV');	// les notes prises en compte dans le calcul du score
 			//print_r($_SESSION['CALCUL_VALEUR']);die;
-			$DB_TAB = DB_STRUCTURE_lister_saisies_devoir($devoir_id2,$with_REQ=true);
+			$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_saisies_devoir($devoir_id2,$with_REQ=true);
 			foreach($DB_TAB as $DB_ROW_SASIE)
 			{
 				$id_gepi = $DB_ROW_SASIE['user_id_gepi'];

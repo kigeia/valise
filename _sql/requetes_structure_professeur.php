@@ -51,35 +51,6 @@ public function DB_recuperer_item_popularite($listing_demande_id,$listing_user_i
 }
 
 /**
- * DB_STRUCTURE_recuperer_devoir_gepi
- *
- * @param int    $prof_id
- * @param int    $groupe_id        id du groupe ou de la classe pour un devoir sur une classe ou un groupe ; 0 pour un devoir sur une sélection d'élèves
- * @param string $date_debut_mysql
- * @param string $date_fin_mysql
- * @return array
- */
-function DB_STRUCTURE_recuperer_devoir_gepi($gepi_cn_devoir_id)
-{
-	// DB::query(SACOCHE_STRUCTURE_BD_NAME , 'SET group_concat_max_len = ...'); // Pour lever si besoin une limitation de GROUP_CONCAT (group_concat_max_len est par défaut limité à une chaine de 1024 caractères).
-	// Il faut ajouter dans la requête des "DISTINCT" sinon la liaison avec "sacoche_jointure_user_groupe" duplique tout x le nb d'élèves associés pour une évaluation sur une sélection d'élèves.
-	$DB_SQL = 'SELECT devoir_id, devoir_date, devoir_visible_date, devoir_info,gepi_cn_devoirs_id, groupe_id, groupe_type, groupe_nom, ';
-	$DB_SQL.= 'GROUP_CONCAT(DISTINCT item_id SEPARATOR "_") AS items_listing, COUNT(DISTINCT item_id) AS items_nombre ';
-	$DB_SQL .= ', '.'GROUP_CONCAT(DISTINCT user_id SEPARATOR "_") AS users_listing, COUNT(DISTINCT user_id) AS users_nombre ';
-	$DB_SQL.= 'FROM sacoche_devoir ';
-	$DB_SQL.= 'LEFT JOIN sacoche_jointure_devoir_item USING (devoir_id) ';
-	$DB_SQL.= 'LEFT JOIN sacoche_groupe USING (groupe_id) ';
-	$DB_SQL.= 'LEFT JOIN sacoche_jointure_user_groupe USING (groupe_id) ';
-	$DB_SQL.= 'WHERE gepi_cn_devoirs_id=:gepi_cn_devoir_id ';
-	$DB_SQL.= 'GROUP BY devoir_id ';
-	$DB_SQL.= 'ORDER BY devoir_date DESC, groupe_nom ASC';
-	$DB_VAR = array(':gepi_cn_devoir_id'=>$gepi_cn_devoir_id);
-	return DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
-}
-
-
-
-/**
  * Retourner les niveaux et matières des référentiels auxquels un professeur a accès.
  *
  * @param int  $user_id
@@ -349,6 +320,40 @@ public function DB_lister_devoirs_prof($prof_id,$groupe_id,$date_debut_mysql,$da
 	$DB_VAR = array(':prof_id'=>$prof_id,':prof_id_like'=>'%,'.$prof_id.',%',':type4'=>'eval');
 	return DB::queryTab(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
 }
+
+/**
+ * DB_STRUCTURE_recuperer_devoir_gepi
+ *
+ * @param int    $prof_id
+ * @param int    $groupe_id        id du groupe ou de la classe pour un devoir sur une classe ou un groupe ; 0 pour un devoir sur une sélection d'élèves
+ * @param string $date_debut_mysql
+ * @param string $date_fin_mysql
+ * @return array
+ */
+function DB_STRUCTURE_recuperer_devoir_gepi($gepi_cn_devoir_id)
+{
+	// DB::query(SACOCHE_STRUCTURE_BD_NAME , 'SET group_concat_max_len = ...'); // Pour lever si besoin une limitation de GROUP_CONCAT (group_concat_max_len est par défaut limité à une chaine de 1024 caractères).
+	// Il faut ajouter dans la requête des "DISTINCT" sinon la liaison avec "sacoche_jointure_user_groupe" duplique tout x le nb d'élèves associés pour une évaluation sur une sélection d'élèves.
+	$DB_SQL = 'SELECT sacoche_devoir.*, groupe_type, groupe_nom, ';
+	$DB_SQL.= 'GROUP_CONCAT(DISTINCT item_id SEPARATOR "_") AS items_listing, COUNT(DISTINCT item_id) AS items_nombre ';
+	if(!$groupe_id)
+	{
+		$DB_SQL .= ', '.'GROUP_CONCAT(DISTINCT user_id SEPARATOR "_") AS users_listing, COUNT(DISTINCT user_id) AS users_nombre ';
+	}
+	$DB_SQL.= 'FROM sacoche_devoir ';
+	$DB_SQL.= 'LEFT JOIN sacoche_jointure_devoir_item USING (devoir_id) ';
+	$DB_SQL.= 'LEFT JOIN sacoche_groupe USING (groupe_id) ';
+	if(!$groupe_id)
+	{
+		$DB_SQL.= 'LEFT JOIN sacoche_jointure_user_groupe USING (groupe_id) ';
+	}
+        $DB_SQL.= 'WHERE gepi_cn_devoirs_id=:gepi_cn_devoir_id ';
+	$DB_SQL.= 'GROUP BY devoir_id ';
+	$DB_SQL.= 'ORDER BY devoir_date DESC, groupe_nom ASC';
+	$DB_VAR = array(':gepi_cn_devoir_id'=>$gepi_cn_devoir_id);
+	return DB::queryRow(SACOCHE_STRUCTURE_BD_NAME , $DB_SQL , $DB_VAR);
+}
+
 
 /**
  * lister_devoirs_prof_groupe_sans_infos_last

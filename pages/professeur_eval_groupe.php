@@ -25,6 +25,7 @@
  * 
  */
 
+
 if(!defined('SACoche')) {exit('Ce fichier ne peut être appelé directement !');}
 $TITRE = "Évaluer une classe ou un groupe";
 //ajout du groupe en provenance de gepi
@@ -144,7 +145,7 @@ if(count($tab_id_classe_groupe))
 			<?php } else { 
 				$gepi_cn_devoirs_array = json_decode($_POST['gepi_cn_devoirs_array'], true);
 				//on va rechercher si le devoir existe déjà
-				$DB_ROW_DEVOIR = DB_STRUCTURE_recuperer_devoir_gepi($gepi_cn_devoirs_array['id']);
+				$DB_ROW_DEVOIR = DB_STRUCTURE_PROFESSEUR::DB_STRUCTURE_recuperer_devoir_gepi($gepi_cn_devoirs_array['id']);
 				if ($DB_ROW_DEVOIR) {		
 					// Formater la date et la référence de l'évaluation
 					$date_affich = convert_date_mysql_to_french($DB_ROW_DEVOIR['devoir_date']);
@@ -169,7 +170,7 @@ if(count($tab_id_classe_groupe))
 					echo		'<q class="voir" title="Voir les acquisitions des élèves à cette évaluation."></q>';
 					echo		'<q class="voir_repart" title="Voir les répartitions des élèves à cette évaluation."></q>';
 					if ($DB_ROW_DEVOIR['gepi_cn_devoirs_id'] != 0) {
-						$DB_TAB = DB_STRUCTURE_lister_parametres('"gepi_url","gepi_rne","integration_gepi"');
+						$DB_TAB = DB_STRUCTURE_PUBLIC::DB_lister_parametres('"gepi_url","gepi_rne","integration_gepi"');
 						foreach($DB_TAB as $DB_ROW)
 						{
 							${$DB_ROW['parametre_nom']} = $DB_ROW['parametre_valeur'];
@@ -183,7 +184,7 @@ if(count($tab_id_classe_groupe))
 							$output_array = array();
 							$tab_modele_bon = array('RR','R','V','VV');	// les notes prises en compte dans le calcul du score
 							//print_r($_SESSION['CALCUL_VALEUR']);die;
-							$DB_TAB = DB_STRUCTURE_lister_saisies_devoir($DB_ROW_DEVOIR['devoir_id'],$with_REQ=true);
+							$DB_TAB = DB_STRUCTURE_PROFESSEUR::DB_lister_saisies_devoir($DB_ROW_DEVOIR['devoir_id'],$with_REQ=true);
 							foreach($DB_TAB as $DB_ROW_SASIE)
 							{
 								$id_gepi = $DB_ROW_SASIE['user_id_gepi'];

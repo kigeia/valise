@@ -68,6 +68,18 @@ $config = array(
 			    'pattern' => '/responsable/',
 			    'replacement' => 'parent',
 			),
+			61 => array(
+			    'class' => 'core:AttributeAlter',
+			    'subject' => 'USER_PROFIL',
+			    'pattern' => '/cpe/',
+			    'replacement' => 'directeur',
+			),
+			62 => array(
+			    'class' => 'core:AttributeAlter',
+			    'subject' => 'USER_PROFIL',
+			    'pattern' => '/scolarite/',
+			    'replacement' => 'directeur',
+			),
 		),
 	),
 
